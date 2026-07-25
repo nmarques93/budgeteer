@@ -6,7 +6,7 @@ defmodule Budgeteer.Households do
   import Ecto.Query, warn: false
   alias Budgeteer.Repo
 
-  alias Budgeteer.Households.{User, UserToken, UserNotifier}
+  alias Budgeteer.Households.{Household, User, UserToken, UserNotifier}
 
   ## Database getters
 
@@ -60,14 +60,26 @@ defmodule Budgeteer.Households do
   """
   def get_user!(id), do: Repo.get!(User, id)
 
+  ## Households
+
+  @doc """
+  Creates a household.
+  """
+  def create_household(attrs) do
+    %Household{}
+    |> Household.changeset(attrs)
+    |> Repo.insert()
+  end
+
   ## User registration
 
   @doc """
-  Registers a user.
+  Registers a user, creating a new household for them (as owner) in the
+  same transaction.
 
   ## Examples
 
-      iex> register_user(%{field: value})
+      iex> register_user(%{email: value, household_name: value})
       {:ok, %User{}}
 
       iex> register_user(%{field: bad_value})
@@ -75,9 +87,32 @@ defmodule Budgeteer.Households do
 
   """
   def register_user(attrs) do
-    %User{}
-    |> User.email_changeset(attrs)
-    |> Repo.insert()
+    changeset = User.registration_changeset(%User{}, attrs)
+
+    if changeset.valid? do
+      Repo.transact(fn ->
+        with {:ok, household} <-
+               create_household(%{name: Ecto.Changeset.get_field(changeset, :household_name)}),
+             {:ok, user} <-
+               changeset
+               |> Ecto.Changeset.put_change(:household_id, household.id)
+               |> Ecto.Changeset.put_change(:role, :owner)
+               |> Repo.insert() do
+          {:ok, user}
+        end
+      end)
+    else
+      {:error, %{changeset | action: :insert}}
+    end
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for registration.
+
+  See `Budgeteer.Households.User.registration_changeset/3` for supported options.
+  """
+  def change_user_registration(user, attrs \\ %{}, opts \\ []) do
+    User.registration_changeset(user, attrs, opts)
   end
 
   ## Settings

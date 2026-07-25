@@ -1,5 +1,7 @@
 # Budgeteer
 
+A family budgeting PWA built in Elixir/Phoenix. Upload a bank statement (PDF or photo) and Claude extracts the transactions automatically — no manual entry. Everything syncs live across household members via LiveView, with shared budget categories and a real-time grocery list.
+
 To start your Phoenix server:
 
 * Run `mix setup` to install and setup dependencies

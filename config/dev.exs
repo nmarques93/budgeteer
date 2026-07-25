@@ -24,7 +24,10 @@ config :budgeteer, BudgeteerWeb.Endpoint,
   code_reloader: true,
   debug_errors: true,
   secret_key_base: "0xA/GONGlbE9pGaGGGEHnDQcn6x19+1C+KllB3mI8i46eFQ4COuFkqt0McS0ot0O",
-  watchers: []
+  watchers: [
+    esbuild: {Esbuild, :install_and_run, [:budgeteer, ~w(--sourcemap=inline --watch)]},
+    tailwind: {Tailwind, :install_and_run, [:budgeteer, ~w(--watch)]}
+  ]
 
 # ## SSL Support
 #

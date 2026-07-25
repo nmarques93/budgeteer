@@ -31,6 +31,8 @@ These deviate from or sharpen the original `PLAN.md` and should be treated as se
 - **EUR-only logic for now, `currency` field kept on `accounts`.** No multi-currency conversion or display logic should be built yet — treat every amount as EUR — but don't remove the column, since the user wants the door open for it later.
 - **Local disk storage for statement uploads**, not S3. Path is `config :budgeteer, :statement_storage_path` (defaults to `priv/statements`). Revisit S3 (`ex_aws`/`ex_aws_s3` — not currently a dependency) only when actually deploying.
 - **One household per user.** `users.household_id` is a nullable FK (nullable at the DB level only because a user can theoretically exist before being assigned to a household during onboarding) — application logic should treat it as required once registration/invite flow is built. Do not model multi-household membership.
+- **Registration creates a household.** The registration form asks for a household name; `Households.register_user/1` creates the `Household` and `User` (as `:owner`) in one transaction — see `lib/budgeteer/households/user.ex` (`registration_changeset/3`) and `lib/budgeteer/households.ex`. Joining an existing household via an invite link is separate, not-yet-built work.
+- **Standard Phoenix asset pipeline was added post-scaffold.** `mix phx.new --no-assets` (per `PLAN.md`'s original suggestion of "Tailwind via CDN") leaves `app.js` as an inert placeholder with *no LiveView JS client at all* — forms silently fall back to plain HTML POSTs with no matching controller route. Since this app is LiveView-first, that's not viable even for local dev, so the standard `esbuild` + `tailwind` + `daisyui`/`heroicons` setup (matching a non-`--no-assets` `mix phx.new`) was wired in instead: `assets/` directory, `config :esbuild`/`config :tailwind` in `config.exs`, `watchers` in `dev.exs`, and `assets.setup`/`assets.build`/`assets.deploy` mix aliases. Run `mix assets.setup && mix assets.build` after a fresh clone (or just `mix setup`).
 - **Duplicate statement protection**: `statements` has a `file_hash` column with a unique index on `(account_id, file_hash)`, not in the original plan. Compute a SHA-256 of the uploaded file before insert to prevent double-importing the same statement.
 - **`raw_ai_output`** is stored as a plain `jsonb` map, unencrypted — same tradeoff as the original plan. It contains merchant names, amounts, and dates from bank statements. Fine for local dev; revisit before any real deployment (this is a bank statement DB, all money data deserves encryption-at-rest scrutiny before going live — this isn't done yet).
 
@@ -77,7 +79,7 @@ grocery_items
   checked (boolean), added_by_id (uuid FK, nullable), checked_by_id (uuid FK, nullable)
 ```
 
-Only migrations exist so far — no Ecto schemas or context modules beyond what `phx.gen.auth` generated (`Budgeteer.Households`). Schemas/contexts for `accounts`, `categories`, `transactions`, `statements`, `grocery_lists`, `grocery_items` are not yet built.
+`Household` and `User` (with `household_id`/`role`/`name` fields) are built out as Ecto schemas in `Budgeteer.Households`, including registration. Schemas/contexts for `accounts`, `categories`, `transactions`, `statements`, `grocery_lists`, `grocery_items` are still just migrations — not yet built.
 
 ---
 
@@ -108,7 +110,7 @@ A local Postgres role `postgres`/`postgres` (superuser) was created on this mach
 
 ## Build Phases (from PLAN.md, unchanged)
 
-1. Core ledger — auth ✅ done, household/invite flow, account CRUD, manual transactions, category CRUD, dashboard — **not yet built**
+1. Core ledger — auth ✅, registration creates a household ✅ — invite-to-join flow, account CRUD, manual transactions, category CRUD, dashboard **not yet built**
 2. AI statement import (Oban + Claude)
 3. Real-time sync (PubSub + Presence)
 4. Grocery list

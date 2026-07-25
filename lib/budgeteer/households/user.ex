@@ -8,8 +8,13 @@ defmodule Budgeteer.Households.User do
     field :email, :string
     field :password, :string, virtual: true, redact: true
     field :hashed_password, :string, redact: true
+    field :name, :string
+    field :role, Ecto.Enum, values: [:owner, :member], default: :owner
     field :confirmed_at, :utc_datetime
     field :authenticated_at, :utc_datetime, virtual: true
+    field :household_name, :string, virtual: true
+
+    belongs_to :household, Budgeteer.Households.Household
 
     timestamps(type: :utc_datetime)
   end
@@ -28,6 +33,19 @@ defmodule Budgeteer.Households.User do
   def email_changeset(user, attrs, opts \\ []) do
     user
     |> cast(attrs, [:email])
+    |> validate_email(opts)
+  end
+
+  @doc """
+  A changeset for registration, which also requires a household name.
+
+  See `email_changeset/3` for the `:validate_unique` option.
+  """
+  def registration_changeset(user, attrs, opts \\ []) do
+    user
+    |> cast(attrs, [:email, :household_name])
+    |> validate_required([:household_name])
+    |> validate_length(:household_name, max: 160)
     |> validate_email(opts)
   end
 

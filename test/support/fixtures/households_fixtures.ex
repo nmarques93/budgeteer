@@ -14,7 +14,8 @@ defmodule Budgeteer.HouseholdsFixtures do
 
   def valid_user_attributes(attrs \\ %{}) do
     Enum.into(attrs, %{
-      email: unique_user_email()
+      email: unique_user_email(),
+      household_name: "Test Household #{System.unique_integer()}"
     })
   end
 

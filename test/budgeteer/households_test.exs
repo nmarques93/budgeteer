@@ -85,6 +85,23 @@ defmodule Budgeteer.HouseholdsTest do
       assert is_nil(user.confirmed_at)
       assert is_nil(user.password)
     end
+
+    test "creates a household for the user, as owner" do
+      {:ok, user} =
+        Households.register_user(valid_user_attributes(household_name: "The Marques Family"))
+
+      assert user.role == :owner
+      assert %{household_id: household_id} = user
+      assert household_id != nil
+
+      household = Budgeteer.Repo.get!(Budgeteer.Households.Household, household_id)
+      assert household.name == "The Marques Family"
+    end
+
+    test "requires household_name to be set" do
+      {:error, changeset} = Households.register_user(%{email: unique_user_email()})
+      assert %{household_name: ["can't be blank"]} = errors_on(changeset)
+    end
   end
 
   describe "sudo_mode?/2" do
