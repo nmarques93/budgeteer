@@ -9,13 +9,24 @@ import Config
 
 config :budgeteer, :scopes,
   user: [
-    default: true,
+    default: false,
     module: Budgeteer.Households.Scope,
     assign_key: :current_scope,
     access_path: [:user, :id],
     schema_key: :user_id,
     schema_type: :binary_id,
     schema_table: :users,
+    test_data_fixture: Budgeteer.HouseholdsFixtures,
+    test_setup_helper: :register_and_log_in_user
+  ],
+  household: [
+    default: true,
+    module: Budgeteer.Households.Scope,
+    assign_key: :current_scope,
+    access_path: [:user, :household_id],
+    schema_key: :household_id,
+    schema_type: :binary_id,
+    schema_table: :households,
     test_data_fixture: Budgeteer.HouseholdsFixtures,
     test_setup_helper: :register_and_log_in_user
   ]

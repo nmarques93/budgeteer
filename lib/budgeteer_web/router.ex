@@ -54,6 +54,11 @@ defmodule BudgeteerWeb.Router do
       on_mount: [{BudgeteerWeb.UserAuth, :require_authenticated}] do
       live "/users/settings", UserLive.Settings, :edit
       live "/users/settings/confirm-email/:token", UserLive.Settings, :confirm_email
+
+      live "/accounts", AccountLive.Index, :index
+      live "/accounts/new", AccountLive.Form, :new
+      live "/accounts/:id", AccountLive.Show, :show
+      live "/accounts/:id/edit", AccountLive.Form, :edit
     end
 
     post "/users/update-password", UserSessionController, :update_password

@@ -34,6 +34,7 @@ These deviate from or sharpen the original `PLAN.md` and should be treated as se
 - **Registration creates a household.** The registration form asks for a household name; `Households.register_user/1` creates the `Household` and `User` (as `:owner`) in one transaction — see `lib/budgeteer/households/user.ex` (`registration_changeset/3`) and `lib/budgeteer/households.ex`. Joining an existing household via an invite link is separate, not-yet-built work.
 - **Standard Phoenix asset pipeline was added post-scaffold.** `mix phx.new --no-assets` (per `PLAN.md`'s original suggestion of "Tailwind via CDN") leaves `app.js` as an inert placeholder with *no LiveView JS client at all* — forms silently fall back to plain HTML POSTs with no matching controller route. Since this app is LiveView-first, that's not viable even for local dev, so the standard `esbuild` + `tailwind` + `daisyui`/`heroicons` setup (matching a non-`--no-assets` `mix phx.new`) was wired in instead: `assets/` directory, `config :esbuild`/`config :tailwind` in `config.exs`, `watchers` in `dev.exs`, and `assets.setup`/`assets.build`/`assets.deploy` mix aliases. Run `mix assets.setup && mix assets.build` after a fresh clone (or just `mix setup`).
 - **Duplicate statement protection**: `statements` has a `file_hash` column with a unique index on `(account_id, file_hash)`, not in the original plan. Compute a SHA-256 of the uploaded file before insert to prevent double-importing the same statement.
+- **Household-scoped generators.** `config :budgeteer, :scopes` (`config/config.exs`) defines a `household` scope (`access_path: [:user, :household_id]`, `schema_key: :household_id`) as the **default** — `mix phx.gen.live`/`phx.gen.context` etc. will automatically thread a `scope` param through every generated context function (`list_x(scope)`, `get_x!(scope, id)`, ...), scope queries by `household_id`, assert ownership on update/delete, and set up per-household PubSub broadcasting (`"household:#{household_id}:resource"`) for free. Use this for every remaining Phase 1 resource (`categories`, `transactions`, `statements`, `grocery_lists`/`grocery_items`) rather than hand-rolling scoping — just run the generator, then **delete the generated migration** (tables already exist from the initial scaffolding migrations) and wire up routes/nav manually. A `user` scope (by `user_id`) also exists but is not default — pass `--scope user` explicitly if a future resource is genuinely per-user rather than per-household. Test fixtures: `household_scope_fixture/0,1` in `test/support/fixtures/households_fixtures.ex` (added alongside the pre-existing `user_scope_fixture/0,1` — both just wrap `Scope.for_user/1`, since our `Scope` struct doesn't distinguish scope "kind").
 - **`raw_ai_output`** is stored as a plain `jsonb` map, unencrypted — same tradeoff as the original plan. It contains merchant names, amounts, and dates from bank statements. Fine for local dev; revisit before any real deployment (this is a bank statement DB, all money data deserves encryption-at-rest scrutiny before going live — this isn't done yet).
 
 ---
@@ -79,7 +80,7 @@ grocery_items
   checked (boolean), added_by_id (uuid FK, nullable), checked_by_id (uuid FK, nullable)
 ```
 
-`Household` and `User` (with `household_id`/`role`/`name` fields) are built out as Ecto schemas in `Budgeteer.Households`, including registration. Schemas/contexts for `accounts`, `categories`, `transactions`, `statements`, `grocery_lists`, `grocery_items` are still just migrations — not yet built.
+`Household` and `User` (with `household_id`/`role`/`name` fields) are built out as Ecto schemas in `Budgeteer.Households`, including registration. `Account` is built out in `Budgeteer.Ledger` (`lib/budgeteer/ledger.ex`, `lib/budgeteer/ledger/account.ex`) with full LiveView CRUD at `/accounts` — generated via `mix phx.gen.live Ledger Account accounts name:string bank_name:string currency:string starting_balance_cents:integer` using the household scope (see Decisions above). `Ledger.current_balance_cents/1` computes the live balance. Schemas/contexts for `categories`, `transactions`, `statements`, `grocery_lists`, `grocery_items` are still just migrations — not yet built.
 
 ---
 
@@ -110,7 +111,7 @@ A local Postgres role `postgres`/`postgres` (superuser) was created on this mach
 
 ## Build Phases (from PLAN.md, unchanged)
 
-1. Core ledger — auth ✅, registration creates a household ✅ — invite-to-join flow, account CRUD, manual transactions, category CRUD, dashboard **not yet built**
+1. Core ledger — auth ✅, registration creates a household ✅, account CRUD ✅ — invite-to-join flow, manual transactions, category CRUD, dashboard **not yet built**
 2. AI statement import (Oban + Claude)
 3. Real-time sync (PubSub + Presence)
 4. Grocery list

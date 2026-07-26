@@ -51,6 +51,15 @@ defmodule Budgeteer.HouseholdsFixtures do
     Scope.for_user(user)
   end
 
+  def household_scope_fixture do
+    user = user_fixture()
+    household_scope_fixture(user)
+  end
+
+  def household_scope_fixture(user) do
+    Scope.for_user(user)
+  end
+
   def set_password(user) do
     {:ok, {user, _expired_tokens}} =
       Households.update_user_password(user, %{password: valid_user_password()})
