@@ -13,7 +13,7 @@ defmodule Budgeteer.LedgerFixtures do
         bank_name: "some bank_name",
         currency: "some currency",
         name: "some name",
-        starting_balance_cents: 42
+        starting_balance: "0.42"
       })
 
     {:ok, account} = Budgeteer.Ledger.create_account(scope, attrs)
@@ -26,7 +26,7 @@ defmodule Budgeteer.LedgerFixtures do
   def transaction_fixture(scope, attrs \\ %{}) do
     attrs =
       Enum.into(attrs, %{
-        amount_cents: 42,
+        amount: "0.42",
         date: ~D[2026-07-25],
         description: "some description",
         merchant: "some merchant",
@@ -36,5 +36,21 @@ defmodule Budgeteer.LedgerFixtures do
 
     {:ok, transaction} = Budgeteer.Ledger.create_transaction(scope, attrs)
     transaction
+  end
+
+  @doc """
+  Generate a category.
+  """
+  def category_fixture(scope, attrs \\ %{}) do
+    attrs =
+      Enum.into(attrs, %{
+        budget: "0.42",
+        color: "some color",
+        name: "some name #{System.unique_integer()}",
+        type: :income
+      })
+
+    {:ok, category} = Budgeteer.Ledger.create_category(scope, attrs)
+    category
   end
 end

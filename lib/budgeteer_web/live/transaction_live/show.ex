@@ -25,10 +25,11 @@ defmodule BudgeteerWeb.TransactionLive.Show do
 
       <.list>
         <:item title="Date">{@transaction.date}</:item>
-        <:item title="Amount cents">{@transaction.amount_cents}</:item>
+        <:item title="Amount">{Budgeteer.Money.format(@transaction.amount_cents)}</:item>
         <:item title="Merchant">{@transaction.merchant}</:item>
         <:item title="Description">{@transaction.description}</:item>
         <:item title="Notes">{@transaction.notes}</:item>
+        <:item title="Category">{@category_name}</:item>
       </.list>
     </Layouts.app>
     """
@@ -42,11 +43,20 @@ defmodule BudgeteerWeb.TransactionLive.Show do
       Ledger.subscribe_transactions(socket.assigns.current_scope)
     end
 
+    transaction = Ledger.get_transaction!(socket.assigns.current_scope, id)
+
+    category_name =
+      case transaction.category_id do
+        nil -> "Uncategorized"
+        category_id -> Ledger.get_category!(socket.assigns.current_scope, category_id).name
+      end
+
     {:ok,
      socket
      |> assign(:page_title, "Show Transaction")
      |> assign(:account, account)
-     |> assign(:transaction, Ledger.get_transaction!(socket.assigns.current_scope, id))}
+     |> assign(:category_name, category_name)
+     |> assign(:transaction, transaction)}
   end
 
   @impl true

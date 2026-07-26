@@ -17,7 +17,7 @@ defmodule BudgeteerWeb.AccountLive.Form do
         <.input field={@form[:name]} type="text" label="Name" />
         <.input field={@form[:bank_name]} type="text" label="Bank name" />
         <.input field={@form[:currency]} type="text" label="Currency" />
-        <.input field={@form[:starting_balance_cents]} type="number" label="Starting balance cents" />
+        <.input field={@form[:starting_balance]} type="text" label="Starting balance" placeholder="e.g. 1500.00" />
         <footer>
           <.button phx-disable-with="Saving..." variant="primary">Save Account</.button>
           <.button navigate={return_path(@current_scope, @return_to, @account)}>Cancel</.button>
@@ -40,6 +40,7 @@ defmodule BudgeteerWeb.AccountLive.Form do
 
   defp apply_action(socket, :edit, %{"id" => id}) do
     account = Ledger.get_account!(socket.assigns.current_scope, id)
+    account = %{account | starting_balance: Budgeteer.Money.to_decimal_string(account.starting_balance_cents)}
 
     socket
     |> assign(:page_title, "Edit Account")
@@ -50,7 +51,8 @@ defmodule BudgeteerWeb.AccountLive.Form do
   defp apply_action(socket, :new, _params) do
     account = %Account{
       household_id: socket.assigns.current_scope.user.household_id,
-      currency: "EUR"
+      currency: "EUR",
+      starting_balance: "0.00"
     }
 
     socket

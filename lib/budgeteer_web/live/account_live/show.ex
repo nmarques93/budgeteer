@@ -28,8 +28,8 @@ defmodule BudgeteerWeb.AccountLive.Show do
         <:item title="Name">{@account.name}</:item>
         <:item title="Bank name">{@account.bank_name}</:item>
         <:item title="Currency">{@account.currency}</:item>
-        <:item title="Starting balance cents">{@account.starting_balance_cents}</:item>
-        <:item title="Current balance">{format_cents(Ledger.current_balance_cents(@account))}</:item>
+        <:item title="Starting balance">{Budgeteer.Money.format(@account.starting_balance_cents)}</:item>
+        <:item title="Current balance">{Budgeteer.Money.format(Ledger.current_balance_cents(@account))}</:item>
       </.list>
     </Layouts.app>
     """
@@ -68,9 +68,5 @@ defmodule BudgeteerWeb.AccountLive.Show do
   def handle_info({type, %Budgeteer.Ledger.Account{}}, socket)
       when type in [:created, :updated, :deleted] do
     {:noreply, socket}
-  end
-
-  defp format_cents(cents) do
-    "€#{:erlang.float_to_binary(cents / 100, decimals: 2)}"
   end
 end

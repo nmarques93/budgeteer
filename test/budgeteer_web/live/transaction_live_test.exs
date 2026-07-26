@@ -4,9 +4,9 @@ defmodule BudgeteerWeb.TransactionLiveTest do
   import Phoenix.LiveViewTest
   import Budgeteer.LedgerFixtures
 
-  @create_attrs %{date: "2026-07-25", description: "some description", amount_cents: 42, merchant: "some merchant", notes: "some notes"}
-  @update_attrs %{date: "2026-07-26", description: "some updated description", amount_cents: 43, merchant: "some updated merchant", notes: "some updated notes"}
-  @invalid_attrs %{date: nil, description: nil, amount_cents: nil, merchant: nil, notes: nil}
+  @create_attrs %{date: "2026-07-25", description: "some description", amount: "0.42", merchant: "some merchant", notes: "some notes"}
+  @update_attrs %{date: "2026-07-26", description: "some updated description", amount: "0.43", merchant: "some updated merchant", notes: "some updated notes"}
+  @invalid_attrs %{date: nil, description: nil, amount: nil, merchant: nil, notes: nil}
 
   setup :register_and_log_in_user
 

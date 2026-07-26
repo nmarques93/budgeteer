@@ -7,10 +7,12 @@ defmodule Budgeteer.Ledger.Transaction do
   schema "transactions" do
     field :date, :date
     field :amount_cents, :integer
+    field :amount, :string, virtual: true
     field :merchant, :string
     field :description, :string
     field :notes, :string
     field :account_id, :binary_id
+    field :category_id, :binary_id
     field :household_id, :binary_id
 
     timestamps(type: :utc_datetime)
@@ -19,8 +21,22 @@ defmodule Budgeteer.Ledger.Transaction do
   @doc false
   def changeset(transaction, attrs, household_scope) do
     transaction
-    |> cast(attrs, [:date, :amount_cents, :merchant, :description, :notes, :account_id])
-    |> validate_required([:date, :amount_cents, :account_id])
+    |> cast(attrs, [:date, :amount, :merchant, :description, :notes, :account_id, :category_id])
+    |> validate_required([:date, :amount, :account_id])
+    |> put_amount_cents()
     |> put_change(:household_id, household_scope.user.household_id)
+  end
+
+  defp put_amount_cents(changeset) do
+    case get_change(changeset, :amount) do
+      nil ->
+        changeset
+
+      str ->
+        case Budgeteer.Money.to_cents(str) do
+          :error -> add_error(changeset, :amount, "is invalid")
+          cents -> put_change(changeset, :amount_cents, cents)
+        end
+    end
   end
 end

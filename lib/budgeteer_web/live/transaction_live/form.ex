@@ -15,10 +15,17 @@ defmodule BudgeteerWeb.TransactionLive.Form do
 
       <.form for={@form} id="transaction-form" phx-change="validate" phx-submit="save">
         <.input field={@form[:date]} type="date" label="Date" />
-        <.input field={@form[:amount_cents]} type="number" label="Amount cents" />
+        <.input field={@form[:amount]} type="text" label="Amount" placeholder="e.g. -42.50 for a debit" />
         <.input field={@form[:merchant]} type="text" label="Merchant" />
         <.input field={@form[:description]} type="text" label="Description" />
         <.input field={@form[:notes]} type="textarea" label="Notes" />
+        <.input
+          field={@form[:category_id]}
+          type="select"
+          label="Category"
+          prompt="Uncategorized"
+          options={Enum.map(@categories, &{&1.name, &1.id})}
+        />
         <footer>
           <.button phx-disable-with="Saving..." variant="primary">Save Transaction</.button>
           <.button navigate={return_path(@account, @return_to, @transaction)}>Cancel</.button>
@@ -35,6 +42,7 @@ defmodule BudgeteerWeb.TransactionLive.Form do
     {:ok,
      socket
      |> assign(:account, account)
+     |> assign(:categories, Ledger.list_categories(socket.assigns.current_scope))
      |> assign(:return_to, return_to(params["return_to"]))
      |> apply_action(socket.assigns.live_action, params)}
   end
@@ -44,6 +52,7 @@ defmodule BudgeteerWeb.TransactionLive.Form do
 
   defp apply_action(socket, :edit, %{"id" => id}) do
     transaction = Ledger.get_transaction!(socket.assigns.current_scope, id)
+    transaction = %{transaction | amount: Budgeteer.Money.to_decimal_string(transaction.amount_cents)}
 
     socket
     |> assign(:page_title, "Edit Transaction")

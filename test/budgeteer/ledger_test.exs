@@ -9,27 +9,27 @@ defmodule Budgeteer.LedgerTest do
     import Budgeteer.HouseholdsFixtures, only: [household_scope_fixture: 0]
     import Budgeteer.LedgerFixtures
 
-    @invalid_attrs %{name: nil, currency: nil, bank_name: nil, starting_balance_cents: nil}
+    @invalid_attrs %{name: nil, currency: nil, bank_name: nil, starting_balance: nil}
 
     test "list_accounts/1 returns all scoped accounts" do
       scope = household_scope_fixture()
       other_scope = household_scope_fixture()
-      account = account_fixture(scope)
-      other_account = account_fixture(other_scope)
+      account = %{account_fixture(scope) | starting_balance: nil}
+      other_account = %{account_fixture(other_scope) | starting_balance: nil}
       assert Ledger.list_accounts(scope) == [account]
       assert Ledger.list_accounts(other_scope) == [other_account]
     end
 
     test "get_account!/2 returns the account with given id" do
       scope = household_scope_fixture()
-      account = account_fixture(scope)
+      account = %{account_fixture(scope) | starting_balance: nil}
       other_scope = household_scope_fixture()
       assert Ledger.get_account!(scope, account.id) == account
       assert_raise Ecto.NoResultsError, fn -> Ledger.get_account!(other_scope, account.id) end
     end
 
     test "create_account/2 with valid data creates a account" do
-      valid_attrs = %{name: "some name", currency: "some currency", bank_name: "some bank_name", starting_balance_cents: 42}
+      valid_attrs = %{name: "some name", currency: "some currency", bank_name: "some bank_name", starting_balance: "0.42"}
       scope = household_scope_fixture()
 
       assert {:ok, %Account{} = account} = Ledger.create_account(scope, valid_attrs)
@@ -48,7 +48,7 @@ defmodule Budgeteer.LedgerTest do
     test "update_account/3 with valid data updates the account" do
       scope = household_scope_fixture()
       account = account_fixture(scope)
-      update_attrs = %{name: "some updated name", currency: "some updated currency", bank_name: "some updated bank_name", starting_balance_cents: 43}
+      update_attrs = %{name: "some updated name", currency: "some updated currency", bank_name: "some updated bank_name", starting_balance: "0.43"}
 
       assert {:ok, %Account{} = account} = Ledger.update_account(scope, account, update_attrs)
       assert account.name == "some updated name"
@@ -69,7 +69,7 @@ defmodule Budgeteer.LedgerTest do
 
     test "update_account/3 with invalid data returns error changeset" do
       scope = household_scope_fixture()
-      account = account_fixture(scope)
+      account = %{account_fixture(scope) | starting_balance: nil}
       assert {:error, %Ecto.Changeset{}} = Ledger.update_account(scope, account, @invalid_attrs)
       assert account == Ledger.get_account!(scope, account.id)
     end
@@ -101,20 +101,20 @@ defmodule Budgeteer.LedgerTest do
     import Budgeteer.HouseholdsFixtures, only: [household_scope_fixture: 0]
     import Budgeteer.LedgerFixtures
 
-    @invalid_attrs %{date: nil, description: nil, amount_cents: nil, merchant: nil, notes: nil}
+    @invalid_attrs %{date: nil, description: nil, amount: nil, merchant: nil, notes: nil}
 
     test "list_transactions/1 returns all scoped transactions" do
       scope = household_scope_fixture()
       other_scope = household_scope_fixture()
-      transaction = transaction_fixture(scope)
-      other_transaction = transaction_fixture(other_scope)
+      transaction = %{transaction_fixture(scope) | amount: nil}
+      other_transaction = %{transaction_fixture(other_scope) | amount: nil}
       assert Ledger.list_transactions(scope) == [transaction]
       assert Ledger.list_transactions(other_scope) == [other_transaction]
     end
 
     test "get_transaction!/2 returns the transaction with given id" do
       scope = household_scope_fixture()
-      transaction = transaction_fixture(scope)
+      transaction = %{transaction_fixture(scope) | amount: nil}
       other_scope = household_scope_fixture()
       assert Ledger.get_transaction!(scope, transaction.id) == transaction
       assert_raise Ecto.NoResultsError, fn -> Ledger.get_transaction!(other_scope, transaction.id) end
@@ -127,7 +127,7 @@ defmodule Budgeteer.LedgerTest do
       valid_attrs = %{
         date: ~D[2026-07-25],
         description: "some description",
-        amount_cents: 42,
+        amount: "0.42",
         merchant: "some merchant",
         notes: "some notes",
         account_id: account.id
@@ -150,7 +150,7 @@ defmodule Budgeteer.LedgerTest do
     test "update_transaction/3 with valid data updates the transaction" do
       scope = household_scope_fixture()
       transaction = transaction_fixture(scope)
-      update_attrs = %{date: ~D[2026-07-26], description: "some updated description", amount_cents: 43, merchant: "some updated merchant", notes: "some updated notes"}
+      update_attrs = %{date: ~D[2026-07-26], description: "some updated description", amount: "0.43", merchant: "some updated merchant", notes: "some updated notes"}
 
       assert {:ok, %Transaction{} = transaction} = Ledger.update_transaction(scope, transaction, update_attrs)
       assert transaction.date == ~D[2026-07-26]
@@ -172,7 +172,7 @@ defmodule Budgeteer.LedgerTest do
 
     test "update_transaction/3 with invalid data returns error changeset" do
       scope = household_scope_fixture()
-      transaction = transaction_fixture(scope)
+      transaction = %{transaction_fixture(scope) | amount: nil}
       assert {:error, %Ecto.Changeset{}} = Ledger.update_transaction(scope, transaction, @invalid_attrs)
       assert transaction == Ledger.get_transaction!(scope, transaction.id)
     end
@@ -195,6 +195,98 @@ defmodule Budgeteer.LedgerTest do
       scope = household_scope_fixture()
       transaction = transaction_fixture(scope)
       assert %Ecto.Changeset{} = Ledger.change_transaction(scope, transaction)
+    end
+  end
+
+  describe "categories" do
+    alias Budgeteer.Ledger.Category
+
+    import Budgeteer.HouseholdsFixtures, only: [household_scope_fixture: 0]
+    import Budgeteer.LedgerFixtures
+
+    @invalid_attrs %{name: nil, type: nil, color: nil, budget: nil}
+
+    test "list_categories/1 returns all scoped categories" do
+      scope = household_scope_fixture()
+      other_scope = household_scope_fixture()
+      category = %{category_fixture(scope) | budget: nil}
+      other_category = %{category_fixture(other_scope) | budget: nil}
+      assert Ledger.list_categories(scope) == [category]
+      assert Ledger.list_categories(other_scope) == [other_category]
+    end
+
+    test "get_category!/2 returns the category with given id" do
+      scope = household_scope_fixture()
+      category = %{category_fixture(scope) | budget: nil}
+      other_scope = household_scope_fixture()
+      assert Ledger.get_category!(scope, category.id) == category
+      assert_raise Ecto.NoResultsError, fn -> Ledger.get_category!(other_scope, category.id) end
+    end
+
+    test "create_category/2 with valid data creates a category" do
+      valid_attrs = %{name: "some name", type: :income, color: "some color", budget: "0.42"}
+      scope = household_scope_fixture()
+
+      assert {:ok, %Category{} = category} = Ledger.create_category(scope, valid_attrs)
+      assert category.name == "some name"
+      assert category.type == :income
+      assert category.color == "some color"
+      assert category.budget_cents == 42
+      assert category.household_id == scope.user.household_id
+    end
+
+    test "create_category/2 with invalid data returns error changeset" do
+      scope = household_scope_fixture()
+      assert {:error, %Ecto.Changeset{}} = Ledger.create_category(scope, @invalid_attrs)
+    end
+
+    test "update_category/3 with valid data updates the category" do
+      scope = household_scope_fixture()
+      category = category_fixture(scope)
+      update_attrs = %{name: "some updated name", type: :expense, color: "some updated color", budget: "0.43"}
+
+      assert {:ok, %Category{} = category} = Ledger.update_category(scope, category, update_attrs)
+      assert category.name == "some updated name"
+      assert category.type == :expense
+      assert category.color == "some updated color"
+      assert category.budget_cents == 43
+    end
+
+    test "update_category/3 with invalid scope raises" do
+      scope = household_scope_fixture()
+      other_scope = household_scope_fixture()
+      category = category_fixture(scope)
+
+      assert_raise MatchError, fn ->
+        Ledger.update_category(other_scope, category, %{})
+      end
+    end
+
+    test "update_category/3 with invalid data returns error changeset" do
+      scope = household_scope_fixture()
+      category = %{category_fixture(scope) | budget: nil}
+      assert {:error, %Ecto.Changeset{}} = Ledger.update_category(scope, category, @invalid_attrs)
+      assert category == Ledger.get_category!(scope, category.id)
+    end
+
+    test "delete_category/2 deletes the category" do
+      scope = household_scope_fixture()
+      category = category_fixture(scope)
+      assert {:ok, %Category{}} = Ledger.delete_category(scope, category)
+      assert_raise Ecto.NoResultsError, fn -> Ledger.get_category!(scope, category.id) end
+    end
+
+    test "delete_category/2 with invalid scope raises" do
+      scope = household_scope_fixture()
+      other_scope = household_scope_fixture()
+      category = category_fixture(scope)
+      assert_raise MatchError, fn -> Ledger.delete_category(other_scope, category) end
+    end
+
+    test "change_category/2 returns a category changeset" do
+      scope = household_scope_fixture()
+      category = category_fixture(scope)
+      assert %Ecto.Changeset{} = Ledger.change_category(scope, category)
     end
   end
 end

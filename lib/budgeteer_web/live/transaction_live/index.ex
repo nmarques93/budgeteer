@@ -27,10 +27,11 @@ defmodule BudgeteerWeb.TransactionLive.Index do
         }
       >
         <:col :let={{_id, transaction}} label="Date">{transaction.date}</:col>
-        <:col :let={{_id, transaction}} label="Amount cents">{transaction.amount_cents}</:col>
+        <:col :let={{_id, transaction}} label="Amount">{Budgeteer.Money.format(transaction.amount_cents)}</:col>
         <:col :let={{_id, transaction}} label="Merchant">{transaction.merchant}</:col>
         <:col :let={{_id, transaction}} label="Description">{transaction.description}</:col>
         <:col :let={{_id, transaction}} label="Notes">{transaction.notes}</:col>
+        <:col :let={{_id, transaction}} label="Category">{category_name(@categories_by_id, transaction.category_id)}</:col>
         <:action :let={{_id, transaction}}>
           <div class="sr-only">
             <.link navigate={~p"/accounts/#{@account}/transactions/#{transaction}"}>Show</.link>
@@ -58,10 +59,13 @@ defmodule BudgeteerWeb.TransactionLive.Index do
       Ledger.subscribe_transactions(socket.assigns.current_scope)
     end
 
+    categories_by_id = Map.new(Ledger.list_categories(socket.assigns.current_scope), &{&1.id, &1.name})
+
     {:ok,
      socket
      |> assign(:page_title, "Transactions for #{account.name}")
      |> assign(:account, account)
+     |> assign(:categories_by_id, categories_by_id)
      |> stream(:transactions, list_transactions(socket.assigns.current_scope, account))}
   end
 
@@ -85,4 +89,7 @@ defmodule BudgeteerWeb.TransactionLive.Index do
   defp list_transactions(current_scope, account) do
     Ledger.list_account_transactions(current_scope, account)
   end
+
+  defp category_name(_categories_by_id, nil), do: "Uncategorized"
+  defp category_name(categories_by_id, category_id), do: Map.get(categories_by_id, category_id, "Uncategorized")
 end
