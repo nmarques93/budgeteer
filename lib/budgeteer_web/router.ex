@@ -59,6 +59,11 @@ defmodule BudgeteerWeb.Router do
       live "/accounts/new", AccountLive.Form, :new
       live "/accounts/:id", AccountLive.Show, :show
       live "/accounts/:id/edit", AccountLive.Form, :edit
+
+      live "/accounts/:account_id/transactions", TransactionLive.Index, :index
+      live "/accounts/:account_id/transactions/new", TransactionLive.Form, :new
+      live "/accounts/:account_id/transactions/:id", TransactionLive.Show, :show
+      live "/accounts/:account_id/transactions/:id/edit", TransactionLive.Form, :edit
     end
 
     post "/users/update-password", UserSessionController, :update_password

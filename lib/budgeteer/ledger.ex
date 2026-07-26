@@ -7,6 +7,7 @@ defmodule Budgeteer.Ledger do
   alias Budgeteer.Repo
 
   alias Budgeteer.Ledger.Account
+  alias Budgeteer.Ledger.Transaction
   alias Budgeteer.Households.Scope
 
   @doc """
@@ -152,12 +153,154 @@ defmodule Budgeteer.Ledger do
   """
   def current_balance_cents(%Account{} = account) do
     sum =
-      Repo.one(
-        from t in "transactions",
-          where: t.account_id == type(^account.id, :binary_id),
-          select: sum(t.amount_cents)
-      )
+      Repo.aggregate(from(t in Transaction, where: t.account_id == ^account.id), :sum, :amount_cents)
 
-    account.starting_balance_cents + (sum || 0)
+    sum_cents = if sum, do: Decimal.to_integer(sum), else: 0
+    account.starting_balance_cents + sum_cents
+  end
+
+  @doc """
+  Returns the list of transactions for a specific account.
+  """
+  def list_account_transactions(%Scope{} = scope, %Account{} = account) do
+    true = account.household_id == scope.user.household_id
+
+    Repo.all_by(Transaction, account_id: account.id, household_id: scope.user.household_id)
+  end
+
+  @doc """
+  Subscribes to scoped notifications about any transaction changes.
+
+  The broadcasted messages match the pattern:
+
+    * {:created, %Transaction{}}
+    * {:updated, %Transaction{}}
+    * {:deleted, %Transaction{}}
+
+  """
+  def subscribe_transactions(%Scope{} = scope) do
+    key = scope.user.household_id
+
+    Phoenix.PubSub.subscribe(Budgeteer.PubSub, "household:#{key}:transactions")
+  end
+
+  defp broadcast_transaction(%Scope{} = scope, message) do
+    key = scope.user.household_id
+
+    Phoenix.PubSub.broadcast(Budgeteer.PubSub, "household:#{key}:transactions", message)
+  end
+
+  @doc """
+  Returns the list of transactions.
+
+  ## Examples
+
+      iex> list_transactions(scope)
+      [%Transaction{}, ...]
+
+  """
+  def list_transactions(%Scope{} = scope) do
+    Repo.all_by(Transaction, household_id: scope.user.household_id)
+  end
+
+  @doc """
+  Gets a single transaction.
+
+  Raises `Ecto.NoResultsError` if the Transaction does not exist.
+
+  ## Examples
+
+      iex> get_transaction!(scope, 123)
+      %Transaction{}
+
+      iex> get_transaction!(scope, 456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_transaction!(%Scope{} = scope, id) do
+    Repo.get_by!(Transaction, id: id, household_id: scope.user.household_id)
+  end
+
+  @doc """
+  Creates a transaction.
+
+  ## Examples
+
+      iex> create_transaction(scope, %{field: value})
+      {:ok, %Transaction{}}
+
+      iex> create_transaction(scope, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_transaction(%Scope{} = scope, attrs) do
+    with {:ok, transaction = %Transaction{}} <-
+           %Transaction{}
+           |> Transaction.changeset(attrs, scope)
+           |> Repo.insert() do
+      broadcast_transaction(scope, {:created, transaction})
+      {:ok, transaction}
+    end
+  end
+
+  @doc """
+  Updates a transaction.
+
+  ## Examples
+
+      iex> update_transaction(scope, transaction, %{field: new_value})
+      {:ok, %Transaction{}}
+
+      iex> update_transaction(scope, transaction, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_transaction(%Scope{} = scope, %Transaction{} = transaction, attrs) do
+    true = transaction.household_id == scope.user.household_id
+
+    with {:ok, transaction = %Transaction{}} <-
+           transaction
+           |> Transaction.changeset(attrs, scope)
+           |> Repo.update() do
+      broadcast_transaction(scope, {:updated, transaction})
+      {:ok, transaction}
+    end
+  end
+
+  @doc """
+  Deletes a transaction.
+
+  ## Examples
+
+      iex> delete_transaction(scope, transaction)
+      {:ok, %Transaction{}}
+
+      iex> delete_transaction(scope, transaction)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_transaction(%Scope{} = scope, %Transaction{} = transaction) do
+    true = transaction.household_id == scope.user.household_id
+
+    with {:ok, transaction = %Transaction{}} <-
+           Repo.delete(transaction) do
+      broadcast_transaction(scope, {:deleted, transaction})
+      {:ok, transaction}
+    end
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking transaction changes.
+
+  ## Examples
+
+      iex> change_transaction(scope, transaction)
+      %Ecto.Changeset{data: %Transaction{}}
+
+  """
+  def change_transaction(%Scope{} = scope, %Transaction{} = transaction, attrs \\ %{}) do
+    true = transaction.household_id == scope.user.household_id
+
+    Transaction.changeset(transaction, attrs, scope)
   end
 end

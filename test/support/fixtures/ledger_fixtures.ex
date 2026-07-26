@@ -19,4 +19,22 @@ defmodule Budgeteer.LedgerFixtures do
     {:ok, account} = Budgeteer.Ledger.create_account(scope, attrs)
     account
   end
+
+  @doc """
+  Generate a transaction.
+  """
+  def transaction_fixture(scope, attrs \\ %{}) do
+    attrs =
+      Enum.into(attrs, %{
+        amount_cents: 42,
+        date: ~D[2026-07-25],
+        description: "some description",
+        merchant: "some merchant",
+        notes: "some notes",
+        account_id: account_fixture(scope).id
+      })
+
+    {:ok, transaction} = Budgeteer.Ledger.create_transaction(scope, attrs)
+    transaction
+  end
 end

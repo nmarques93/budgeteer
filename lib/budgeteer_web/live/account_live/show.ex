@@ -20,6 +20,10 @@ defmodule BudgeteerWeb.AccountLive.Show do
         </:actions>
       </.header>
 
+      <.link navigate={~p"/accounts/#{@account}/transactions"} class="link">
+        View transactions
+      </.link>
+
       <.list>
         <:item title="Name">{@account.name}</:item>
         <:item title="Bank name">{@account.bank_name}</:item>
