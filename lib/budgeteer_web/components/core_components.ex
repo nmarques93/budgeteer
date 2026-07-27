@@ -78,7 +78,12 @@ defmodule BudgeteerWeb.CoreComponents do
           <p>{msg}</p>
         </div>
         <div class="flex-1" />
-        <button type="button" class="group self-start cursor-pointer" aria-label={gettext("close")}>
+        <button
+          type="button"
+          class="group self-start cursor-pointer"
+          phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("##{@id}")}
+          aria-label={gettext("close")}
+        >
           <.icon name="hero-x-mark" class="size-5 opacity-40 group-hover:opacity-70" />
         </button>
       </div>
