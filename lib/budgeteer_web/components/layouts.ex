@@ -31,6 +31,8 @@ defmodule BudgeteerWeb.Layouts do
     default: nil,
     doc: "the current [scope](https://phoenix.hexdocs.pm/scopes.html)"
 
+  attr :online_members, :list, default: [], doc: "other household members currently connected"
+
   slot :inner_block, required: true
 
   def app(assigns) do
@@ -44,6 +46,11 @@ defmodule BudgeteerWeb.Layouts do
       </div>
       <div class="flex-none">
         <ul class="flex flex-column px-1 space-x-4 items-center">
+          <li :if={@online_members != []} class="flex items-center gap-2">
+            <span :for={member <- @online_members} class="badge badge-success badge-outline gap-1">
+              <span class="size-2 rounded-full bg-success"></span> {member.name || member.email} online
+            </span>
+          </li>
           <li>
             <a href="https://phoenixframework.org/" class="btn btn-ghost">Website</a>
           </li>

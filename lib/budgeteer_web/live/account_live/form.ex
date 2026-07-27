@@ -7,7 +7,7 @@ defmodule BudgeteerWeb.AccountLive.Form do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
+    <Layouts.app flash={@flash} current_scope={@current_scope} online_members={@online_members}>
       <.header>
         {@page_title}
         <:subtitle>Use this form to manage account records in your database.</:subtitle>

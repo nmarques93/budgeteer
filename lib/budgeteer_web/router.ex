@@ -51,7 +51,7 @@ defmodule BudgeteerWeb.Router do
     pipe_through [:browser, :require_authenticated_user]
 
     live_session :require_authenticated_user,
-      on_mount: [{BudgeteerWeb.UserAuth, :require_authenticated}] do
+      on_mount: [{BudgeteerWeb.UserAuth, :require_authenticated}, {BudgeteerWeb.PresenceHooks, :track}] do
       live "/dashboard", DashboardLive, :index
 
       live "/users/settings", UserLive.Settings, :edit

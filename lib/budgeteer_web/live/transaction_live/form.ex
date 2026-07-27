@@ -7,7 +7,7 @@ defmodule BudgeteerWeb.TransactionLive.Form do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
+    <Layouts.app flash={@flash} current_scope={@current_scope} online_members={@online_members}>
       <.header>
         {@page_title}
         <:subtitle>For {@account.name}</:subtitle>

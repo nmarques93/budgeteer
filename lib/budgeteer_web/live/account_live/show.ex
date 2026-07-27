@@ -6,7 +6,7 @@ defmodule BudgeteerWeb.AccountLive.Show do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
+    <Layouts.app flash={@flash} current_scope={@current_scope} online_members={@online_members}>
       <.header>
         Account {@account.id}
         <:subtitle>This is a account record from your database.</:subtitle>
