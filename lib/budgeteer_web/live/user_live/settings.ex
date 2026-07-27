@@ -65,6 +65,20 @@ defmodule BudgeteerWeb.UserLive.Settings do
           Save Password
         </.button>
       </.form>
+
+      <div class="divider" />
+
+      <.form for={@invite_form} id="invite_form" phx-submit="send_invite">
+        <.input
+          field={@invite_form[:email]}
+          type="email"
+          label="Invite a household member"
+          placeholder="their@email.com"
+          spellcheck="false"
+          required
+        />
+        <.button variant="primary" phx-disable-with="Sending...">Send invite</.button>
+      </.form>
     </Layouts.app>
     """
   end
@@ -94,6 +108,7 @@ defmodule BudgeteerWeb.UserLive.Settings do
       |> assign(:email_form, to_form(email_changeset))
       |> assign(:password_form, to_form(password_changeset))
       |> assign(:trigger_submit, false)
+      |> assign(:invite_form, to_form(%{"email" => ""}, as: "invite"))
 
     {:ok, socket}
   end
@@ -156,5 +171,18 @@ defmodule BudgeteerWeb.UserLive.Settings do
       changeset ->
         {:noreply, assign(socket, password_form: to_form(changeset, action: :insert))}
     end
+  end
+
+  def handle_event("send_invite", %{"invite" => %{"email" => email}}, socket) do
+    Households.deliver_household_invite(
+      socket.assigns.current_scope.user,
+      email,
+      &url(~p"/users/register?#{[token: &1]}")
+    )
+
+    {:noreply,
+     socket
+     |> put_flash(:info, "An invite was sent to #{email}.")
+     |> assign(:invite_form, to_form(%{"email" => ""}, as: "invite"))}
   end
 end

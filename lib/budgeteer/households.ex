@@ -115,6 +115,42 @@ defmodule Budgeteer.Households do
     User.registration_changeset(user, attrs, opts)
   end
 
+  @doc """
+  Registers a user who is joining an existing household via an invite,
+  instead of creating a new household.
+
+  ## Examples
+
+      iex> register_invited_user(%{field: value}, household)
+      {:ok, %User{}}
+
+      iex> register_invited_user(%{field: bad_value}, household)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def register_invited_user(attrs, %Household{} = household) do
+    changeset = User.invite_registration_changeset(%User{}, attrs)
+
+    if changeset.valid? do
+      changeset
+      |> Ecto.Changeset.put_change(:household_id, household.id)
+      |> Ecto.Changeset.put_change(:role, :member)
+      |> Repo.insert()
+    else
+      {:error, %{changeset | action: :insert}}
+    end
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for registering via a household invite.
+
+  See `Budgeteer.Households.User.invite_registration_changeset/3` for
+  supported options.
+  """
+  def change_invited_user_registration(user, attrs \\ %{}, opts \\ []) do
+    User.invite_registration_changeset(user, attrs, opts)
+  end
+
   ## Settings
 
   @doc """
@@ -306,6 +342,32 @@ defmodule Budgeteer.Households do
     {encoded_token, user_token} = UserToken.build_email_token(user, "login")
     Repo.insert!(user_token)
     UserNotifier.deliver_login_instructions(user, magic_link_url_fun.(encoded_token))
+  end
+
+  @doc """
+  Delivers a household invite to the given email, on behalf of the inviter.
+  """
+  def deliver_household_invite(%User{} = inviter, invitee_email, invite_url_fun)
+      when is_function(invite_url_fun, 1) do
+    {encoded_token, user_token} = UserToken.build_household_invite_token(inviter, invitee_email)
+    Repo.insert!(user_token)
+    UserNotifier.deliver_household_invite_instructions(inviter, invitee_email, invite_url_fun.(encoded_token))
+  end
+
+  @doc """
+  Resolves a household invite token to the household the invite is for and
+  the email it was sent to.
+
+  Returns `{:ok, household, invitee_email}` or `:error` if the token is
+  missing, malformed, or expired.
+  """
+  def get_household_invite(token) do
+    with {:ok, query} <- UserToken.verify_household_invite_token_query(token),
+         {inviter, user_token} <- Repo.one(query) do
+      {:ok, Repo.get!(Household, inviter.household_id), user_token.sent_to}
+    else
+      _ -> :error
+    end
   end
 
   @doc """

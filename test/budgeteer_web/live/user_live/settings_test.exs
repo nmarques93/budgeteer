@@ -160,6 +160,34 @@ defmodule BudgeteerWeb.UserLive.SettingsTest do
     end
   end
 
+  describe "invite form" do
+    setup %{conn: conn} do
+      user = user_fixture()
+      %{conn: log_in_user(conn, user), user: user}
+    end
+
+    test "sends an invite to the given email", %{conn: conn, user: user} do
+      invitee_email = unique_user_email()
+
+      {:ok, lv, _html} = live(conn, ~p"/users/settings")
+
+      result =
+        lv
+        |> form("#invite_form", %{"invite" => %{"email" => invitee_email}})
+        |> render_submit()
+
+      assert result =~ "An invite was sent to #{invitee_email}"
+
+      assert user_token =
+               Budgeteer.Repo.get_by(Households.UserToken,
+                 user_id: user.id,
+                 context: "household_invite"
+               )
+
+      assert user_token.sent_to == invitee_email
+    end
+  end
+
   describe "confirm email" do
     setup %{conn: conn} do
       user = user_fixture()

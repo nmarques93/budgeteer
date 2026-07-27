@@ -406,6 +406,80 @@ defmodule Budgeteer.HouseholdsTest do
     end
   end
 
+  describe "deliver_household_invite/3" do
+    setup do
+      %{inviter: user_fixture()}
+    end
+
+    test "sends token through notification", %{inviter: inviter} do
+      invitee_email = unique_user_email()
+
+      token =
+        extract_user_token(fn url ->
+          Households.deliver_household_invite(inviter, invitee_email, url)
+        end)
+
+      {:ok, token} = Base.url_decode64(token, padding: false)
+      assert user_token = Repo.get_by(UserToken, token: :crypto.hash(:sha256, token))
+      assert user_token.user_id == inviter.id
+      assert user_token.sent_to == invitee_email
+      assert user_token.context == "household_invite"
+    end
+  end
+
+  describe "get_household_invite/1" do
+    setup do
+      inviter = user_fixture()
+      invitee_email = unique_user_email()
+
+      token =
+        extract_user_token(fn url ->
+          Households.deliver_household_invite(inviter, invitee_email, url)
+        end)
+
+      %{inviter: inviter, invitee_email: invitee_email, token: token}
+    end
+
+    test "resolves a valid token to the inviter's household and the invitee email", %{
+      inviter: inviter,
+      invitee_email: invitee_email,
+      token: token
+    } do
+      assert {:ok, household, ^invitee_email} = Households.get_household_invite(token)
+      assert household.id == inviter.household_id
+    end
+
+    test "rejects a garbage token" do
+      assert Households.get_household_invite("not-a-real-token") == :error
+    end
+
+    test "rejects an expired token", %{token: token} do
+      {1, nil} = Repo.update_all(UserToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
+      assert Households.get_household_invite(token) == :error
+    end
+  end
+
+  describe "register_invited_user/2" do
+    test "joins the given household as a member, without creating a new one" do
+      inviter = user_fixture()
+      household = Repo.get!(Budgeteer.Households.Household, inviter.household_id)
+      email = unique_user_email()
+
+      assert {:ok, user} = Households.register_invited_user(%{email: email}, household)
+      assert user.household_id == household.id
+      assert user.role == :member
+      assert Repo.aggregate(Budgeteer.Households.Household, :count) == 1
+    end
+
+    test "requires a valid email" do
+      inviter = user_fixture()
+      household = Repo.get!(Budgeteer.Households.Household, inviter.household_id)
+
+      {:error, changeset} = Households.register_invited_user(%{email: "not valid"}, household)
+      assert %{email: ["must have the @ sign and no spaces"]} = errors_on(changeset)
+    end
+  end
+
   describe "inspect/2 for the User module" do
     test "does not include password" do
       refute inspect(%User{password: "123456"}) =~ "password: \"123456\""

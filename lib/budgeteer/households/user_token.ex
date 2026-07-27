@@ -11,6 +11,7 @@ defmodule Budgeteer.Households.UserToken do
   @magic_link_validity_in_minutes 15
   @change_email_validity_in_days 7
   @session_validity_in_days 14
+  @household_invite_validity_in_days 7
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -144,6 +145,44 @@ defmodule Budgeteer.Households.UserToken do
         query =
           from token in by_token_and_context_query(hashed_token, context),
             where: token.inserted_at > ago(@change_email_validity_in_days, "day")
+
+        {:ok, query}
+
+      :error ->
+        :error
+    end
+  end
+
+  @doc """
+  Builds a token and its hash to be delivered to an invited household
+  member's email.
+
+  The token's `user_id` is the *inviter*, and `sent_to` is the invitee's
+  email — this is what locks the invite to a specific address, the same
+  way a magic link is locked to `sent_to == user.email`.
+  """
+  def build_household_invite_token(inviter, invitee_email) do
+    build_hashed_token(inviter, "household_invite", invitee_email)
+  end
+
+  @doc """
+  Checks if a household invite token is valid and returns its underlying
+  lookup query.
+
+  If found, the query returns a tuple of the form `{inviter, token}`. The
+  token is valid if it matches its hashed counterpart in the database and
+  has not expired (after @household_invite_validity_in_days).
+  """
+  def verify_household_invite_token_query(token) do
+    case Base.url_decode64(token, padding: false) do
+      {:ok, decoded_token} ->
+        hashed_token = :crypto.hash(@hash_algorithm, decoded_token)
+
+        query =
+          from token in by_token_and_context_query(hashed_token, "household_invite"),
+            join: user in assoc(token, :user),
+            where: token.inserted_at > ago(@household_invite_validity_in_days, "day"),
+            select: {user, token}
 
         {:ok, query}
 

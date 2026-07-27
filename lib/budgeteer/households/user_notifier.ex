@@ -65,6 +65,28 @@ defmodule Budgeteer.Households.UserNotifier do
     """)
   end
 
+  @doc """
+  Deliver instructions to join a household via an invite.
+  """
+  def deliver_household_invite_instructions(inviter, invitee_email, url) do
+    deliver(invitee_email, "You've been invited to a household on Budgeteer", """
+
+    ==============================
+
+    Hi,
+
+    #{inviter.name || inviter.email} invited you to join their household on Budgeteer.
+
+    You can accept the invite by visiting the URL below:
+
+    #{url}
+
+    If you weren't expecting this, please ignore this email.
+
+    ==============================
+    """)
+  end
+
   defp deliver_confirmation_instructions(user, url) do
     deliver(user.email, "Confirmation instructions", """
 

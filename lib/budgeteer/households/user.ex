@@ -49,6 +49,18 @@ defmodule Budgeteer.Households.User do
     |> validate_email(opts)
   end
 
+  @doc """
+  A changeset for registering via a household invite — no household name
+  is collected since the household comes from the invite, not the form.
+
+  See `email_changeset/3` for the `:validate_unique` option.
+  """
+  def invite_registration_changeset(user, attrs, opts \\ []) do
+    user
+    |> cast(attrs, [:email])
+    |> validate_email(opts)
+  end
+
   defp validate_email(changeset, opts) do
     changeset =
       changeset

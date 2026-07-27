@@ -23,7 +23,12 @@ defmodule BudgeteerWeb.UserLive.Registration do
         </div>
 
         <.form for={@form} id="registration_form" phx-submit="save" phx-change="validate">
+          <p :if={@invite} class="mb-4">
+            You're joining <strong>{@invite.household.name}</strong>.
+          </p>
+
           <.input
+            :if={!@invite}
             field={@form[:household_name]}
             type="text"
             label="Household name"
@@ -38,6 +43,7 @@ defmodule BudgeteerWeb.UserLive.Registration do
             label="Email"
             autocomplete="username"
             spellcheck="false"
+            readonly={!!@invite}
             required
           />
 
@@ -56,15 +62,44 @@ defmodule BudgeteerWeb.UserLive.Registration do
     {:ok, redirect(socket, to: BudgeteerWeb.UserAuth.signed_in_path(socket))}
   end
 
-  def mount(_params, _session, socket) do
-    changeset = Households.change_user_registration(%User{}, %{}, validate_unique: false)
+  def mount(params, _session, socket) do
+    invite = resolve_invite(params["token"])
 
-    {:ok, assign_form(socket, changeset), temporary_assigns: [form: nil]}
+    socket =
+      if params["token"] && !invite do
+        put_flash(socket, :error, "This invite link is invalid or has expired.")
+      else
+        socket
+      end
+
+    changeset =
+      if invite do
+        Households.change_invited_user_registration(%User{}, %{"email" => invite.email}, validate_unique: false)
+      else
+        Households.change_user_registration(%User{}, %{}, validate_unique: false)
+      end
+
+    {:ok, socket |> assign(:invite, invite) |> assign_form(changeset), temporary_assigns: [form: nil]}
+  end
+
+  defp resolve_invite(nil), do: nil
+
+  defp resolve_invite(token) do
+    case Households.get_household_invite(token) do
+      {:ok, household, email} -> %{household: household, email: email}
+      :error -> nil
+    end
   end
 
   @impl true
   def handle_event("save", %{"user" => user_params}, socket) do
-    case Households.register_user(user_params) do
+    result =
+      case socket.assigns.invite do
+        %{household: household} -> Households.register_invited_user(user_params, household)
+        nil -> Households.register_user(user_params)
+      end
+
+    case result do
       {:ok, user} ->
         {:ok, _} =
           Households.deliver_login_instructions(
@@ -86,7 +121,12 @@ defmodule BudgeteerWeb.UserLive.Registration do
   end
 
   def handle_event("validate", %{"user" => user_params}, socket) do
-    changeset = Households.change_user_registration(%User{}, user_params, validate_unique: false)
+    changeset =
+      case socket.assigns.invite do
+        %{} -> Households.change_invited_user_registration(%User{}, user_params, validate_unique: false)
+        nil -> Households.change_user_registration(%User{}, user_params, validate_unique: false)
+      end
+
     {:noreply, assign_form(socket, Map.put(changeset, :action, :validate))}
   end
 

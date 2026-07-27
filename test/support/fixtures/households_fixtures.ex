@@ -7,7 +7,7 @@ defmodule Budgeteer.HouseholdsFixtures do
   import Ecto.Query
 
   alias Budgeteer.Households
-  alias Budgeteer.Households.Scope
+  alias Budgeteer.Households.{Household, Scope}
 
   def unique_user_email, do: "user#{System.unique_integer()}@example.com"
   def valid_user_password, do: "hello world!"
@@ -38,6 +38,25 @@ defmodule Budgeteer.HouseholdsFixtures do
 
     {:ok, {user, _expired_tokens}} =
       Households.login_user_by_magic_link(token)
+
+    user
+  end
+
+  @doc """
+  Registers and confirms a second, `:member`-role user in the same
+  household as `household_owner` — as if they'd joined via an invite,
+  without going through the actual token/email flow.
+  """
+  def second_household_member_fixture(household_owner, attrs \\ %{}) do
+    household = Budgeteer.Repo.get!(Household, household_owner.household_id)
+    {:ok, user} = attrs |> valid_user_attributes() |> Households.register_invited_user(household)
+
+    token =
+      extract_user_token(fn url ->
+        Households.deliver_login_instructions(user, url)
+      end)
+
+    {:ok, {user, _expired_tokens}} = Households.login_user_by_magic_link(token)
 
     user
   end
