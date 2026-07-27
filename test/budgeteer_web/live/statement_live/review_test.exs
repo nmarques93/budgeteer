@@ -1,0 +1,189 @@
+defmodule BudgeteerWeb.StatementLive.ReviewTest do
+  use BudgeteerWeb.ConnCase
+
+  import Phoenix.LiveViewTest
+
+  alias Budgeteer.Ledger
+  alias Budgeteer.Statements
+
+  import Budgeteer.LedgerFixtures, only: [account_fixture: 1, category_fixture: 2]
+  import Budgeteer.StatementsFixtures
+
+  setup :register_and_log_in_user
+
+  defp create_account(%{scope: scope}) do
+    %{account: account_fixture(scope)}
+  end
+
+  defp processed_statement_fixture(scope, account, raw_ai_output) do
+    statement = statement_fixture(scope, %{account: account})
+    {:ok, statement} = Statements.mark_processed(statement, raw_ai_output)
+    statement
+  end
+
+  describe "Review" do
+    setup [:create_account]
+
+    test "renders one row per extracted transaction, pre-filled, with category matched case-insensitively", %{
+      conn: conn,
+      scope: scope,
+      account: account
+    } do
+      category = category_fixture(scope, %{name: "Groceries"})
+
+      raw_ai_output = %{
+        "currency" => "EUR",
+        "transactions" => [
+          %{
+            "date" => "2026-07-20",
+            "amount_cents" => -4250,
+            "merchant" => "Continente",
+            "description" => "Weekly shop",
+            "category" => "groceries"
+          },
+          %{
+            "date" => "2026-07-21",
+            "amount_cents" => -1200,
+            "merchant" => "Corner Cafe",
+            "description" => "Coffee",
+            "category" => "Restaurants"
+          }
+        ]
+      }
+
+      statement = processed_statement_fixture(scope, account, raw_ai_output)
+
+      {:ok, review_live, html} = live(conn, ~p"/accounts/#{account}/statements/#{statement}/review")
+
+      assert html =~ "Review #{statement.filename}"
+      assert html =~ "Continente"
+      assert html =~ "-42.50"
+      assert html =~ "Weekly shop"
+      assert html =~ "Corner Cafe"
+      assert html =~ "-12.00"
+
+      # "groceries" matches the existing "Groceries" category case-insensitively -> pre-selected
+      assert has_element?(review_live, ~s{option[value="#{category.id}"][selected]})
+
+      # "Restaurants" has no existing match -> shown as a "Suggested:" hint instead
+      assert html =~ "Suggested:"
+      assert html =~ "Restaurants"
+    end
+
+    test "creating a suggested category assigns it to every matching row", %{
+      conn: conn,
+      scope: scope,
+      account: account
+    } do
+      raw_ai_output = %{
+        "currency" => "EUR",
+        "transactions" => [
+          %{
+            "date" => "2026-07-20",
+            "amount_cents" => -1200,
+            "merchant" => "Corner Cafe",
+            "description" => "Coffee",
+            "category" => "Restaurants"
+          },
+          %{
+            "date" => "2026-07-21",
+            "amount_cents" => -1500,
+            "merchant" => "Pizza Place",
+            "description" => "Dinner",
+            "category" => "restaurants"
+          }
+        ]
+      }
+
+      statement = processed_statement_fixture(scope, account, raw_ai_output)
+
+      {:ok, review_live, _html} = live(conn, ~p"/accounts/#{account}/statements/#{statement}/review")
+
+      html =
+        review_live
+        |> element(~s{button[phx-value-index="0"]}, "Create it")
+        |> render_click()
+
+      assert html =~ "Created category"
+      refute html =~ "Suggested:"
+
+      assert [%Budgeteer.Ledger.Category{name: "Restaurants", type: :expense}] =
+               Ledger.list_categories(scope)
+
+      # both rows (case-insensitive match) got assigned, not just the one clicked
+      assert has_element?(review_live, ~s{select[name="rows[0][category_id]"] option[selected]}, "Restaurants")
+      assert has_element?(review_live, ~s{select[name="rows[1][category_id]"] option[selected]}, "Restaurants")
+    end
+
+    test "shows a message and no form when the statement hasn't been processed yet", %{
+      conn: conn,
+      scope: scope,
+      account: account
+    } do
+      statement = statement_fixture(scope, %{account: account})
+
+      {:ok, _review_live, html} = live(conn, ~p"/accounts/#{account}/statements/#{statement}/review")
+
+      assert html =~ "hasn&#39;t finished processing yet"
+      refute html =~ "review-form"
+    end
+
+    test "submitting saves only the checked rows as transactions", %{conn: conn, scope: scope, account: account} do
+      raw_ai_output = %{
+        "currency" => "EUR",
+        "transactions" => [
+          %{
+            "date" => "2026-07-20",
+            "amount_cents" => -4250,
+            "merchant" => "Continente",
+            "description" => "Weekly shop",
+            "category" => ""
+          },
+          %{
+            "date" => "2026-07-21",
+            "amount_cents" => -1200,
+            "merchant" => "Corner Cafe",
+            "description" => "Coffee",
+            "category" => ""
+          }
+        ]
+      }
+
+      statement = processed_statement_fixture(scope, account, raw_ai_output)
+
+      {:ok, review_live, _html} = live(conn, ~p"/accounts/#{account}/statements/#{statement}/review")
+
+      params = %{
+        "rows" => %{
+          "0" => %{
+            "include" => "true",
+            "date" => "2026-07-20",
+            "amount" => "-42.50",
+            "merchant" => "Continente",
+            "description" => "Weekly shop",
+            "category_id" => ""
+          },
+          "1" => %{
+            "include" => "false",
+            "date" => "2026-07-21",
+            "amount" => "-12.00",
+            "merchant" => "Corner Cafe",
+            "description" => "Coffee",
+            "category_id" => ""
+          }
+        }
+      }
+
+      assert {:ok, _index_live, html} =
+               review_live
+               |> render_submit("save", params)
+               |> follow_redirect(conn, ~p"/accounts/#{account}/transactions")
+
+      assert html =~ "1 transaction(s) saved"
+
+      assert [transaction] = Ledger.list_transactions(scope)
+      assert transaction.merchant == "Continente"
+      assert transaction.statement_id == statement.id
+    end
+  end
+end

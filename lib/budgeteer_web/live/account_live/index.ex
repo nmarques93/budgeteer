@@ -29,6 +29,9 @@ defmodule BudgeteerWeb.AccountLive.Index do
           <div class="sr-only">
             <.link navigate={~p"/accounts/#{account}"}>Show</.link>
           </div>
+          <.link navigate={~p"/accounts/#{account}/statements"}>Statements</.link>
+        </:action>
+        <:action :let={{_id, account}}>
           <.link navigate={~p"/accounts/#{account}/edit"}>Edit</.link>
         </:action>
         <:action :let={{id, account}}>

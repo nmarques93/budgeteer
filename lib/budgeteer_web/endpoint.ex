@@ -46,6 +46,11 @@ defmodule BudgeteerWeb.Endpoint do
   plug Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],
     pass: ["*/*"],
+    # Defaults are 8MB / 15s; statement uploads allow up to 15MB and the
+    # default 15s-per-socket-read timeout is too tight for a slow client
+    # (e.g. reading a file from a cloud-synced folder) — see StatementController.
+    length: 20_000_000,
+    read_timeout: 120_000,
     json_decoder: Phoenix.json_library()
 
   plug Plug.MethodOverride

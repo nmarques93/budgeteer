@@ -14,15 +14,23 @@ defmodule BudgeteerWeb.AccountLive.Show do
           <.button navigate={~p"/accounts"}>
             <.icon name="hero-arrow-left" />
           </.button>
-          <.button variant="primary" navigate={~p"/accounts/#{@account}/edit?return_to=show"}>
+          <.button variant="primary" navigate={~p"/accounts/#{@account}/statements/new"}>
+            <.icon name="hero-arrow-up-tray" /> Upload statement
+          </.button>
+          <.button navigate={~p"/accounts/#{@account}/edit?return_to=show"}>
             <.icon name="hero-pencil-square" /> Edit account
           </.button>
         </:actions>
       </.header>
 
-      <.link navigate={~p"/accounts/#{@account}/transactions"} class="link">
-        View transactions
-      </.link>
+      <div class="flex gap-4 mb-4">
+        <.button navigate={~p"/accounts/#{@account}/transactions"}>
+          <.icon name="hero-list-bullet" /> Transactions
+        </.button>
+        <.button navigate={~p"/accounts/#{@account}/statements"}>
+          <.icon name="hero-document-text" /> Statements
+        </.button>
+      </div>
 
       <.list>
         <:item title="Name">{@account.name}</:item>

@@ -13,6 +13,7 @@ defmodule Budgeteer.Ledger.Transaction do
     field :notes, :string
     field :account_id, :binary_id
     field :category_id, :binary_id
+    field :statement_id, :binary_id
     field :household_id, :binary_id
 
     timestamps(type: :utc_datetime)
@@ -21,7 +22,7 @@ defmodule Budgeteer.Ledger.Transaction do
   @doc false
   def changeset(transaction, attrs, household_scope) do
     transaction
-    |> cast(attrs, [:date, :amount, :merchant, :description, :notes, :account_id, :category_id])
+    |> cast(attrs, [:date, :amount, :merchant, :description, :notes, :account_id, :category_id, :statement_id])
     |> validate_required([:date, :amount, :account_id])
     |> put_amount_cents()
     |> put_change(:household_id, household_scope.user.household_id)

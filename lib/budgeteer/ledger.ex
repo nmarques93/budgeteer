@@ -343,6 +343,16 @@ defmodule Budgeteer.Ledger do
   end
 
   @doc """
+  Returns the category names for a household, by id (no scope). For use by
+  the Statements.ParseWorker, which runs outside a request/user context and
+  passes the names to the AI client so it can suggest a matching category
+  per extracted transaction.
+  """
+  def list_category_names(household_id) do
+    Repo.all(from c in Category, where: c.household_id == ^household_id, select: c.name)
+  end
+
+  @doc """
   Gets a single category.
 
   Raises `Ecto.NoResultsError` if the Category does not exist.

@@ -29,6 +29,9 @@ config :budgeteer, Budgeteer.Mailer, adapter: Swoosh.Adapters.Test
 # Run Oban jobs inline/synchronously in tests instead of via the queues
 config :budgeteer, Oban, testing: :inline
 
+# Mock the Anthropic client in tests — never hit the real API
+config :budgeteer, :ai_client, Budgeteer.AI.ClientMock
+
 # Disable swoosh api client as it is only required for production adapters
 config :swoosh, :api_client, false
 
