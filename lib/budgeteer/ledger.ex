@@ -442,4 +442,49 @@ defmodule Budgeteer.Ledger do
 
     Category.changeset(category, attrs, scope)
   end
+
+  @doc """
+  Returns the household's total balance in cents, summed across all accounts.
+  """
+  def total_balance_cents(%Scope{} = scope) do
+    scope |> list_accounts() |> Enum.map(&current_balance_cents/1) |> Enum.sum()
+  end
+
+  @doc """
+  Returns per-category totals (cents spent/received) for categorized
+  transactions within the given month (defaults to the current month).
+  """
+  def monthly_category_totals(%Scope{} = scope, date \\ Date.utc_today()) do
+    start_of_month = Date.beginning_of_month(date)
+    end_of_month = Date.end_of_month(date)
+
+    Repo.all(
+      from t in Transaction,
+        join: c in Category,
+        on: c.id == t.category_id,
+        where: t.household_id == ^scope.user.household_id,
+        where: t.date >= ^start_of_month and t.date <= ^end_of_month,
+        group_by: [c.id, c.name, c.type, c.budget_cents],
+        order_by: [asc: c.name],
+        select: %{
+          category_id: c.id,
+          name: c.name,
+          type: c.type,
+          budget_cents: c.budget_cents,
+          total_cents: sum(t.amount_cents)
+        }
+    )
+  end
+
+  @doc """
+  Returns the household's most recent transactions, across all accounts.
+  """
+  def list_recent_transactions(%Scope{} = scope, limit \\ 10) do
+    Repo.all(
+      from t in Transaction,
+        where: t.household_id == ^scope.user.household_id,
+        order_by: [desc: t.date, desc: t.inserted_at],
+        limit: ^limit
+    )
+  end
 end
