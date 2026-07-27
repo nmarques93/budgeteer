@@ -239,7 +239,7 @@ defmodule BudgeteerWeb.UserAuth do
       socket =
         socket
         |> Phoenix.LiveView.put_flash(:error, "You must re-authenticate to access this page.")
-        |> Phoenix.LiveView.redirect(to: ~p"/users/log-in")
+        |> Phoenix.LiveView.redirect(to: ~p"/users/log-in?#{[return_to: ~p"/users/settings"]}")
 
       {:halt, socket}
     end

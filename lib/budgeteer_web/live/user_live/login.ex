@@ -67,6 +67,7 @@ defmodule BudgeteerWeb.UserLive.Login do
           phx-submit="submit_password"
           phx-trigger-action={@trigger_submit}
         >
+          <input :if={@return_to} type="hidden" name="return_to" value={@return_to} />
           <.input
             readonly={!!@current_scope}
             field={f[:email]}
@@ -96,14 +97,14 @@ defmodule BudgeteerWeb.UserLive.Login do
   end
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     email =
       Phoenix.Flash.get(socket.assigns.flash, :email) ||
         get_in(socket.assigns, [:current_scope, Access.key(:user), Access.key(:email)])
 
     form = to_form(%{"email" => email}, as: "user")
 
-    {:ok, assign(socket, form: form, trigger_submit: false)}
+    {:ok, assign(socket, form: form, trigger_submit: false, return_to: safe_return_to(params["return_to"]))}
   end
 
   @impl true
@@ -115,7 +116,7 @@ defmodule BudgeteerWeb.UserLive.Login do
     if user = Households.get_user_by_email(email) do
       Households.deliver_login_instructions(
         user,
-        &url(~p"/users/log-in/#{&1}")
+        &url(~p"/users/log-in/#{&1}?#{[return_to: socket.assigns.return_to]}")
       )
     end
 
@@ -127,6 +128,12 @@ defmodule BudgeteerWeb.UserLive.Login do
      |> put_flash(:info, info)
      |> push_navigate(to: ~p"/users/log-in")}
   end
+
+  defp safe_return_to("/" <> _ = path) do
+    if String.starts_with?(path, "//"), do: nil, else: path
+  end
+
+  defp safe_return_to(_), do: nil
 
   defp local_mail_adapter? do
     Application.get_env(:budgeteer, Budgeteer.Mailer)[:adapter] == Swoosh.Adapters.Local

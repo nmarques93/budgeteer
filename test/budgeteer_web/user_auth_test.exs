@@ -309,8 +309,11 @@ defmodule BudgeteerWeb.UserAuthTest do
         assigns: %{__changed__: %{}, flash: %{}}
       }
 
-      assert {:halt, _updated_socket} =
+      assert {:halt, updated_socket} =
                UserAuth.on_mount(:require_sudo_mode, %{}, session, socket)
+
+      assert {:redirect, %{to: to}} = updated_socket.redirected
+      assert to == ~p"/users/log-in?#{[return_to: ~p"/users/settings"]}"
     end
   end
 

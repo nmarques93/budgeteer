@@ -22,6 +22,7 @@ defmodule BudgeteerWeb.UserLive.Confirmation do
           phx-trigger-action={@trigger_submit}
         >
           <input type="hidden" name={@form[:token].name} value={@form[:token].value} />
+          <input :if={@return_to} type="hidden" name="return_to" value={@return_to} />
           <.button
             name={@form[:remember_me].name}
             value="true"
@@ -45,6 +46,7 @@ defmodule BudgeteerWeb.UserLive.Confirmation do
           phx-trigger-action={@trigger_submit}
         >
           <input type="hidden" name={@form[:token].name} value={@form[:token].value} />
+          <input :if={@return_to} type="hidden" name="return_to" value={@return_to} />
           <%= if @current_scope do %>
             <.button phx-disable-with="Logging in..." class="btn btn-primary w-full">
               Log in
@@ -73,12 +75,17 @@ defmodule BudgeteerWeb.UserLive.Confirmation do
   end
 
   @impl true
-  def mount(%{"token" => token}, _session, socket) do
+  def mount(%{"token" => token} = params, _session, socket) do
     if user = Households.get_user_by_magic_link_token(token) do
       form = to_form(%{"token" => token}, as: "user")
 
-      {:ok, assign(socket, user: user, form: form, trigger_submit: false),
-       temporary_assigns: [form: nil]}
+      {:ok,
+       assign(socket,
+         user: user,
+         form: form,
+         trigger_submit: false,
+         return_to: safe_return_to(params["return_to"])
+       ), temporary_assigns: [form: nil]}
     else
       {:ok,
        socket
@@ -91,4 +98,10 @@ defmodule BudgeteerWeb.UserLive.Confirmation do
   def handle_event("submit", %{"user" => params}, socket) do
     {:noreply, assign(socket, form: to_form(params, as: "user"), trigger_submit: true)}
   end
+
+  defp safe_return_to("/" <> _ = path) do
+    if String.starts_with?(path, "//"), do: nil, else: path
+  end
+
+  defp safe_return_to(_), do: nil
 end

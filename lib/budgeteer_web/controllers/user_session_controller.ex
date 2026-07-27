@@ -5,11 +5,11 @@ defmodule BudgeteerWeb.UserSessionController do
   alias BudgeteerWeb.UserAuth
 
   def create(conn, %{"_action" => "confirmed"} = params) do
-    create(conn, params, "User confirmed successfully.")
+    conn |> maybe_store_return_to(params) |> create(params, "User confirmed successfully.")
   end
 
   def create(conn, params) do
-    create(conn, params, "Welcome back!")
+    conn |> maybe_store_return_to(params) |> create(params, "Welcome back!")
   end
 
   # magic link login
@@ -58,6 +58,20 @@ defmodule BudgeteerWeb.UserSessionController do
     |> put_session(:user_return_to, ~p"/users/settings")
     |> create(params, "Password updated successfully!")
   end
+
+  # `return_to` arrives as a plain query/form param (set as a hidden field by
+  # UserLive.Login / UserLive.Confirmation from the ?return_to= they were
+  # given — see UserAuth.on_mount(:require_sudo_mode, ...)). Only accept an
+  # internal path to avoid an open-redirect via an attacker-supplied URL.
+  defp maybe_store_return_to(conn, %{"return_to" => "/" <> _ = return_to}) do
+    if String.starts_with?(return_to, "//") do
+      conn
+    else
+      put_session(conn, :user_return_to, return_to)
+    end
+  end
+
+  defp maybe_store_return_to(conn, _params), do: conn
 
   def delete(conn, _params) do
     conn
