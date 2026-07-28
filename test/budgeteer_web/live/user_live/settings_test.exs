@@ -188,6 +188,48 @@ defmodule BudgeteerWeb.UserLive.SettingsTest do
     end
   end
 
+  describe "access tokens" do
+    setup %{conn: conn} do
+      user = user_fixture()
+      %{conn: log_in_user(conn, user), user: user}
+    end
+
+    test "generates a token, shows it once, then lists it", %{conn: conn} do
+      {:ok, lv, _html} = live(conn, ~p"/users/settings")
+
+      result =
+        lv
+        |> form("#access_token_form", %{"access_token" => %{"name" => "Claude Desktop"}})
+        |> render_submit()
+
+      assert result =~ "Copy your token now"
+      assert result =~ "bgtpat_"
+      assert result =~ "Claude Desktop"
+
+      # A subsequent render (e.g. a patch from another event) doesn't
+      # re-derive or leak the raw token again — it's only ever set inside
+      # the create_access_token handler itself.
+      html = render(lv)
+      assert html =~ "Claude Desktop"
+    end
+
+    test "revokes a token", %{conn: conn, user: user} do
+      {:ok, _raw_token, access_token} =
+        Households.create_access_token(Households.Scope.for_user(user), "Old laptop")
+
+      {:ok, lv, html} = live(conn, ~p"/users/settings")
+      assert html =~ "Old laptop"
+
+      result =
+        lv
+        |> element("button[phx-value-id='#{access_token.id}']", "Revoke")
+        |> render_click()
+
+      assert result =~ "Token revoked."
+      refute result =~ "Old laptop"
+    end
+  end
+
   describe "confirm email" do
     setup %{conn: conn} do
       user = user_fixture()

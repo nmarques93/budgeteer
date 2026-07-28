@@ -6,7 +6,7 @@ defmodule Budgeteer.Households do
   import Ecto.Query, warn: false
   alias Budgeteer.Repo
 
-  alias Budgeteer.Households.{Household, User, UserToken, UserNotifier}
+  alias Budgeteer.Households.{Household, User, UserToken, UserNotifier, AccessToken, Scope}
 
   ## Database getters
 
@@ -454,6 +454,73 @@ defmodule Budgeteer.Households do
   def delete_user_session_token(token) do
     Repo.delete_all(from(UserToken, where: [token: ^token, context: "session"]))
     :ok
+  end
+
+  ## Access tokens (personal access tokens for the read-only MCP server)
+
+  @doc """
+  Creates a personal access token for the scoped user.
+
+  Returns `{:ok, raw_token, %AccessToken{}}` — the raw token is only ever
+  available here, at creation time. Only its hash is persisted, so it must
+  be shown to the user immediately and can never be recovered later.
+  """
+  def create_access_token(%Scope{} = scope, name) do
+    {raw_token, hashed_token} = AccessToken.build_token()
+
+    changeset = AccessToken.changeset(%AccessToken{}, %{name: name})
+
+    if changeset.valid? do
+      changeset
+      |> Ecto.Changeset.put_change(:token, hashed_token)
+      |> Ecto.Changeset.put_change(:user_id, scope.user.id)
+      |> Repo.insert()
+      |> case do
+        {:ok, access_token} -> {:ok, raw_token, access_token}
+        {:error, changeset} -> {:error, changeset}
+      end
+    else
+      {:error, %{changeset | action: :insert}}
+    end
+  end
+
+  @doc """
+  Returns the scoped user's access tokens, newest first.
+  """
+  def list_access_tokens(%Scope{} = scope) do
+    Repo.all(
+      from a in AccessToken,
+        where: a.user_id == ^scope.user.id,
+        order_by: [desc: a.inserted_at]
+    )
+  end
+
+  @doc """
+  Revokes (deletes) an access token, scoped to the given user — one user
+  can never revoke another user's token.
+  """
+  def revoke_access_token(%Scope{} = scope, id) do
+    case Repo.get_by(AccessToken, id: id, user_id: scope.user.id) do
+      nil -> {:error, :not_found}
+      access_token -> Repo.delete(access_token)
+    end
+  end
+
+  @doc """
+  Looks up the user for a raw access token string, touching `last_used_at`
+  on success. Returns `nil` for a malformed, unknown, or revoked token.
+  """
+  def get_user_by_access_token(raw_token) when is_binary(raw_token) do
+    with {:ok, query} <- AccessToken.verify_query(raw_token),
+         {user, access_token} <- Repo.one(query) do
+      access_token
+      |> Ecto.Changeset.change(last_used_at: DateTime.utc_now(:second))
+      |> Repo.update()
+
+      user
+    else
+      _ -> nil
+    end
   end
 
   ## Token helper

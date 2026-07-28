@@ -14,6 +14,7 @@ defmodule Budgeteer.Application do
       {Phoenix.PubSub, name: Budgeteer.PubSub},
       BudgeteerWeb.Presence,
       {Oban, Application.fetch_env!(:budgeteer, Oban)},
+      {BudgeteerWeb.MCP.Server, transport: :streamable_http},
       # Start to serve requests, typically the last entry
       BudgeteerWeb.Endpoint
     ]

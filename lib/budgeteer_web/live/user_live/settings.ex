@@ -79,6 +79,48 @@ defmodule BudgeteerWeb.UserLive.Settings do
         />
         <.button variant="primary" phx-disable-with="Sending...">Send invite</.button>
       </.form>
+
+      <div class="divider" />
+
+      <div>
+        <.header>
+          API access
+          <:subtitle>
+            Personal access tokens for read-only MCP clients (Claude Desktop, etc.) to query your household's data.
+          </:subtitle>
+        </.header>
+
+        <div :if={@new_token} class="alert alert-warning mt-4">
+          <div>
+            <p class="font-semibold">Copy your token now — you won't be able to see it again.</p>
+            <p class="font-mono text-sm break-all mt-1">{@new_token}</p>
+          </div>
+        </div>
+
+        <.form for={@access_token_form} id="access_token_form" phx-submit="create_access_token" class="mt-4">
+          <.input
+            field={@access_token_form[:name]}
+            type="text"
+            label="Token name"
+            placeholder="e.g. Claude Desktop"
+            required
+          />
+          <.button variant="primary" phx-disable-with="Generating...">Generate token</.button>
+        </.form>
+
+        <div class="mt-4">
+          <.table id="access-tokens" rows={@access_tokens}>
+            <:col :let={token} label="Name">{token.name}</:col>
+            <:col :let={token} label="Created">{token.inserted_at}</:col>
+            <:col :let={token} label="Last used">{token.last_used_at || "Never"}</:col>
+            <:action :let={token}>
+              <.button phx-click="revoke_access_token" phx-value-id={token.id} data-confirm="Revoke this token?">
+                Revoke
+              </.button>
+            </:action>
+          </.table>
+        </div>
+      </div>
     </Layouts.app>
     """
   end
@@ -109,6 +151,9 @@ defmodule BudgeteerWeb.UserLive.Settings do
       |> assign(:password_form, to_form(password_changeset))
       |> assign(:trigger_submit, false)
       |> assign(:invite_form, to_form(%{"email" => ""}, as: "invite"))
+      |> assign(:new_token, nil)
+      |> assign(:access_token_form, to_form(%{"name" => ""}, as: "access_token"))
+      |> assign(:access_tokens, Households.list_access_tokens(socket.assigns.current_scope))
 
     {:ok, socket}
   end
@@ -184,5 +229,36 @@ defmodule BudgeteerWeb.UserLive.Settings do
      socket
      |> put_flash(:info, "An invite was sent to #{email}.")
      |> assign(:invite_form, to_form(%{"email" => ""}, as: "invite"))}
+  end
+
+  def handle_event("create_access_token", %{"access_token" => %{"name" => name}}, socket) do
+    scope = socket.assigns.current_scope
+
+    case Households.create_access_token(scope, name) do
+      {:ok, raw_token, _access_token} ->
+        {:noreply,
+         socket
+         |> assign(:new_token, raw_token)
+         |> assign(:access_token_form, to_form(%{"name" => ""}, as: "access_token"))
+         |> assign(:access_tokens, Households.list_access_tokens(scope))}
+
+      {:error, _changeset} ->
+        {:noreply, put_flash(socket, :error, "Couldn't create the token — please try again.")}
+    end
+  end
+
+  def handle_event("revoke_access_token", %{"id" => id}, socket) do
+    scope = socket.assigns.current_scope
+
+    case Households.revoke_access_token(scope, id) do
+      {:ok, _access_token} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, "Token revoked.")
+         |> assign(:access_tokens, Households.list_access_tokens(scope))}
+
+      {:error, :not_found} ->
+        {:noreply, put_flash(socket, :error, "That token no longer exists.")}
+    end
   end
 end

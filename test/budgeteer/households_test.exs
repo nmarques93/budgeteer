@@ -544,6 +544,74 @@ defmodule Budgeteer.HouseholdsTest do
     end
   end
 
+  describe "access tokens" do
+    test "create_access_token/2 returns a usable raw token and persists only its hash" do
+      user = user_fixture()
+      scope = Budgeteer.Households.Scope.for_user(user)
+
+      assert {:ok, raw_token, access_token} = Households.create_access_token(scope, "Claude Desktop")
+      assert String.starts_with?(raw_token, "bgtpat_")
+      assert access_token.name == "Claude Desktop"
+      assert access_token.token != raw_token
+      assert Households.get_user_by_access_token(raw_token).id == user.id
+    end
+
+    test "create_access_token/2 requires a name" do
+      user = user_fixture()
+      scope = Budgeteer.Households.Scope.for_user(user)
+
+      assert {:error, changeset} = Households.create_access_token(scope, "")
+      assert %{name: ["can't be blank"]} = errors_on(changeset)
+    end
+
+    test "list_access_tokens/1 scopes to the current user" do
+      user = user_fixture()
+      other_user = user_fixture()
+      scope = Budgeteer.Households.Scope.for_user(user)
+      other_scope = Budgeteer.Households.Scope.for_user(other_user)
+
+      {:ok, _, first} = Households.create_access_token(scope, "First")
+      {:ok, _, second} = Households.create_access_token(scope, "Second")
+      {:ok, _, _other} = Households.create_access_token(other_scope, "Someone else's")
+
+      assert Households.list_access_tokens(scope) |> Enum.map(& &1.id) |> Enum.sort() ==
+               Enum.sort([first.id, second.id])
+    end
+
+    test "revoke_access_token/2 deletes the token and is scoped to its owner" do
+      user = user_fixture()
+      other_user = user_fixture()
+      scope = Budgeteer.Households.Scope.for_user(user)
+      other_scope = Budgeteer.Households.Scope.for_user(other_user)
+
+      {:ok, raw_token, access_token} = Households.create_access_token(scope, "Claude Desktop")
+
+      assert {:error, :not_found} = Households.revoke_access_token(other_scope, access_token.id)
+      assert Households.get_user_by_access_token(raw_token)
+
+      assert {:ok, _} = Households.revoke_access_token(scope, access_token.id)
+      refute Households.get_user_by_access_token(raw_token)
+    end
+
+    test "get_user_by_access_token/1 returns nil for garbage or unknown tokens" do
+      refute Households.get_user_by_access_token("garbage")
+      refute Households.get_user_by_access_token("bgtpat_" <> Base.url_encode64(:crypto.strong_rand_bytes(32), padding: false))
+    end
+
+    test "get_user_by_access_token/1 touches last_used_at" do
+      user = user_fixture()
+      scope = Budgeteer.Households.Scope.for_user(user)
+      {:ok, raw_token, access_token} = Households.create_access_token(scope, "Claude Desktop")
+
+      refute access_token.last_used_at
+
+      assert Households.get_user_by_access_token(raw_token)
+
+      [reloaded] = Households.list_access_tokens(scope)
+      assert reloaded.last_used_at
+    end
+  end
+
   describe "inspect/2 for the User module" do
     test "does not include password" do
       refute inspect(%User{password: "123456"}) =~ "password: \"123456\""

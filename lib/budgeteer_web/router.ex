@@ -17,6 +17,17 @@ defmodule BudgeteerWeb.Router do
     plug :accepts, ["json"]
   end
 
+  pipeline :mcp do
+    plug :accepts, ["json"]
+    plug BudgeteerWeb.MCPAuthPlug
+  end
+
+  scope "/mcp" do
+    pipe_through :mcp
+
+    forward "/", Anubis.Server.Transport.StreamableHTTP.Plug, server: BudgeteerWeb.MCP.Server
+  end
+
   scope "/", BudgeteerWeb do
     pipe_through :browser
 
