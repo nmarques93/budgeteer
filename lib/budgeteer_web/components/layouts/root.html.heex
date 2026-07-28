@@ -19,6 +19,14 @@
       (() => {
         const systemTheme = () => matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 
+        const syncToggle = () => {
+          const source = document.documentElement.getAttribute("data-theme-source");
+          const active = source === "system" ? "system" : document.documentElement.getAttribute("data-theme");
+          document.querySelectorAll("[data-phx-theme]").forEach((btn) => {
+            btn.classList.toggle("bg-base-300", btn.dataset.phxTheme === active);
+          });
+        };
+
         const setTheme = (theme) => {
           if (theme === "system") {
             localStorage.removeItem("phx:theme");
@@ -29,12 +37,14 @@
             document.documentElement.setAttribute("data-theme", theme);
             document.documentElement.setAttribute("data-theme-source", "user");
           }
+          syncToggle();
         };
         if (!document.documentElement.hasAttribute("data-theme")) {
           setTheme(localStorage.getItem("phx:theme") || "system");
         }
         window.addEventListener("storage", (e) => e.key === "phx:theme" && setTheme(e.newValue || "system"));
         window.addEventListener("phx:set-theme", (e) => setTheme(e.target.dataset.phxTheme));
+        document.addEventListener("DOMContentLoaded", syncToggle);
 
         matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
           if (document.documentElement.getAttribute("data-theme-source") === "system") {
@@ -46,6 +56,40 @@
   </head>
   <body>
     <ul class="menu menu-horizontal w-full relative z-10 flex flex-nowrap items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end overflow-x-auto">
+      <li>
+        <div class="flex items-center gap-0.5 rounded-full border border-base-300 p-0.5" role="group" aria-label="Theme">
+          <button
+            type="button"
+            phx-click={JS.dispatch("phx:set-theme")}
+            data-phx-theme="system"
+            class="rounded-full p-1.5 text-base-content/60 hover:text-base-content"
+            aria-label="Use system theme"
+            title="System"
+          >
+            <.icon name="hero-computer-desktop-micro" />
+          </button>
+          <button
+            type="button"
+            phx-click={JS.dispatch("phx:set-theme")}
+            data-phx-theme="light"
+            class="rounded-full p-1.5 text-base-content/60 hover:text-base-content"
+            aria-label="Use light theme"
+            title="Light"
+          >
+            <.icon name="hero-sun-micro" />
+          </button>
+          <button
+            type="button"
+            phx-click={JS.dispatch("phx:set-theme")}
+            data-phx-theme="dark"
+            class="rounded-full p-1.5 text-base-content/60 hover:text-base-content"
+            aria-label="Use dark theme"
+            title="Dark"
+          >
+            <.icon name="hero-moon-micro" />
+          </button>
+        </div>
+      </li>
       <%= if @current_scope do %>
         <li>
           {@current_scope.user.email}
