@@ -4,7 +4,14 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content={get_csrf_token()} />
-    <.live_title default="Budgeteer" suffix=" · Phoenix Framework" phx-no-format>{assigns[:page_title]}</.live_title>
+    <meta name="theme-color" content="#262a33" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="manifest" href={~p"/manifest.json"} />
+    <link rel="apple-touch-icon" href={~p"/images/icons/apple-touch-icon.png"} />
+    <link rel="icon" type="image/png" sizes="192x192" href={~p"/images/icons/icon-192.png"} />
+    <.live_title default="Budgeteer" suffix=" · Budgeteer" phx-no-format>{assigns[:page_title]}</.live_title>
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
     </script>
@@ -38,7 +45,7 @@
     </script>
   </head>
   <body>
-    <ul class="menu menu-horizontal w-full relative z-10 flex items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end">
+    <ul class="menu menu-horizontal w-full relative z-10 flex flex-nowrap items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end overflow-x-auto">
       <%= if @current_scope do %>
         <li>
           {@current_scope.user.email}

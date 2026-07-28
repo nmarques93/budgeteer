@@ -24,67 +24,93 @@ defmodule BudgeteerWeb.StatementLive.Review do
       </p>
 
       <form :if={@rows != []} id="review-form" phx-submit="save">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Include</th>
-              <th>Date</th>
-              <th>Amount</th>
-              <th>Merchant</th>
-              <th>Description</th>
-              <th>Category</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr :for={row <- @rows}>
-              <td>
-                <input type="hidden" name={"rows[#{row.index}][include]"} value="false" />
-                <input
-                  type="checkbox"
-                  class="checkbox checkbox-sm"
-                  name={"rows[#{row.index}][include]"}
-                  value="true"
-                  checked
-                />
-              </td>
-              <td><input type="date" class="w-full input" name={"rows[#{row.index}][date]"} value={row.date} /></td>
-              <td>
-                <input type="text" class="w-full input" name={"rows[#{row.index}][amount]"} value={row.amount} />
-              </td>
-              <td>
-                <input type="text" class="w-full input" name={"rows[#{row.index}][merchant]"} value={row.merchant} />
-              </td>
-              <td>
-                <input
-                  type="text"
-                  class="w-full input"
-                  name={"rows[#{row.index}][description]"}
-                  value={row.description}
-                />
-              </td>
-              <td>
-                <select class="w-full select" name={"rows[#{row.index}][category_id]"}>
-                  <option value="">Uncategorized</option>
-                  <option :for={category <- @categories} value={category.id} selected={category.id == row.category_id}>
-                    {category.name}
-                  </option>
-                </select>
-                <p :if={row.category_id == nil and row.suggested_category not in [nil, ""]} class="text-xs opacity-70 mt-1">
-                  Suggested: "{row.suggested_category}" — not yet a category.
-                  <button
-                    type="button"
-                    class="link"
-                    phx-click="create_category"
-                    phx-value-index={row.index}
-                    phx-value-name={row.suggested_category}
+        <div class="overflow-x-auto">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Include</th>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Merchant</th>
+                <th>Description</th>
+                <th>Category</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr :for={row <- @rows}>
+                <td>
+                  <input type="hidden" name={"rows[#{row.index}][include]"} value="false" />
+                  <input
+                    type="checkbox"
+                    class="checkbox checkbox-sm"
+                    name={"rows[#{row.index}][include]"}
+                    value="true"
+                    checked
+                  />
+                </td>
+                <td>
+                  <input
+                    type="date"
+                    class="w-full input"
+                    name={"rows[#{row.index}][date]"}
+                    value={row.date}
+                  />
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    class="w-full input"
+                    name={"rows[#{row.index}][amount]"}
+                    value={row.amount}
+                  />
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    class="w-full input"
+                    name={"rows[#{row.index}][merchant]"}
+                    value={row.merchant}
+                  />
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    class="w-full input"
+                    name={"rows[#{row.index}][description]"}
+                    value={row.description}
+                  />
+                </td>
+                <td>
+                  <select class="w-full select" name={"rows[#{row.index}][category_id]"}>
+                    <option value="">Uncategorized</option>
+                    <option
+                      :for={category <- @categories}
+                      value={category.id}
+                      selected={category.id == row.category_id}
+                    >
+                      {category.name}
+                    </option>
+                  </select>
+                  <p
+                    :if={row.category_id == nil and row.suggested_category not in [nil, ""]}
+                    class="text-xs opacity-70 mt-1"
                   >
-                    Create it
-                  </button>
-                </p>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                    Suggested: "{row.suggested_category}" — not yet a category.
+                    <button
+                      type="button"
+                      class="link"
+                      phx-click="create_category"
+                      phx-value-index={row.index}
+                      phx-value-name={row.suggested_category}
+                    >
+                      Create it
+                    </button>
+                  </p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
         <footer class="mt-4">
           <.button phx-disable-with="Saving..." variant="primary">Save transactions</.button>
@@ -184,7 +210,8 @@ defmodule BudgeteerWeb.StatementLive.Review do
 
   defp assign_if_matching_suggestion(row, category, suggested_name) do
     if row.category_id == nil and row.suggested_category not in [nil, ""] and
-         String.downcase(String.trim(row.suggested_category)) == String.downcase(String.trim(suggested_name)) do
+         String.downcase(String.trim(row.suggested_category)) ==
+           String.downcase(String.trim(suggested_name)) do
       %{row | category_id: category.id}
     else
       row

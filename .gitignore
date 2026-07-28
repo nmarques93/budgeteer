@@ -28,3 +28,6 @@ budgeteer-*.tar
 # Locally-stored uploaded bank statements (dev-only file storage)
 /priv/statements/
 
+# Self-signed local dev cert (mix phx.gen.cert) — never commit private keys
+/priv/cert/
+
