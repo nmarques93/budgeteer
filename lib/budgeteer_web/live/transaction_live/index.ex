@@ -27,7 +27,7 @@ defmodule BudgeteerWeb.TransactionLive.Index do
         }
       >
         <:col :let={{_id, transaction}} label="Date">{transaction.date}</:col>
-        <:col :let={{_id, transaction}} label="Amount">{Budgeteer.Money.format(transaction.amount_cents)}</:col>
+        <:col :let={{_id, transaction}} label="Amount"><.money cents={transaction.amount_cents} /></:col>
         <:col :let={{_id, transaction}} label="Merchant">{transaction.merchant}</:col>
         <:col :let={{_id, transaction}} label="Description">{transaction.description}</:col>
         <:col :let={{_id, transaction}} label="Notes">{transaction.notes}</:col>

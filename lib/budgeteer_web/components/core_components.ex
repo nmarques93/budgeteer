@@ -433,6 +433,25 @@ defmodule BudgeteerWeb.CoreComponents do
   end
 
   @doc """
+  Renders a formatted money amount with tabular, monospaced figures so a
+  column of amounts lines up — part of the "Ledger" direction's printed-
+  statement feel (see CLAUDE.md's Visual Redesign section).
+
+  ## Examples
+
+      <.money cents={@transaction.amount_cents} />
+      <.money cents={@category.budget_cents} class="text-3xl font-bold" />
+  """
+  attr :cents, :any, required: true, doc: "integer cents, or nil"
+  attr :class, :any, default: nil
+
+  def money(assigns) do
+    ~H"""
+    <span class={["font-mono tabular-nums", @class]}>{Budgeteer.Money.format(@cents)}</span>
+    """
+  end
+
+  @doc """
   Renders a [Heroicon](https://heroicons.com).
 
   Heroicons come in three styles – outline, solid, and mini.

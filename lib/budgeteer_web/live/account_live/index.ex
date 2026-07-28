@@ -24,7 +24,7 @@ defmodule BudgeteerWeb.AccountLive.Index do
         <:col :let={{_id, account}} label="Name">{account.name}</:col>
         <:col :let={{_id, account}} label="Bank name">{account.bank_name}</:col>
         <:col :let={{_id, account}} label="Currency">{account.currency}</:col>
-        <:col :let={{_id, account}} label="Balance">{Budgeteer.Money.format(Ledger.current_balance_cents(account))}</:col>
+        <:col :let={{_id, account}} label="Balance"><.money cents={Ledger.current_balance_cents(account)} /></:col>
         <:action :let={{_id, account}}>
           <div class="sr-only">
             <.link navigate={~p"/accounts/#{account}"}>Show</.link>

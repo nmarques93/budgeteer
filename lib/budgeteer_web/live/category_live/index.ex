@@ -23,7 +23,7 @@ defmodule BudgeteerWeb.CategoryLive.Index do
       >
         <:col :let={{_id, category}} label="Name">{category.name}</:col>
         <:col :let={{_id, category}} label="Color">{category.color}</:col>
-        <:col :let={{_id, category}} label="Budget">{Budgeteer.Money.format(category.budget_cents)}</:col>
+        <:col :let={{_id, category}} label="Budget"><.money cents={category.budget_cents} /></:col>
         <:col :let={{_id, category}} label="Type">{category.type}</:col>
         <:action :let={{_id, category}}>
           <div class="sr-only">

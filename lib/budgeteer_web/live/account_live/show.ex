@@ -36,8 +36,8 @@ defmodule BudgeteerWeb.AccountLive.Show do
         <:item title="Name">{@account.name}</:item>
         <:item title="Bank name">{@account.bank_name}</:item>
         <:item title="Currency">{@account.currency}</:item>
-        <:item title="Starting balance">{Budgeteer.Money.format(@account.starting_balance_cents)}</:item>
-        <:item title="Current balance">{Budgeteer.Money.format(Ledger.current_balance_cents(@account))}</:item>
+        <:item title="Starting balance"><.money cents={@account.starting_balance_cents} /></:item>
+        <:item title="Current balance"><.money cents={Ledger.current_balance_cents(@account)} /></:item>
       </.list>
     </Layouts.app>
     """

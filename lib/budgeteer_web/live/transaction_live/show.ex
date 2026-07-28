@@ -25,7 +25,7 @@ defmodule BudgeteerWeb.TransactionLive.Show do
 
       <.list>
         <:item title="Date">{@transaction.date}</:item>
-        <:item title="Amount">{Budgeteer.Money.format(@transaction.amount_cents)}</:item>
+        <:item title="Amount"><.money cents={@transaction.amount_cents} /></:item>
         <:item title="Merchant">{@transaction.merchant}</:item>
         <:item title="Description">{@transaction.description}</:item>
         <:item title="Notes">{@transaction.notes}</:item>

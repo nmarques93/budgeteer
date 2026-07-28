@@ -23,7 +23,7 @@ defmodule BudgeteerWeb.CategoryLive.Show do
       <.list>
         <:item title="Name">{@category.name}</:item>
         <:item title="Color">{@category.color}</:item>
-        <:item title="Budget">{Budgeteer.Money.format(@category.budget_cents)}</:item>
+        <:item title="Budget"><.money cents={@category.budget_cents} /></:item>
         <:item title="Type">{@category.type}</:item>
       </.list>
     </Layouts.app>

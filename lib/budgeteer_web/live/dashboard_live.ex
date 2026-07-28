@@ -13,15 +13,15 @@ defmodule BudgeteerWeb.DashboardLive do
 
       <div class="mt-4">
         <div class="text-sm opacity-70">Total balance</div>
-        <div class="text-3xl font-bold">{Budgeteer.Money.format(@total_balance_cents)}</div>
+        <div class="text-3xl font-bold"><.money cents={@total_balance_cents} /></div>
       </div>
 
       <h2 class="text-lg font-semibold mt-8">This month by category</h2>
       <.table id="category-totals" rows={@category_totals}>
         <:col :let={row} label="Category">{row.name}</:col>
         <:col :let={row} label="Type">{row.type}</:col>
-        <:col :let={row} label="Spent">{Budgeteer.Money.format(row.total_cents)}</:col>
-        <:col :let={row} label="Budget">{Budgeteer.Money.format(row.budget_cents)}</:col>
+        <:col :let={row} label="Spent"><.money cents={row.total_cents} /></:col>
+        <:col :let={row} label="Budget"><.money cents={row.budget_cents} /></:col>
       </.table>
 
       <h2 class="text-lg font-semibold mt-8">Recent transactions</h2>
@@ -29,7 +29,7 @@ defmodule BudgeteerWeb.DashboardLive do
         <:col :let={transaction} label="Date">{transaction.date}</:col>
         <:col :let={transaction} label="Account">{account_name(@accounts_by_id, transaction.account_id)}</:col>
         <:col :let={transaction} label="Merchant">{transaction.merchant}</:col>
-        <:col :let={transaction} label="Amount">{Budgeteer.Money.format(transaction.amount_cents)}</:col>
+        <:col :let={transaction} label="Amount"><.money cents={transaction.amount_cents} /></:col>
         <:col :let={transaction} label="Category">{category_name(@categories_by_id, transaction.category_id)}</:col>
       </.table>
     </Layouts.app>
