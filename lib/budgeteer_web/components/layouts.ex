@@ -41,7 +41,7 @@ defmodule BudgeteerWeb.Layouts do
       <div class="flex-1">
         <a href="/" class="flex-1 flex w-fit items-center gap-2">
           <img src={~p"/images/logo.svg"} width="28" />
-          <span class="text-sm font-semibold">Budgeteer</span>
+          <span class="brand text-sm font-semibold">Budgeteer</span>
         </a>
       </div>
       <div :if={@online_members != []} class="flex-none">

@@ -4,8 +4,8 @@
   "description": "Family budgeting: AI statement import, shared ledger, grocery lists.",
   "start_url": "/dashboard",
   "display": "standalone",
-  "background_color": "#262a33",
-  "theme_color": "#262a33",
+  "background_color": "#1c1914",
+  "theme_color": "#1c1914",
   "icons": [
     {
       "src": "/images/icons/icon-192.png",
