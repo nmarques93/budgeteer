@@ -480,6 +480,70 @@ defmodule Budgeteer.HouseholdsTest do
     end
   end
 
+  describe "find_or_create_oauth_user/2" do
+    defp oauth_auth(email, name \\ "Ada Lovelace") do
+      %Ueberauth.Auth{
+        uid: "google-#{email}",
+        provider: :google,
+        info: %Ueberauth.Auth.Info{email: email, name: name}
+      }
+    end
+
+    test "logs in an existing user with a matching email, invite or not" do
+      %{id: id} = user = user_fixture()
+      assert {:ok, %User{id: ^id}} = Households.find_or_create_oauth_user(oauth_auth(user.email))
+    end
+
+    test "creates a new household as owner when there's no existing user and no invite" do
+      email = unique_user_email()
+
+      assert {:ok, user} = Households.find_or_create_oauth_user(oauth_auth(email, "Ada Lovelace"))
+      assert user.email == email
+      assert user.name == "Ada Lovelace"
+      assert user.role == :owner
+      assert user.confirmed_at
+
+      household = Repo.get!(Budgeteer.Households.Household, user.household_id)
+      assert household.name == "Ada Lovelace's Household"
+    end
+
+    test "joins the inviting household as a member when the invite email matches" do
+      inviter = user_fixture()
+      invitee_email = unique_user_email()
+
+      token =
+        extract_user_token(fn url ->
+          Households.deliver_household_invite(inviter, invitee_email, url)
+        end)
+
+      assert {:ok, user} = Households.find_or_create_oauth_user(oauth_auth(invitee_email), token)
+      assert user.household_id == inviter.household_id
+      assert user.role == :member
+      assert user.confirmed_at
+    end
+
+    test "falls back to a new household when the invite email doesn't match" do
+      inviter = user_fixture()
+      invitee_email = unique_user_email()
+
+      token =
+        extract_user_token(fn url ->
+          Households.deliver_household_invite(inviter, invitee_email, url)
+        end)
+
+      other_email = unique_user_email()
+      assert {:ok, user} = Households.find_or_create_oauth_user(oauth_auth(other_email), token)
+      assert user.household_id != inviter.household_id
+      assert user.role == :owner
+    end
+
+    test "creates a new household when the invite token is invalid" do
+      email = unique_user_email()
+      assert {:ok, user} = Households.find_or_create_oauth_user(oauth_auth(email), "garbage")
+      assert user.role == :owner
+    end
+  end
+
   describe "inspect/2 for the User module" do
     test "does not include password" do
       refute inspect(%User{password: "123456"}) =~ "password: \"123456\""

@@ -61,6 +61,19 @@ defmodule Budgeteer.Households.User do
     |> validate_email(opts)
   end
 
+  @doc """
+  A changeset for registering via OAuth (Google, etc.) — no password fields
+  are touched, since `hashed_password: nil` is already a fully legal shape
+  for this schema (see `valid_password?/2`).
+
+  See `email_changeset/3` for the `:validate_unique` option.
+  """
+  def oauth_registration_changeset(user, attrs, opts \\ []) do
+    user
+    |> cast(attrs, [:email, :name])
+    |> validate_email(opts)
+  end
+
   defp validate_email(changeset, opts) do
     changeset =
       changeset

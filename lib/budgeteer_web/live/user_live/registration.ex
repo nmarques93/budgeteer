@@ -51,6 +51,14 @@ defmodule BudgeteerWeb.UserLive.Registration do
             Create an account
           </.button>
         </.form>
+
+        <div :if={@invite}>
+          <div class="divider">or</div>
+
+          <.link href={~p"/auth/google?#{[token: @invite_token]}"} class="btn btn-outline w-full">
+            Continue with Google
+          </.link>
+        </div>
       </div>
     </Layouts.app>
     """
@@ -79,7 +87,11 @@ defmodule BudgeteerWeb.UserLive.Registration do
         Households.change_user_registration(%User{}, %{}, validate_unique: false)
       end
 
-    {:ok, socket |> assign(:invite, invite) |> assign_form(changeset), temporary_assigns: [form: nil]}
+    {:ok,
+     socket
+     |> assign(:invite, invite)
+     |> assign(:invite_token, params["token"])
+     |> assign_form(changeset), temporary_assigns: [form: nil]}
   end
 
   defp resolve_invite(nil), do: nil

@@ -105,5 +105,8 @@ defmodule BudgeteerWeb.Router do
 
     post "/users/log-in", UserSessionController, :create
     delete "/users/log-out", UserSessionController, :delete
+
+    get "/auth/:provider", UserOAuthController, :request
+    get "/auth/:provider/callback", UserOAuthController, :callback
   end
 end

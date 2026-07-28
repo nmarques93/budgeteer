@@ -52,6 +52,15 @@ config :budgeteer, :statement_storage_path, Path.expand("priv/statements")
 # once a domain is picked; see CLAUDE.md.
 config :budgeteer, :mail_from, {"Budgeteer", "onboarding@resend.dev"}
 
+# OAuth sign-in. Only Google is wired up, but any future Ueberauth strategy
+# (GitHub, etc.) is just another entry here plus a new hex dep — the rest
+# of the integration (Households.find_or_create_oauth_user/2, the callback
+# controller) is provider-agnostic. See CLAUDE.md for the full design.
+config :ueberauth, Ueberauth,
+  providers: [
+    google: {Ueberauth.Strategy.Google, [default_scope: "email profile"]}
+  ]
+
 # Configure the endpoint
 config :budgeteer, BudgeteerWeb.Endpoint,
   url: [host: "localhost"],

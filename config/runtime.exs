@@ -27,6 +27,16 @@ config :budgeteer, BudgeteerWeb.Endpoint,
 # the AI client is mocked there (see config/test.exs).
 config :budgeteer, :anthropic_api_key, System.get_env("ANTHROPIC_API_KEY")
 
+# Google OAuth. Same tolerance as ANTHROPIC_API_KEY above — unconditional,
+# no raise if unset — rather than the RESEND_API_KEY raise-in-prod-only
+# pattern, since this needs to be testable via a real browser flow in dev
+# once set locally, and should degrade gracefully (the button just won't
+# work) rather than crash boot. Register a redirect URI of
+# "<host>/auth/google/callback" in Google Cloud Console to get these.
+config :ueberauth, Ueberauth.Strategy.Google.OAuth,
+  client_id: System.get_env("GOOGLE_CLIENT_ID"),
+  client_secret: System.get_env("GOOGLE_CLIENT_SECRET")
+
 if config_env() == :dev do
   # Reload browser tabs when matching files change.
   config :budgeteer, BudgeteerWeb.Endpoint,

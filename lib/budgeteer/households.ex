@@ -151,6 +151,84 @@ defmodule Budgeteer.Households do
     User.invite_registration_changeset(user, attrs, opts)
   end
 
+  @doc """
+  Finds or creates a user from an OAuth callback (Google, etc.), reconciling
+  against any pending household invite token.
+
+  Google-verified email ownership is treated as the same trust level the
+  app already extends to magic-link login (anyone with access to the
+  inbox) — an existing user with a matching email is logged straight in,
+  with no separate "link this account" confirmation step.
+
+  * Existing user with this email → `{:ok, user}`, as-is.
+  * No existing user, `invite_token` resolves to an invite sent to this
+    exact email → joins that household as `:member`.
+  * No existing user, no matching invite → creates a new household and
+    joins it as `:owner`, named after the user (there's no interactive
+    naming step for this path).
+
+  OAuth-created users are confirmed immediately, since Google already
+  verified the email.
+  """
+  def find_or_create_oauth_user(%Ueberauth.Auth{} = auth, invite_token \\ nil) do
+    email = auth.info.email
+    name = auth.info.name
+
+    case get_user_by_email(email) do
+      %User{} = user ->
+        {:ok, user}
+
+      nil ->
+        case resolve_matching_invite(invite_token, email) do
+          {:ok, household} -> create_oauth_invited_user(email, name, household)
+          :error -> create_oauth_owner_user(email, name)
+        end
+    end
+  end
+
+  defp resolve_matching_invite(nil, _email), do: :error
+
+  defp resolve_matching_invite(token, email) do
+    case get_household_invite(token) do
+      {:ok, household, ^email} -> {:ok, household}
+      _ -> :error
+    end
+  end
+
+  defp create_oauth_invited_user(email, name, %Household{} = household) do
+    changeset = User.oauth_registration_changeset(%User{}, %{email: email, name: name})
+
+    if changeset.valid? do
+      changeset
+      |> Ecto.Changeset.put_change(:household_id, household.id)
+      |> Ecto.Changeset.put_change(:role, :member)
+      |> Ecto.Changeset.put_change(:confirmed_at, DateTime.utc_now(:second))
+      |> Repo.insert()
+    else
+      {:error, %{changeset | action: :insert}}
+    end
+  end
+
+  defp create_oauth_owner_user(email, name) do
+    changeset = User.oauth_registration_changeset(%User{}, %{email: email, name: name})
+
+    if changeset.valid? do
+      Repo.transact(fn ->
+        with {:ok, household} <- create_household(%{name: "#{name || email}'s Household"}),
+             {:ok, user} <-
+               changeset
+               |> Ecto.Changeset.put_change(:household_id, household.id)
+               |> Ecto.Changeset.put_change(:role, :owner)
+               |> Ecto.Changeset.put_change(:confirmed_at, DateTime.utc_now(:second))
+               |> Repo.insert() do
+          {:ok, user}
+        end
+      end)
+    else
+      {:error, %{changeset | action: :insert}}
+    end
+  end
+
   ## Settings
 
   @doc """

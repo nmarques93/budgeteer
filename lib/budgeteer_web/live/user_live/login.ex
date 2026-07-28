@@ -91,6 +91,14 @@ defmodule BudgeteerWeb.UserLive.Login do
             Log in only this time
           </.button>
         </.form>
+
+        <div :if={!@current_scope}>
+          <div class="divider">or</div>
+
+          <.link href={~p"/auth/google"} class="btn btn-outline w-full">
+            Continue with Google
+          </.link>
+        </div>
       </div>
     </Layouts.app>
     """

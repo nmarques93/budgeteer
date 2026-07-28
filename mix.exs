@@ -41,6 +41,8 @@ defmodule Budgeteer.MixProject do
   defp deps do
     [
       {:bcrypt_elixir, "~> 3.0"},
+      {:ueberauth, "~> 0.10"},
+      {:ueberauth_google, "~> 0.10"},
       {:phoenix, "~> 1.8.9"},
       {:phoenix_ecto, "~> 4.5"},
       {:ecto_sql, "~> 3.13"},
