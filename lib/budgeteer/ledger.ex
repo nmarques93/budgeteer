@@ -497,4 +497,45 @@ defmodule Budgeteer.Ledger do
         limit: ^limit
     )
   end
+
+  @doc """
+  Returns the household's total balance across all accounts for each of the
+  last `days` days (default 30), oldest first — one point per day, carrying
+  the previous day's balance forward on days with no transactions. Used for
+  the dashboard's balance trend chart.
+  """
+  def balance_history(%Scope{} = scope, days \\ 30) do
+    today = Date.utc_today()
+    start_date = Date.add(today, -(days - 1))
+    starting_total = scope |> list_accounts() |> Enum.map(& &1.starting_balance_cents) |> Enum.sum()
+
+    pre_start_sum =
+      Repo.aggregate(
+        from(t in Transaction,
+          where: t.household_id == ^scope.user.household_id and t.date < ^start_date
+        ),
+        :sum,
+        :amount_cents
+      )
+
+    pre_start_cents = if pre_start_sum, do: Decimal.to_integer(pre_start_sum), else: 0
+
+    daily_deltas =
+      Repo.all(
+        from t in Transaction,
+          where: t.household_id == ^scope.user.household_id,
+          where: t.date >= ^start_date and t.date <= ^today,
+          group_by: t.date,
+          select: {t.date, sum(t.amount_cents)}
+      )
+      |> Map.new(fn {date, sum} -> {date, Decimal.to_integer(sum)} end)
+
+    {history, _final} =
+      Enum.map_reduce(Date.range(start_date, today), starting_total + pre_start_cents, fn date, running ->
+        running = running + Map.get(daily_deltas, date, 0)
+        {%{date: date, balance_cents: running}, running}
+      end)
+
+    history
+  end
 end

@@ -289,4 +289,68 @@ defmodule Budgeteer.LedgerTest do
       assert %Ecto.Changeset{} = Ledger.change_category(scope, category)
     end
   end
+
+  describe "balance_history/2" do
+    import Budgeteer.HouseholdsFixtures, only: [household_scope_fixture: 0]
+    import Budgeteer.LedgerFixtures
+
+    test "returns one point per day, oldest first, ending today" do
+      scope = household_scope_fixture()
+      account_fixture(scope, %{starting_balance: "100.00"})
+
+      history = Ledger.balance_history(scope, 5)
+
+      today = Date.utc_today()
+      assert Enum.map(history, & &1.date) == Enum.map(-4..0, &Date.add(today, &1))
+      assert Enum.all?(history, &(&1.balance_cents == 10_000))
+    end
+
+    test "carries the starting balance forward with no transactions" do
+      scope = household_scope_fixture()
+      account_fixture(scope, %{starting_balance: "50.00"})
+
+      assert Ledger.balance_history(scope, 3) |> Enum.map(& &1.balance_cents) == [5_000, 5_000, 5_000]
+    end
+
+    test "applies a transaction's delta starting on its date, carried forward after" do
+      scope = household_scope_fixture()
+      account = account_fixture(scope, %{starting_balance: "100.00"})
+      today = Date.utc_today()
+
+      {:ok, _} =
+        Ledger.create_transaction(scope, %{
+          account_id: account.id,
+          amount: "-20.00",
+          date: Date.add(today, -1)
+        })
+
+      history = Ledger.balance_history(scope, 3)
+
+      assert Enum.map(history, & &1.balance_cents) == [10_000, 8_000, 8_000]
+    end
+
+    test "folds a transaction before the window into the starting point" do
+      scope = household_scope_fixture()
+      account = account_fixture(scope, %{starting_balance: "100.00"})
+      today = Date.utc_today()
+
+      {:ok, _} =
+        Ledger.create_transaction(scope, %{
+          account_id: account.id,
+          amount: "-30.00",
+          date: Date.add(today, -10)
+        })
+
+      assert Ledger.balance_history(scope, 3) |> Enum.map(& &1.balance_cents) == [7_000, 7_000, 7_000]
+    end
+
+    test "scopes to the household" do
+      scope = household_scope_fixture()
+      other_scope = household_scope_fixture()
+      account_fixture(scope, %{starting_balance: "100.00"})
+      account_fixture(other_scope, %{starting_balance: "500.00"})
+
+      assert Ledger.balance_history(scope, 1) == [%{date: Date.utc_today(), balance_cents: 10_000}]
+    end
+  end
 end
