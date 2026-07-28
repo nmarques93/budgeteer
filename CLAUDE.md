@@ -144,3 +144,23 @@ A local Postgres role `postgres`/`postgres` (superuser) was created on this mach
 3. Real-time sync ✅ — PubSub broadcasts/subscriptions were already in place for every resource; `Phoenix.Presence` ("who's online") added this round. Conflict handling is plain last-write-wins (no optimistic locking anywhere) — already true by default, no extra code needed. **Phase 3 complete**.
 4. Grocery list ✅ — `Budgeteer.Groceries` (lists + items), real-time check/uncheck via per-list PubSub topics, archive/unarchive. **Phase 4 complete**.
 5. PWA polish ✅ — manifest.json + icons, app-shell service worker (dev-disabled), local HTTPS, mobile-responsive tables/nav, scaffold branding cleanup. **Phase 5 complete — full roadmap done.**
+
+---
+
+## Visual Redesign — direction chosen, not yet implemented
+
+Three candidate directions were mocked up (serif/brass "Ledger", warm/rounded "Household", dark-instrument-panel "Signal") against real app data before touching any component code — deliberately, to avoid redoing component work if the direction changed. **"Ledger" was chosen**: a serif built for reading figures off paper (Georgia/ui-serif), hairline rules like ruled ledger sheets, muted brass (`#8a6a2f`) as the household's accent color, monospaced tabular figures for amounts, warm cream paper ground (`#f2ede1`) in light mode. Rationale: the core feature is importing a real, printed bank statement — the design should feel like an extension of that document, not a generic finance-app dashboard.
+
+Not yet applied to the real app — next step when picked back up is retuning daisyUI's theme tokens in `assets/css/app.css` (`--color-base-100` etc., both the light and dark theme blocks) to match, which is the single highest-leverage change since every component already reads from those tokens, before any per-page/component work.
+
+---
+
+## Future Ideas (not yet planned — no schema, no code, ranked by the discussion that produced them)
+
+The long-term ambition is for Budgeteer to become a one-stop shop for home management, not just budgeting. None of this is scheduled; capturing it here so it isn't lost.
+
+1. **Real outbound email provider** — highest priority, arguably a bug not a feature. Swoosh is still on the `Local` adapter in every environment (see the Decisions section above) — no email has ever actually left the server, which means the household invite flow is non-functional for real users today. Small, contained fix: pick a provider (Mailgun/SES/Postmark), wire it into `config/runtime.exs`, set a real `from` address in `UserNotifier` (currently hardcoded to `contact@example.com`).
+2. **Meal planning** — natural extension of the grocery list already built. A meal plan whose ingredients can push onto an existing `GroceryList` is a coherent, contained addition, not a new subsystem.
+3. **MCP integration** — every context module (`Ledger`, `Groceries`, `Statements`) already has a clean, household-scoped API; an MCP server is largely a thin adapter over functions that already exist. The real design question is auth — can't reuse browser session cookies, so it needs its own personal-access-token scheme per user.
+4. **Live grocery prices from Continente/Pingo Doce** — deprioritized. Neither retailer has a public API, so this is a scraping problem (fragile, breaks on every site redesign, legally grey), not an engineering one. Cheaper alternative worth considering instead: let users optionally log the price when they check off a grocery item, and aggregate it over time — crowdsourced, no scraping.
+5. **Inbound email parsing** (e-receipts/statements arriving by mail, auto-imported) — a much bigger, separate feature from #1, closer in shape to the existing statement-import pipeline (dedicated inbound address + parser). Parked, not deprioritized — just bigger than it looks.
