@@ -46,6 +46,12 @@ config :budgeteer, Oban,
 # when this app is actually deployed off a single host.
 config :budgeteer, :statement_storage_path, Path.expand("priv/statements")
 
+# The "from" address for all outbound email. Resend's own shared address
+# works without owning a domain — deliberately not a custom domain yet,
+# since the product name (and therefore a domain) isn't settled. Revisit
+# once a domain is picked; see CLAUDE.md.
+config :budgeteer, :mail_from, {"Budgeteer", "onboarding@resend.dev"}
+
 # Configure the endpoint
 config :budgeteer, BudgeteerWeb.Endpoint,
   url: [host: "localhost"],

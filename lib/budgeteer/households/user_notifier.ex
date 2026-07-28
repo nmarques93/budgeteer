@@ -9,7 +9,7 @@ defmodule Budgeteer.Households.UserNotifier do
     email =
       new()
       |> to(recipient)
-      |> from({"Budgeteer", "contact@example.com"})
+      |> from(Application.fetch_env!(:budgeteer, :mail_from))
       |> subject(subject)
       |> text_body(body)
 
