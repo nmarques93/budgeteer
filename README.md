@@ -1,20 +1,32 @@
 # Budgeteer
 
-A family budgeting PWA built in Elixir/Phoenix. Upload a bank statement (PDF or photo) and Claude extracts the transactions automatically — no manual entry. Everything syncs live across household members via LiveView, with shared budget categories and a real-time grocery list.
+A family budgeting PWA. Upload a bank statement (PDF or photo) and Claude extracts the transactions automatically — no manual entry. Everything syncs live across household members via LiveView, with shared budget categories and a real-time grocery list.
 
-To start your Phoenix server:
+## Features
 
-* Run `mix setup` to install and setup dependencies
-* Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
+- **AI statement import** — upload a PDF/photo, review and confirm extracted transactions before anything touches the ledger
+- **Real-time sync** — every household member sees the same accounts, transactions, and categories update live
+- **Shared grocery list** — check items off together, in real time
+- **Meal planning** — recipes with one-click "add ingredients to grocery list"
+- **Dashboard** — balance history, spend vs. budget by category
+- **Google sign-in**, alongside email/password and magic-link login
+- **PWA** — installable to a phone's home screen
+- **Read-only MCP server** — query your own household's data from an MCP client via a personal access token
 
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+## Stack
 
-Ready to run in production? Please [check our deployment guides](https://phoenix.hexdocs.pm/deployment.html).
+Elixir + Phoenix + LiveView, PostgreSQL, Oban for background jobs, the Claude API for statement parsing. See [CLAUDE.md](CLAUDE.md) for the full history of decisions behind this app.
 
-## Learn more
+## Local development
 
-* Official website: https://www.phoenixframework.org/
-* Guides: https://phoenix.hexdocs.pm/overview.html
-* Docs: https://phoenix.hexdocs.pm
-* Forum: https://elixirforum.com/c/phoenix-forum
-* Source: https://github.com/phoenixframework/phoenix
+```bash
+brew services start postgresql@17   # if not already running
+mix setup                           # deps, DB, assets
+mix phx.server
+```
+
+Visit [`localhost:4000`](http://localhost:4000). Statement parsing needs your own `ANTHROPIC_API_KEY` set in the environment — without it, uploads still exercise the full pipeline but land on `status: failed` with an auth error, which is expected.
+
+## Deployment
+
+Deployed on Fly.io — see `fly.toml` and CLAUDE.md's "Deployment hardening" decision for the full setup (Docker release, secrets, volume-backed statement storage, encryption key management).
