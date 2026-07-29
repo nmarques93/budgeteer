@@ -12,7 +12,14 @@ config :budgeteer, BudgeteerWeb.Endpoint,
   force_ssl: [
     rewrite_on: [:x_forwarded_proto],
     exclude: [
-      # paths: ["/health"],
+      # Fly's internal HTTP health check (fly.toml, checks "/") hits the app
+      # directly on the internal port, bypassing Fly's edge — so it never
+      # gets an x-forwarded-proto header and looks like plain HTTP here,
+      # which force_ssl would otherwise 301-redirect, failing the check.
+      # Safe to exclude: Fly's edge (force_https in fly.toml) already
+      # redirects all real internet traffic to HTTPS before it reaches this
+      # app at all.
+      paths: ["/"],
       hosts: ["localhost", "127.0.0.1"]
     ]
   ]
