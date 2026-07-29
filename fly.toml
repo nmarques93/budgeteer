@@ -1,0 +1,47 @@
+# fly.toml app configuration file generated for budgeteer-marbled-snowfall-2406 on 2026-07-29T08:48:57+01:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'budgeteer-marbled-snowfall-2406'
+primary_region = 'cdg'
+kill_signal = 'SIGTERM'
+
+[build]
+[deploy]
+  release_command = '/app/bin/migrate'
+
+[env]
+  PHX_HOST = 'budgeteer-marbled-snowfall-2406.fly.dev'
+  PORT = '8080'
+  STATEMENT_STORAGE_PATH = '/data/statements'
+
+[[mounts]]
+  source = 'budgeteer_data'
+  destination = '/data'
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+  [http_service.concurrency]
+    type = 'connections'
+    hard_limit = 1000
+    soft_limit = 1000
+
+  [[http_service.checks]]
+    interval = '10s'
+    timeout = '2s'
+    grace_period = '10s'
+    method = 'GET'
+    path = '/'
+    protocol = 'http'
+
+[[vm]]
+  memory = '512mb'
+  cpus = 1
+  memory_mb = 512

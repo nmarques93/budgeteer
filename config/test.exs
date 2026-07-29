@@ -32,6 +32,9 @@ config :budgeteer, Oban, testing: :inline
 # Mock the Anthropic client in tests — never hit the real API
 config :budgeteer, :ai_client, Budgeteer.AI.ClientMock
 
+# Fixed test-only Cloak key, same pattern as config/dev.exs.
+config :budgeteer, :cloak_key, "V4ih+ZUr81t+msj/Q2yJiI6hWEQfDtXBNLVtqttUZ8Q="
+
 # Disable swoosh api client as it is only required for production adapters
 config :swoosh, :api_client, false
 

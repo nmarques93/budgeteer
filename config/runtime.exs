@@ -145,4 +145,28 @@ if config_env() == :prod do
   config :budgeteer, Budgeteer.Mailer,
     adapter: Swoosh.Adapters.Resend,
     api_key: resend_api_key
+
+  # Encrypts `Statement.raw_ai_output` at rest (real bank statement data) —
+  # see Budgeteer.Vault / Budgeteer.Encrypted.Map and CLAUDE.md's Decisions
+  # section. Generate with:
+  #   mix run -e 'IO.puts(:crypto.strong_rand_bytes(32) |> Base.encode64())'
+  # Rotating this key makes all previously-encrypted rows unreadable — treat
+  # it like SECRET_KEY_BASE, not like an API key that's safe to regenerate.
+  cloak_key =
+    System.get_env("CLOAK_KEY") ||
+      raise """
+      environment variable CLOAK_KEY is missing.
+      Generate one by calling:
+          mix run -e 'IO.puts(:crypto.strong_rand_bytes(32) |> Base.encode64())'
+      """
+
+  config :budgeteer, :cloak_key, cloak_key
+
+  # Statement uploads on disk. Defaults to the compile-time priv/statements
+  # path (config/config.exs) for a single persistent-disk deployment; set
+  # this to a mounted volume's path (e.g. a Fly.io volume) to keep uploads
+  # across deploys/restarts. See CLAUDE.md's Decisions section.
+  if storage_path = System.get_env("STATEMENT_STORAGE_PATH") do
+    config :budgeteer, :statement_storage_path, storage_path
+  end
 end

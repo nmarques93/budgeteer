@@ -44,6 +44,10 @@ config :budgeteer, BudgeteerWeb.Endpoint,
 # Enable dev routes for dashboard and mailbox
 config :budgeteer, dev_routes: true
 
+# Fixed dev-only Cloak key, same "baked-in default, prod requires env var"
+# pattern as secret_key_base above. Never used for real data.
+config :budgeteer, :cloak_key, "AfoPz51lh3S7kBOmygrj18YEqRmpHOtOXLx65mz9M+M="
+
 # Do not include metadata nor timestamps in development logs
 config :logger, :default_formatter, format: "[$level] $message\n"
 

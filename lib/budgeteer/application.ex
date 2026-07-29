@@ -10,6 +10,7 @@ defmodule Budgeteer.Application do
     children = [
       BudgeteerWeb.Telemetry,
       Budgeteer.Repo,
+      Budgeteer.Vault,
       {DNSCluster, query: Application.get_env(:budgeteer, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Budgeteer.PubSub},
       BudgeteerWeb.Presence,

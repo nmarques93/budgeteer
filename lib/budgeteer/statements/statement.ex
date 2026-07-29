@@ -9,7 +9,7 @@ defmodule Budgeteer.Statements.Statement do
     field :storage_path, :string
     field :file_hash, :string
     field :status, Ecto.Enum, values: [:pending, :processing, :processed, :failed], default: :pending
-    field :raw_ai_output, :map
+    field :raw_ai_output, Budgeteer.Encrypted.Map
     field :error_message, :string
     field :account_id, :binary_id
     field :uploaded_by_id, :binary_id
