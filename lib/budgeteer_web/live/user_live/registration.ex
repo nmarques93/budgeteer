@@ -52,7 +52,7 @@ defmodule BudgeteerWeb.UserLive.Registration do
           </.button>
         </.form>
 
-        <div :if={@invite}>
+        <div>
           <div class="divider">or</div>
 
           <.link href={~p"/auth/google?#{[token: @invite_token]}"} class="btn btn-outline w-full">
