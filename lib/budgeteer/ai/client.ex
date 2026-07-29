@@ -24,6 +24,10 @@ defmodule Budgeteer.AI.Client do
   exactly. If none of the existing categories fit well, suggest a new,
   concise category name instead (e.g. "Restaurants"). If you have no basis
   to guess, use an empty string.
+
+  If the document contains no identifiable transactions at all, return an
+  empty `transactions` array. Never return a placeholder transaction with
+  blank or zero fields just to have something in the array.
   """
 
   @output_schema %{
