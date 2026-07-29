@@ -92,10 +92,10 @@ defmodule BudgeteerWeb.UserLive.Login do
           </.button>
         </.form>
 
-        <div :if={!@current_scope}>
+        <div>
           <div class="divider">or</div>
 
-          <.link href={~p"/auth/google"} class="btn btn-outline w-full">
+          <.link href={~p"/auth/google?#{[return_to: @return_to]}"} class="btn btn-outline w-full">
             Continue with Google
           </.link>
         </div>

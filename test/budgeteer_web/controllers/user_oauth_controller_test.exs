@@ -53,6 +53,22 @@ defmodule BudgeteerWeb.UserOAuthControllerTest do
       assert user.role == :owner
     end
 
+    test "redirects to the stashed return_to path (e.g. a sudo-mode reauth back to Settings)", %{
+      conn: conn
+    } do
+      user = user_fixture()
+
+      conn =
+        conn
+        |> with_test_session()
+        |> put_session(:oauth_return_to, ~p"/users/settings")
+        |> assign(:ueberauth_auth, oauth_auth(user.email))
+        |> UserOAuthController.callback(%{})
+
+      assert redirected_to(conn) == ~p"/users/settings"
+      refute get_session(conn, :oauth_return_to)
+    end
+
     test "joins the invite's household as a member when the stashed invite token matches", %{
       conn: conn
     } do
