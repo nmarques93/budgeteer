@@ -45,6 +45,8 @@ defmodule Budgeteer.MixProject do
       {:ueberauth_google, "~> 0.10"},
       {:anubis_mcp, "~> 1.10"},
       {:cloak_ecto, "~> 1.3"},
+      {:sentry, "~> 13.0"},
+      {:finch, "~> 0.21"},
       {:phoenix, "~> 1.8.9"},
       {:phoenix_ecto, "~> 4.5"},
       {:ecto_sql, "~> 3.13"},

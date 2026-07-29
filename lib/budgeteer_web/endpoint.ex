@@ -65,5 +65,10 @@ defmodule BudgeteerWeb.Endpoint do
   plug Plug.MethodOverride
   plug Plug.Head
   plug Plug.Session, @session_options
+  # Enriches any Sentry event with request context (path, params, headers).
+  # No Sentry.PlugCapture alongside it — that plug only exists to rescue
+  # exceptions Cowboy would otherwise swallow; this app uses Bandit, which
+  # doesn't need it (see the LoggerHandler config in application.ex).
+  plug Sentry.PlugContext
   plug BudgeteerWeb.Router
 end

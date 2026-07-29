@@ -37,6 +37,10 @@ config :ueberauth, Ueberauth.Strategy.Google.OAuth,
   client_id: System.get_env("GOOGLE_CLIENT_ID"),
   client_secret: System.get_env("GOOGLE_CLIENT_SECRET")
 
+# Error tracking. Same tolerance as ANTHROPIC_API_KEY/GOOGLE_CLIENT_ID above —
+# unset means Sentry's client just no-ops rather than crashing boot.
+config :sentry, dsn: System.get_env("SENTRY_DSN")
+
 if config_env() == :dev do
   # Reload browser tabs when matching files change.
   config :budgeteer, BudgeteerWeb.Endpoint,

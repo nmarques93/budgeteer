@@ -46,6 +46,14 @@ config :budgeteer, Oban,
 # when this app is actually deployed off a single host.
 config :budgeteer, :statement_storage_path, Path.expand("priv/statements")
 
+# Error tracking. `dsn` itself is set in runtime.exs from SENTRY_DSN — left
+# unset here (and in dev/test), Sentry's client just no-ops instead of
+# erroring, which is what we want locally.
+config :sentry,
+  environment_name: config_env(),
+  enable_source_code_context: true,
+  root_source_code_paths: [File.cwd!()]
+
 # The "from" address for all outbound email. Resend's own shared address
 # works without owning a domain — deliberately not a custom domain yet,
 # since the product name (and therefore a domain) isn't settled. Revisit

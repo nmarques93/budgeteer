@@ -7,6 +7,15 @@ defmodule Budgeteer.Application do
 
   @impl true
   def start(_type, _args) do
+    # Bandit (this app's adapter) doesn't need Sentry.PlugCapture — that
+    # plug exists only to rescue exceptions Cowboy would otherwise swallow.
+    # Sentry.LoggerHandler's default excluded_domains ([:cowboy, :bandit])
+    # assumes PlugCapture is handling those, so without it we'd silently
+    # drop every crash — override to capture everything instead.
+    :logger.add_handler(:sentry_handler, Sentry.LoggerHandler, %{
+      config: %{capture_log_messages: true, capture_excluded_domains: []}
+    })
+
     children = [
       BudgeteerWeb.Telemetry,
       Budgeteer.Repo,

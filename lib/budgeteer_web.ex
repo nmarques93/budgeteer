@@ -52,6 +52,8 @@ defmodule BudgeteerWeb do
     quote do
       use Phoenix.LiveView
 
+      on_mount Sentry.LiveViewHook
+
       unquote(html_helpers())
     end
   end
