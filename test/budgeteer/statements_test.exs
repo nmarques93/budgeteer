@@ -74,7 +74,7 @@ defmodule Budgeteer.StatementsTest do
       assert statement.raw_ai_output == %{"currency" => "EUR", "transactions" => []}
     end
 
-    test "on an AI client error, leaves the statement failed with an error message" do
+    test "on an AI client error, leaves the statement processing so Oban can retry (not immediately failed)" do
       scope = household_scope_fixture()
       account = account_fixture(scope)
       path = write_temp_statement_file!()
@@ -92,9 +92,12 @@ defmodule Budgeteer.StatementsTest do
 
       assert {:ok, created} = Statements.create_statement(scope, attrs)
 
+      # This is the first of up to 3 scheduled attempts (see ParseWorker) —
+      # it stays :processing rather than jumping straight to :failed. The
+      # "fails only on the final attempt" behavior is covered directly in
+      # the ParseWorker tests below.
       statement = Statements.get_statement!(scope, created.id)
-      assert statement.status == :failed
-      assert statement.error_message =~ "401"
+      assert statement.status == :processing
     end
 
     test "duplicate file_hash for the same account returns an error changeset" do
@@ -144,17 +147,31 @@ defmodule Budgeteer.StatementsTest do
       assert :ok = perform_job(ParseWorker, %{"statement_id" => statement.id})
     end
 
-    test "perform/1 marks the statement failed when the file is missing" do
+    test "perform/1 marks the statement failed only on the final attempt" do
       scope = household_scope_fixture()
 
       statement =
         statement_fixture(scope, %{storage_path: "/tmp/does-not-exist-#{System.unique_integer([:positive])}.pdf"})
 
-      assert :ok = perform_job(ParseWorker, %{"statement_id" => statement.id})
+      assert {:error, _reason} =
+               perform_job(ParseWorker, %{"statement_id" => statement.id}, attempt: 3, max_attempts: 3)
 
       updated = Statements.get_statement!(statement.id)
       assert updated.status == :failed
       assert updated.error_message =~ "enoent"
+    end
+
+    test "perform/1 leaves the statement processing (not failed) on a non-final attempt, so Oban retries" do
+      scope = household_scope_fixture()
+
+      statement =
+        statement_fixture(scope, %{storage_path: "/tmp/does-not-exist-#{System.unique_integer([:positive])}.pdf"})
+
+      assert {:error, _reason} =
+               perform_job(ParseWorker, %{"statement_id" => statement.id}, attempt: 1, max_attempts: 3)
+
+      updated = Statements.get_statement!(statement.id)
+      assert updated.status == :processing
     end
   end
 end

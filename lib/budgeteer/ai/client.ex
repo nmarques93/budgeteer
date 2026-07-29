@@ -63,6 +63,12 @@ defmodule Budgeteer.AI.Client do
     body = %{
       model: @model,
       max_tokens: 8000,
+      # Extraction should be as repeatable as possible run-to-run — this
+      # isn't a creative task. Claude's default temperature (1.0) left room
+      # for the model to occasionally return a degenerate result (a single
+      # blank-field placeholder transaction) for a real, cleanly formatted
+      # statement it should have parsed correctly.
+      temperature: 0,
       system: @system_prompt <> "\n\n" <> categories_hint(category_names),
       output_config: %{format: %{type: "json_schema", schema: @output_schema}},
       messages: [
@@ -121,7 +127,7 @@ defmodule Budgeteer.AI.Client do
     case Enum.find(content, &(&1["type"] == "text")) do
       %{"text" => text} ->
         case Jason.decode(text) do
-          {:ok, parsed} -> {:ok, parsed}
+          {:ok, parsed} -> validate_parsed(parsed)
           {:error, reason} -> {:error, {:invalid_json, reason}}
         end
 
@@ -131,4 +137,25 @@ defmodule Budgeteer.AI.Client do
   end
 
   defp handle_success(body), do: {:error, {:unexpected_response, body}}
+
+  # A schema-valid but degenerate response (every field blank/zero on a
+  # transaction) is worse than an outright error — treating it as a success
+  # would let a placeholder row reach the review screen looking like real
+  # data. An empty `transactions` list is a legitimate "nothing to extract"
+  # result and is left alone; only a blank *entry* is rejected. Returning
+  # `:error` here lets `ParseWorker`'s existing Oban retry take another pass
+  # instead of the statement silently landing on a junk result.
+  defp validate_parsed(%{"transactions" => transactions} = parsed) do
+    if Enum.any?(transactions, &blank_transaction?/1) do
+      {:error, {:degenerate_response, parsed}}
+    else
+      {:ok, parsed}
+    end
+  end
+
+  defp validate_parsed(parsed), do: {:ok, parsed}
+
+  defp blank_transaction?(t) do
+    t["date"] == "" and t["merchant"] == "" and t["description"] == "" and t["amount_cents"] == 0
+  end
 end

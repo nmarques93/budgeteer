@@ -11,7 +11,7 @@ defmodule Budgeteer.Statements.ParseWorker do
   alias Budgeteer.Statements
 
   @impl true
-  def perform(%Oban.Job{args: %{"statement_id" => statement_id}}) do
+  def perform(%Oban.Job{args: %{"statement_id" => statement_id}} = job) do
     statement = Statements.get_statement!(statement_id)
     {:ok, statement} = Statements.mark_processing(statement)
     category_names = Ledger.list_category_names(statement.household_id)
@@ -23,8 +23,16 @@ defmodule Budgeteer.Statements.ParseWorker do
       :ok
     else
       {:error, reason} ->
-        Statements.mark_failed(statement, format_error(reason))
-        :ok
+        # Only give up (mark :failed) on the last scheduled attempt — a
+        # transient blip (a flaky AI response, a network hiccup) gets
+        # Oban's normal retry-with-backoff instead of failing the statement
+        # on the very first hiccup. The statement stays :processing across
+        # retries, matching the existing "still working on it" UI banner.
+        if job.attempt >= job.max_attempts do
+          Statements.mark_failed(statement, format_error(reason))
+        end
+
+        {:error, reason}
     end
   end
 
