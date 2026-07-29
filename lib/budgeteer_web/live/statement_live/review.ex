@@ -173,6 +173,8 @@ defmodule BudgeteerWeb.StatementLive.Review do
 
     case errors do
       [] ->
+        {:ok, _statement} = Statements.clear_reviewed(scope, statement)
+
         {:noreply,
          socket
          |> put_flash(:info, "#{length(oks)} transaction(s) saved")

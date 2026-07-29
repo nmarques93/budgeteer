@@ -150,8 +150,6 @@ if config_env() == :prod do
   # see Budgeteer.Vault / Budgeteer.Encrypted.Map and CLAUDE.md's Decisions
   # section. Generate with:
   #   mix run -e 'IO.puts(:crypto.strong_rand_bytes(32) |> Base.encode64())'
-  # Rotating this key makes all previously-encrypted rows unreadable — treat
-  # it like SECRET_KEY_BASE, not like an API key that's safe to regenerate.
   cloak_key =
     System.get_env("CLOAK_KEY") ||
       raise """
@@ -161,6 +159,12 @@ if config_env() == :prod do
       """
 
   config :budgeteer, :cloak_key, cloak_key
+
+  # Only set during an active key rotation — see Budgeteer.Vault's
+  # moduledoc for the rotation runbook. Unset the rest of the time.
+  if previous_key = System.get_env("CLOAK_PREVIOUS_KEY") do
+    config :budgeteer, :cloak_previous_key, previous_key
+  end
 
   # Statement uploads on disk. Defaults to the compile-time priv/statements
   # path (config/config.exs) for a single persistent-disk deployment; set

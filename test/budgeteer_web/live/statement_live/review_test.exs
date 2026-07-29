@@ -184,6 +184,12 @@ defmodule BudgeteerWeb.StatementLive.ReviewTest do
       assert [transaction] = Ledger.list_transactions(scope)
       assert transaction.merchant == "Continente"
       assert transaction.statement_id == statement.id
+
+      # raw_ai_output is a temporary staging artifact, not a permanent
+      # record — once reviewed, keeping an indefinite encrypted copy of
+      # the statement's contents only widens what a future key
+      # compromise would expose, for no benefit.
+      assert Statements.get_statement!(scope, statement.id).raw_ai_output == nil
     end
   end
 end

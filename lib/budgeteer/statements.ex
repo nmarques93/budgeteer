@@ -110,6 +110,21 @@ defmodule Budgeteer.Statements do
     update_status(statement, %{"status" => "failed", "error_message" => error_message})
   end
 
+  @doc """
+  Clears the raw AI output once a statement's rows have been reviewed and
+  confirmed into real `Transaction` records. `raw_ai_output` is a temporary
+  staging artifact (see moduledoc) — keeping an indefinite encrypted copy
+  of every past statement's contents around serves no purpose once it's
+  been reviewed, and only widens what a future key compromise would
+  expose. Scoped, since this is called from the review screen, not the
+  Oban worker.
+  """
+  def clear_reviewed(%Scope{} = scope, %Statement{} = statement) do
+    true = statement.household_id == scope.user.household_id
+
+    update_status(statement, %{"raw_ai_output" => nil})
+  end
+
   defp update_status(%Statement{} = statement, attrs) do
     with {:ok, statement = %Statement{}} <-
            statement
