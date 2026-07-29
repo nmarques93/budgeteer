@@ -24,7 +24,16 @@ defmodule BudgeteerWeb.Endpoint do
     at: "/",
     from: :budgeteer,
     gzip: not code_reloading?,
-    only: BudgeteerWeb.static_paths(),
+    only: ~w(assets fonts images),
+    # Plug.Static's `:only` matches the request's first path segment
+    # literally, which works for directories (a nested file's digested name
+    # doesn't change its first segment) but not for standalone top-level
+    # files — a digested "manifest-<hash>.json" never literally equals
+    # "manifest.json". `:only_matching` prefix-matches instead, which is
+    # exactly what Plug.Static's own docs recommend for "digested files at
+    # the root". Without this, ~p"/manifest.json" 404s in prod (verified
+    # against a real deploy) since it resolves to the digested filename.
+    only_matching: ~w(favicon robots manifest sw),
     raise_on_missing_only: code_reloading?
 
   # Code reloading can be explicitly enabled under the
