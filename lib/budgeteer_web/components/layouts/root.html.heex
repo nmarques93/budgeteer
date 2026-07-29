@@ -55,7 +55,7 @@
     </script>
   </head>
   <body>
-    <ul class="menu menu-horizontal w-full relative z-10 flex flex-nowrap items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end overflow-x-auto">
+    <ul class="menu menu-horizontal w-full relative z-10 flex flex-wrap items-center gap-4 px-4 sm:px-6 lg:px-8">
       <li>
         <div class="flex items-center gap-0.5 rounded-full border border-base-300 p-0.5" role="group" aria-label="Theme">
           <button
@@ -91,10 +91,7 @@
         </div>
       </li>
       <%= if @current_scope do %>
-        <li>
-          {@current_scope.user.email}
-        </li>
-        <li>
+        <li class="ml-auto flex flex-row items-center gap-4">
           <.link href={~p"/dashboard"}>Dashboard</.link>
         </li>
         <li>
@@ -107,19 +104,25 @@
           <.link href={~p"/groceries"}>Groceries</.link>
         </li>
         <li>
-          <.link href={~p"/recipes"}>Recipes</.link>
+          <details>
+            <summary>More</summary>
+            <ul class="bg-base-100 rounded-box z-20">
+              <li><.link href={~p"/recipes"}>Recipes</.link></li>
+              <li><.link href={~p"/meal-plan"}>Meal Plan</.link></li>
+            </ul>
+          </details>
         </li>
         <li>
-          <.link href={~p"/meal-plan"}>Meal Plan</.link>
-        </li>
-        <li>
-          <.link href={~p"/users/settings"}>Settings</.link>
-        </li>
-        <li>
-          <.link href={~p"/users/log-out"} method="delete">Log out</.link>
+          <details>
+            <summary>{@current_scope.user.email}</summary>
+            <ul class="bg-base-100 rounded-box z-20 right-0">
+              <li><.link href={~p"/users/settings"}>Settings</.link></li>
+              <li><.link href={~p"/users/log-out"} method="delete">Log out</.link></li>
+            </ul>
+          </details>
         </li>
       <% else %>
-        <li>
+        <li class="ml-auto flex flex-row items-center gap-4">
           <.link href={~p"/users/register"}>Register</.link>
         </li>
         <li>

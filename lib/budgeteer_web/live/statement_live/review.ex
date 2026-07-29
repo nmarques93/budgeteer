@@ -37,8 +37,8 @@ defmodule BudgeteerWeb.StatementLive.Review do
               </tr>
             </thead>
             <tbody>
-              <tr :for={row <- @rows}>
-                <td>
+              <tr :for={row <- @rows} class="align-top">
+                <td class="align-top pt-4">
                   <input type="hidden" name={"rows[#{row.index}][include]"} value="false" />
                   <input
                     type="checkbox"
@@ -48,7 +48,7 @@ defmodule BudgeteerWeb.StatementLive.Review do
                     checked
                   />
                 </td>
-                <td>
+                <td class="align-top">
                   <input
                     type="date"
                     class="w-full input"
@@ -56,7 +56,7 @@ defmodule BudgeteerWeb.StatementLive.Review do
                     value={row.date}
                   />
                 </td>
-                <td>
+                <td class="align-top">
                   <input
                     type="text"
                     class="w-full input"
@@ -64,7 +64,7 @@ defmodule BudgeteerWeb.StatementLive.Review do
                     value={row.amount}
                   />
                 </td>
-                <td>
+                <td class="align-top">
                   <input
                     type="text"
                     class="w-full input"
@@ -72,7 +72,7 @@ defmodule BudgeteerWeb.StatementLive.Review do
                     value={row.merchant}
                   />
                 </td>
-                <td>
+                <td class="align-top">
                   <input
                     type="text"
                     class="w-full input"
@@ -80,8 +80,8 @@ defmodule BudgeteerWeb.StatementLive.Review do
                     value={row.description}
                   />
                 </td>
-                <td>
-                  <select class="w-full select" name={"rows[#{row.index}][category_id]"}>
+                <td class="align-top min-w-56">
+                  <select class="w-full select min-w-40" name={"rows[#{row.index}][category_id]"}>
                     <option value="">Uncategorized</option>
                     <option
                       :for={category <- @categories}
@@ -93,7 +93,7 @@ defmodule BudgeteerWeb.StatementLive.Review do
                   </select>
                   <p
                     :if={row.category_id == nil and row.suggested_category not in [nil, ""]}
-                    class="text-xs opacity-70 mt-1"
+                    class="text-xs opacity-70 mt-1 max-w-56"
                   >
                     Suggested: "{row.suggested_category}" — not yet a category.
                     <button
