@@ -6,12 +6,14 @@ A family budgeting PWA. Upload a bank statement (PDF or photo) and Claude extrac
 
 - **AI statement import** — upload a PDF/photo, review and confirm extracted transactions before anything touches the ledger
 - **Real-time sync** — every household member sees the same accounts, transactions, and categories update live
+- **Transaction search** — filter by date, category, merchant, or amount, across one account or the whole household
+- **Budget alerts** — an email the moment a category's spend meets its budget for the month
 - **Shared grocery list** — check items off together, in real time
 - **Meal planning** — recipes with one-click "add ingredients to grocery list"
-- **Dashboard** — balance history, spend vs. budget by category
+- **Dashboard** — balance history, spend vs. budget by category, category-spend breakdown
 - **Google sign-in**, alongside email/password and magic-link login
 - **PWA** — installable to a phone's home screen
-- **Read-only MCP server** — query your own household's data from an MCP client via a personal access token
+- **MCP server** — query your household's data from an MCP client via a personal access token; write access for creating recipes and planning meals
 
 ## Stack
 
