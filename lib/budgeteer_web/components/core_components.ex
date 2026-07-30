@@ -478,6 +478,39 @@ defmodule BudgeteerWeb.CoreComponents do
     """
   end
 
+  @doc """
+  Renders the Budgeteer mark ("Roofline Ledger" — a gable apex opening onto
+  ruled rows). Single-color and stroke-based by design, so it's rendered
+  inline (not via `<img src=.../>`) specifically so `currentColor` resolves
+  against the caller's own `class` — pass a text-color utility (e.g.
+  `text-primary`) to recolor it, rather than hardcoding a fill per theme.
+
+  ## Examples
+
+      <.logo class="size-7 text-primary" />
+  """
+  attr :class, :any, default: "size-7"
+
+  def logo(assigns) do
+    ~H"""
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 64 64"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="3.5"
+      stroke-linecap="square"
+      class={@class}
+      aria-hidden="true"
+    >
+      <path d="M32 8 L10 26 M32 8 L54 26"></path>
+      <line x1="10" y1="36" x2="54" y2="36"></line>
+      <line x1="14" y1="46" x2="50" y2="46"></line>
+      <line x1="18" y1="56" x2="46" y2="56"></line>
+    </svg>
+    """
+  end
+
   ## JS Commands
 
   def show(js \\ %JS{}, selector) do
