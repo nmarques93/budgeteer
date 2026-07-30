@@ -11,6 +11,11 @@ defmodule BudgeteerWeb.TransactionLive.Search do
       <.header>
         Search Transactions
         <:subtitle>Search across every account in the household.</:subtitle>
+        <:actions>
+          <.button href={~p"/transactions/export?#{FilterForm.export_query(@filter_params)}"}>
+            <.icon name="hero-arrow-down-tray" /> Export CSV
+          </.button>
+        </:actions>
       </.header>
 
       <FilterForm.filter_form filters={@filter_params} categories={@categories} accounts={@accounts} />

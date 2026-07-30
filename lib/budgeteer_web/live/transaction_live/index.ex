@@ -14,6 +14,11 @@ defmodule BudgeteerWeb.TransactionLive.Index do
           <.link navigate={~p"/accounts/#{@account}"}>Back to account</.link>
         </:subtitle>
         <:actions>
+          <.button href={
+            ~p"/transactions/export?#{FilterForm.export_query(@filter_params, %{"account_id" => @account.id})}"
+          }>
+            <.icon name="hero-arrow-down-tray" /> Export CSV
+          </.button>
           <.button variant="primary" navigate={~p"/accounts/#{@account}/transactions/new"}>
             <.icon name="hero-plus" /> New Transaction
           </.button>

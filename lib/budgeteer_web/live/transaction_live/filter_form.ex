@@ -65,6 +65,20 @@ defmodule BudgeteerWeb.TransactionLive.FilterForm do
     end
   end
 
+  @doc """
+  Strips blank values from the raw form params so a CSV-export link's query
+  string doesn't carry empty `date_from=&date_to=&...` around. `extra` lets
+  a caller inject a filter the form itself doesn't render as a field (e.g.
+  `TransactionLive.Index` fixing `account_id` server-side, since its filter
+  form has no account select).
+  """
+  def export_query(params, extra \\ %{}) do
+    params
+    |> Map.merge(extra)
+    |> Enum.reject(fn {_key, value} -> value in [nil, ""] end)
+    |> Map.new()
+  end
+
   attr :filters, :map, required: true
   attr :categories, :list, required: true
 
