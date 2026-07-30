@@ -19,6 +19,7 @@ defmodule BudgeteerWeb.DashboardLive do
       </div>
 
       <h2 class="text-lg font-semibold mt-8">This month by category</h2>
+      <.category_breakdown_chart breakdown={@category_breakdown} />
       <.table id="category-totals" rows={@category_totals}>
         <:col :let={row} label="Category">{row.name}</:col>
         <:col :let={row} label="Type">{row.type}</:col>
@@ -49,36 +50,92 @@ defmodule BudgeteerWeb.DashboardLive do
       Ledger.subscribe_categories(scope)
     end
 
-    accounts_by_id = Map.new(Ledger.list_accounts(scope), &{&1.id, &1.name})
-    categories_by_id = Map.new(Ledger.list_categories(scope), &{&1.id, &1.name})
+    categories = Ledger.list_categories(scope)
 
     {:ok,
      socket
      |> assign(:page_title, "Dashboard")
-     |> assign(:accounts_by_id, accounts_by_id)
-     |> assign(:categories_by_id, categories_by_id)
+     |> assign(:accounts_by_id, Map.new(Ledger.list_accounts(scope), &{&1.id, &1.name}))
+     |> assign(:categories_by_id, Map.new(categories, &{&1.id, &1.name}))
+     |> assign(:categories, categories)
      |> load_data()}
   end
 
   @impl true
   def handle_info({type, _record}, socket) when type in [:created, :updated, :deleted] do
     scope = socket.assigns.current_scope
+    categories = Ledger.list_categories(scope)
 
     {:noreply,
      socket
      |> assign(:accounts_by_id, Map.new(Ledger.list_accounts(scope), &{&1.id, &1.name}))
-     |> assign(:categories_by_id, Map.new(Ledger.list_categories(scope), &{&1.id, &1.name}))
+     |> assign(:categories_by_id, Map.new(categories, &{&1.id, &1.name}))
+     |> assign(:categories, categories)
      |> load_data()}
   end
 
   defp load_data(socket) do
     scope = socket.assigns.current_scope
+    category_totals = decimal_totals(Ledger.monthly_category_totals(scope))
 
     socket
     |> assign(:total_balance_cents, Ledger.total_balance_cents(scope))
     |> assign(:balance_history, Ledger.balance_history(scope))
-    |> assign(:category_totals, decimal_totals(Ledger.monthly_category_totals(scope)))
+    |> assign(:category_totals, category_totals)
+    |> assign(:category_breakdown, category_breakdown(socket.assigns.categories, category_totals))
     |> assign(:recent_transactions, Ledger.list_recent_transactions(scope))
+  end
+
+  # Stable color-slot assignment: categories are given a fixed slot by
+  # alphabetical order among the household's own expense categories, not by
+  # this month's spend rank — otherwise the same category could repaint a
+  # different color from month to month as spending patterns shift (see
+  # the dataviz skill's "color follows the entity, never its rank" rule).
+  # Categories beyond the 8-slot cap fold into a single gray "Other"
+  # segment rather than generating a 9th hue.
+  defp category_breakdown(categories, category_totals) do
+    slot_by_name =
+      categories
+      |> Enum.filter(&(&1.type == :expense))
+      |> Enum.map(& &1.name)
+      |> Enum.sort()
+      |> Enum.with_index(1)
+      |> Map.new()
+
+    spend_by_name =
+      category_totals
+      |> Enum.filter(&(&1.type == :expense and &1.total_cents < 0))
+      |> Map.new(&{&1.name, abs(&1.total_cents)})
+
+    total_cents = spend_by_name |> Map.values() |> Enum.sum()
+
+    if total_cents == 0 do
+      []
+    else
+      {main, other} =
+        spend_by_name
+        |> Enum.map(fn {name, cents} -> {name, cents, Map.fetch!(slot_by_name, name)} end)
+        |> Enum.split_with(fn {_name, _cents, slot} -> slot <= 8 end)
+
+      main_segments =
+        main
+        |> Enum.sort_by(fn {_name, _cents, slot} -> slot end)
+        |> Enum.map(fn {name, cents, slot} -> breakdown_segment(name, cents, total_cents, "var(--series-#{slot})") end)
+
+      case Enum.sum(Enum.map(other, fn {_name, cents, _slot} -> cents end)) do
+        0 -> main_segments
+        other_cents -> main_segments ++ [breakdown_segment("Other", other_cents, total_cents, "var(--series-other)")]
+      end
+    end
+  end
+
+  defp breakdown_segment(name, cents, total_cents, color) do
+    %{
+      name: name,
+      formatted: Budgeteer.Money.format(-cents),
+      percent: Float.round(cents / total_cents * 100, 1),
+      color: color
+    }
   end
 
   defp decimal_totals(rows) do
@@ -221,6 +278,97 @@ defmodule BudgeteerWeb.DashboardLive do
       end)
 
     %{line: line, area: line <> " #{last_x},30 #{first_x},30", last: List.last(coords), hover: hover}
+  end
+
+  @doc """
+  Renders this month's expense spend as a single horizontal stacked bar —
+  one segment per category, proportional to its share of total spend.
+  Complements the per-row budget meters in the table below: those answer
+  "how does each category compare to its own budget," this answers "where
+  did the money actually go, relative to everything else." Uses the
+  dataviz skill's validated categorical palette (`app.css`'s
+  `--series-*` custom properties) with a fixed, alphabetically-assigned
+  slot per category — never colored by this month's spend rank, so a
+  category's color stays stable across months.
+  """
+  attr :breakdown, :list, required: true
+
+  def category_breakdown_chart(assigns) do
+    ~H"""
+    <div :if={@breakdown != []} id="category-breakdown" phx-hook=".CategoryBreakdown" class="relative mt-2 mb-6">
+      <div data-bar class="flex gap-0.5 h-4 rounded-full overflow-hidden">
+        <div
+          :for={segment <- @breakdown}
+          class="h-full transition-filter hover:brightness-110 focus:brightness-110 outline-none"
+          style={"width: #{segment.percent}%; background-color: #{segment.color}"}
+          tabindex="0"
+          data-name={segment.name}
+          data-value={segment.formatted}
+          data-percent={segment.percent}
+        />
+      </div>
+      <div
+        data-tooltip
+        class="hidden absolute -top-9 pointer-events-none text-xs bg-base-100 border border-base-300 rounded px-2 py-1 shadow-sm whitespace-nowrap z-10"
+      >
+        <span data-tooltip-name class="opacity-60"></span>
+        <span data-tooltip-value class="font-mono font-semibold ml-1"></span>
+      </div>
+      <div class="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs">
+        <div :for={segment <- @breakdown} class="flex items-center gap-1.5">
+          <span class="inline-block size-2 rounded-full shrink-0" style={"background-color: #{segment.color}"}></span>
+          <span class="opacity-70">{segment.name}</span>
+          <span class="font-mono">{segment.formatted}</span>
+        </div>
+      </div>
+      <script :type={Phoenix.LiveView.ColocatedHook} name=".CategoryBreakdown">
+        export default {
+          mounted() {
+            this.tooltip = this.el.querySelector("[data-tooltip]")
+            this.tooltipName = this.el.querySelector("[data-tooltip-name]")
+            this.tooltipValue = this.el.querySelector("[data-tooltip-value]")
+            this.bar = this.el.querySelector("[data-bar]")
+
+            this.onOver = (e) => this.handleOver(e)
+            this.onOut = (e) => this.handleOut(e)
+
+            this.el.addEventListener("pointerover", this.onOver)
+            this.el.addEventListener("pointerout", this.onOut)
+            this.el.addEventListener("focusin", this.onOver)
+            this.el.addEventListener("focusout", this.onOut)
+          },
+
+          destroyed() {
+            this.el.removeEventListener("pointerover", this.onOver)
+            this.el.removeEventListener("pointerout", this.onOut)
+            this.el.removeEventListener("focusin", this.onOver)
+            this.el.removeEventListener("focusout", this.onOut)
+          },
+
+          handleOver(e) {
+            const segment = e.target.closest("[data-name]")
+            if (!segment) return
+
+            this.tooltipName.textContent = segment.dataset.name
+            this.tooltipValue.textContent = segment.dataset.value
+            this.tooltip.classList.remove("hidden")
+
+            const barRect = this.bar.getBoundingClientRect()
+            const segRect = segment.getBoundingClientRect()
+            const center = ((segRect.left + segRect.width / 2 - barRect.left) / barRect.width) * 100
+
+            this.tooltip.style.left = `${center}%`
+            this.tooltip.style.transform =
+              center > 70 ? "translateX(-100%)" : center < 30 ? "translateX(0)" : "translateX(-50%)"
+          },
+
+          handleOut(e) {
+            if (e.target.closest("[data-name]")) this.tooltip.classList.add("hidden")
+          }
+        }
+      </script>
+    </div>
+    """
   end
 
   @doc """
