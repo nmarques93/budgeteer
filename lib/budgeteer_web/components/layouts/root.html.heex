@@ -57,6 +57,36 @@
   </head>
   <body>
     <ul class="menu menu-horizontal w-full relative z-10 flex flex-wrap items-center gap-4 px-4 sm:px-6 lg:px-8">
+      <li class="mr-auto">
+        <.link href={~p"/"} class="flex items-center gap-2 !p-0">
+          <.logo class="size-6 text-primary" />
+          <span class="brand text-sm font-semibold">Budgeteer</span>
+        </.link>
+      </li>
+      <%= if @current_scope do %>
+        <li>
+          <.link href={~p"/dashboard"}>Dashboard</.link>
+        </li>
+        <li>
+          <.link href={~p"/accounts"}>Accounts</.link>
+        </li>
+        <li>
+          <.link href={~p"/categories"}>Categories</.link>
+        </li>
+        <li>
+          <.link href={~p"/groceries"}>Groceries</.link>
+        </li>
+        <li>
+          <details>
+            <summary>More</summary>
+            <ul class="bg-base-100 rounded-box z-20">
+              <li><.link href={~p"/transactions"}>Search Transactions</.link></li>
+              <li><.link href={~p"/recipes"}>Recipes</.link></li>
+              <li><.link href={~p"/meal-plan"}>Meal Plan</.link></li>
+            </ul>
+          </details>
+        </li>
+      <% end %>
       <li>
         <div class="flex items-center gap-0.5 rounded-full border border-base-300 p-0.5" role="group" aria-label="Theme">
           <button
@@ -92,28 +122,6 @@
         </div>
       </li>
       <%= if @current_scope do %>
-        <li class="ml-auto flex flex-row items-center gap-4">
-          <.link href={~p"/dashboard"}>Dashboard</.link>
-        </li>
-        <li>
-          <.link href={~p"/accounts"}>Accounts</.link>
-        </li>
-        <li>
-          <.link href={~p"/categories"}>Categories</.link>
-        </li>
-        <li>
-          <.link href={~p"/groceries"}>Groceries</.link>
-        </li>
-        <li>
-          <details>
-            <summary>More</summary>
-            <ul class="bg-base-100 rounded-box z-20">
-              <li><.link href={~p"/transactions"}>Search Transactions</.link></li>
-              <li><.link href={~p"/recipes"}>Recipes</.link></li>
-              <li><.link href={~p"/meal-plan"}>Meal Plan</.link></li>
-            </ul>
-          </details>
-        </li>
         <li>
           <details>
             <summary>{@current_scope.user.email}</summary>
@@ -124,7 +132,7 @@
           </details>
         </li>
       <% else %>
-        <li class="ml-auto flex flex-row items-center gap-4">
+        <li>
           <.link href={~p"/users/register"}>Register</.link>
         </li>
         <li>

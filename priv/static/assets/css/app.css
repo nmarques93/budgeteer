@@ -1152,20 +1152,6 @@
       }
     }
   }
-  .navbar {
-    @layer daisyui.l1.l2.l3 {
-      display: flex;
-      width: 100%;
-      align-items: center;
-      padding: 0.5rem;
-      min-height: 4rem;
-    }
-    :where(&) {
-      @layer daisyui.l1.l2 {
-        position: relative;
-      }
-    }
-  }
   .progress {
     @layer daisyui.l1.l2.l3 {
       position: relative;
@@ -1488,6 +1474,9 @@
   .mt-14 {
     margin-top: calc(var(--spacing) * 14);
   }
+  .mr-auto {
+    margin-right: auto;
+  }
   .fieldset-legend {
     @layer daisyui.l1.l2.l3 {
       margin-bottom: calc(0.25rem * -1);
@@ -1517,9 +1506,6 @@
   }
   .ml-1 {
     margin-left: calc(var(--spacing) * 1);
-  }
-  .ml-auto {
-    margin-left: auto;
   }
   .status {
     @layer daisyui.l1.l2.l3 {
@@ -1855,9 +1841,6 @@
   .w-80 {
     width: calc(var(--spacing) * 80);
   }
-  .w-fit {
-    width: fit-content;
-  }
   .w-full {
     width: 100%;
   }
@@ -1953,9 +1936,6 @@
   }
   .grid-cols-\[1fr_auto_1fr\] {
     grid-template-columns: 1fr auto 1fr;
-  }
-  .flex-row {
-    flex-direction: row;
   }
   .flex-wrap {
     flex-wrap: wrap;
@@ -2126,6 +2106,9 @@
       padding: 0.1875rem;
       --size: calc(var(--size-selector, 0.25rem) * 5);
     }
+  }
+  .\!p-0 {
+    padding: calc(var(--spacing) * 0) !important;
   }
   .p-0\.5 {
     padding: calc(var(--spacing) * 0.5);
