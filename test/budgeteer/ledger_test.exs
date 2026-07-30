@@ -1,6 +1,8 @@
 defmodule Budgeteer.LedgerTest do
   use Budgeteer.DataCase
 
+  import Swoosh.TestAssertions
+
   alias Budgeteer.Ledger
 
   describe "accounts" do
@@ -29,7 +31,13 @@ defmodule Budgeteer.LedgerTest do
     end
 
     test "create_account/2 with valid data creates a account" do
-      valid_attrs = %{name: "some name", currency: "some currency", bank_name: "some bank_name", starting_balance: "0.42"}
+      valid_attrs = %{
+        name: "some name",
+        currency: "some currency",
+        bank_name: "some bank_name",
+        starting_balance: "0.42"
+      }
+
       scope = household_scope_fixture()
 
       assert {:ok, %Account{} = account} = Ledger.create_account(scope, valid_attrs)
@@ -48,7 +56,13 @@ defmodule Budgeteer.LedgerTest do
     test "update_account/3 with valid data updates the account" do
       scope = household_scope_fixture()
       account = account_fixture(scope)
-      update_attrs = %{name: "some updated name", currency: "some updated currency", bank_name: "some updated bank_name", starting_balance: "0.43"}
+
+      update_attrs = %{
+        name: "some updated name",
+        currency: "some updated currency",
+        bank_name: "some updated bank_name",
+        starting_balance: "0.43"
+      }
 
       assert {:ok, %Account{} = account} = Ledger.update_account(scope, account, update_attrs)
       assert account.name == "some updated name"
@@ -117,7 +131,10 @@ defmodule Budgeteer.LedgerTest do
       transaction = %{transaction_fixture(scope) | amount: nil}
       other_scope = household_scope_fixture()
       assert Ledger.get_transaction!(scope, transaction.id) == transaction
-      assert_raise Ecto.NoResultsError, fn -> Ledger.get_transaction!(other_scope, transaction.id) end
+
+      assert_raise Ecto.NoResultsError, fn ->
+        Ledger.get_transaction!(other_scope, transaction.id)
+      end
     end
 
     test "create_transaction/2 with valid data creates a transaction" do
@@ -150,9 +167,18 @@ defmodule Budgeteer.LedgerTest do
     test "update_transaction/3 with valid data updates the transaction" do
       scope = household_scope_fixture()
       transaction = transaction_fixture(scope)
-      update_attrs = %{date: ~D[2026-07-26], description: "some updated description", amount: "0.43", merchant: "some updated merchant", notes: "some updated notes"}
 
-      assert {:ok, %Transaction{} = transaction} = Ledger.update_transaction(scope, transaction, update_attrs)
+      update_attrs = %{
+        date: ~D[2026-07-26],
+        description: "some updated description",
+        amount: "0.43",
+        merchant: "some updated merchant",
+        notes: "some updated notes"
+      }
+
+      assert {:ok, %Transaction{} = transaction} =
+               Ledger.update_transaction(scope, transaction, update_attrs)
+
       assert transaction.date == ~D[2026-07-26]
       assert transaction.description == "some updated description"
       assert transaction.amount_cents == 43
@@ -173,7 +199,10 @@ defmodule Budgeteer.LedgerTest do
     test "update_transaction/3 with invalid data returns error changeset" do
       scope = household_scope_fixture()
       transaction = %{transaction_fixture(scope) | amount: nil}
-      assert {:error, %Ecto.Changeset{}} = Ledger.update_transaction(scope, transaction, @invalid_attrs)
+
+      assert {:error, %Ecto.Changeset{}} =
+               Ledger.update_transaction(scope, transaction, @invalid_attrs)
+
       assert transaction == Ledger.get_transaction!(scope, transaction.id)
     end
 
@@ -195,6 +224,88 @@ defmodule Budgeteer.LedgerTest do
       scope = household_scope_fixture()
       transaction = transaction_fixture(scope)
       assert %Ecto.Changeset{} = Ledger.change_transaction(scope, transaction)
+    end
+  end
+
+  describe "search_transactions/2" do
+    import Budgeteer.HouseholdsFixtures, only: [household_scope_fixture: 0]
+    import Budgeteer.LedgerFixtures
+
+    test "with no filters returns every scoped transaction, most recent first" do
+      scope = household_scope_fixture()
+      other_scope = household_scope_fixture()
+      older = transaction_fixture(scope, %{date: ~D[2026-01-01]})
+      newer = transaction_fixture(scope, %{date: ~D[2026-06-01]})
+      transaction_fixture(other_scope)
+
+      assert Ledger.search_transactions(scope) |> Enum.map(& &1.id) == [newer.id, older.id]
+    end
+
+    test "filters by date range" do
+      scope = household_scope_fixture()
+      jan = transaction_fixture(scope, %{date: ~D[2026-01-15]})
+      transaction_fixture(scope, %{date: ~D[2026-06-15]})
+
+      result =
+        Ledger.search_transactions(scope, %{date_from: ~D[2026-01-01], date_to: ~D[2026-02-01]})
+
+      assert Enum.map(result, & &1.id) == [jan.id]
+    end
+
+    test "filters by account_id" do
+      scope = household_scope_fixture()
+      account_a = account_fixture(scope)
+      account_b = account_fixture(scope)
+      tx_a = transaction_fixture(scope, %{account_id: account_a.id})
+      transaction_fixture(scope, %{account_id: account_b.id})
+
+      result = Ledger.search_transactions(scope, %{account_id: account_a.id})
+      assert Enum.map(result, & &1.id) == [tx_a.id]
+    end
+
+    test ~s(filters by category, including "uncategorized") do
+      scope = household_scope_fixture()
+      category = category_fixture(scope)
+      categorized = transaction_fixture(scope, %{category_id: category.id})
+      uncategorized = transaction_fixture(scope)
+
+      assert Ledger.search_transactions(scope, %{category_id: category.id}) |> Enum.map(& &1.id) ==
+               [
+                 categorized.id
+               ]
+
+      assert Ledger.search_transactions(scope, %{category_id: "uncategorized"})
+             |> Enum.map(& &1.id) == [
+               uncategorized.id
+             ]
+    end
+
+    test "filters by merchant/description/notes substring, case-insensitively" do
+      scope = household_scope_fixture()
+      match = transaction_fixture(scope, %{merchant: "Amazon Prime"})
+      transaction_fixture(scope, %{merchant: "Local Bakery"})
+
+      assert Ledger.search_transactions(scope, %{query: "amazon"}) |> Enum.map(& &1.id) == [
+               match.id
+             ]
+    end
+
+    test "filters by amount range, matching on absolute value" do
+      scope = household_scope_fixture()
+      expense = transaction_fixture(scope, %{amount: "-45.00"})
+      income = transaction_fixture(scope, %{amount: "45.00"})
+      transaction_fixture(scope, %{amount: "5.00"})
+
+      result = Ledger.search_transactions(scope, %{amount_min: 4000, amount_max: 5000})
+      assert Enum.map(result, & &1.id) |> Enum.sort() == Enum.sort([expense.id, income.id])
+    end
+
+    test "blank filter values are ignored" do
+      scope = household_scope_fixture()
+      transaction = transaction_fixture(scope)
+
+      result = Ledger.search_transactions(scope, %{query: "", date_from: nil, category_id: ""})
+      assert Enum.map(result, & &1.id) == [transaction.id]
     end
   end
 
@@ -243,7 +354,13 @@ defmodule Budgeteer.LedgerTest do
     test "update_category/3 with valid data updates the category" do
       scope = household_scope_fixture()
       category = category_fixture(scope)
-      update_attrs = %{name: "some updated name", type: :expense, color: "some updated color", budget: "0.43"}
+
+      update_attrs = %{
+        name: "some updated name",
+        type: :expense,
+        color: "some updated color",
+        budget: "0.43"
+      }
 
       assert {:ok, %Category{} = category} = Ledger.update_category(scope, category, update_attrs)
       assert category.name == "some updated name"
@@ -309,7 +426,11 @@ defmodule Budgeteer.LedgerTest do
       scope = household_scope_fixture()
       account_fixture(scope, %{starting_balance: "50.00"})
 
-      assert Ledger.balance_history(scope, 3) |> Enum.map(& &1.balance_cents) == [5_000, 5_000, 5_000]
+      assert Ledger.balance_history(scope, 3) |> Enum.map(& &1.balance_cents) == [
+               5_000,
+               5_000,
+               5_000
+             ]
     end
 
     test "applies a transaction's delta starting on its date, carried forward after" do
@@ -341,7 +462,11 @@ defmodule Budgeteer.LedgerTest do
           date: Date.add(today, -10)
         })
 
-      assert Ledger.balance_history(scope, 3) |> Enum.map(& &1.balance_cents) == [7_000, 7_000, 7_000]
+      assert Ledger.balance_history(scope, 3) |> Enum.map(& &1.balance_cents) == [
+               7_000,
+               7_000,
+               7_000
+             ]
     end
 
     test "scopes to the household" do
@@ -350,7 +475,119 @@ defmodule Budgeteer.LedgerTest do
       account_fixture(scope, %{starting_balance: "100.00"})
       account_fixture(other_scope, %{starting_balance: "500.00"})
 
-      assert Ledger.balance_history(scope, 1) == [%{date: Date.utc_today(), balance_cents: 10_000}]
+      assert Ledger.balance_history(scope, 1) == [
+               %{date: Date.utc_today(), balance_cents: 10_000}
+             ]
+    end
+  end
+
+  describe "budget alerts" do
+    import Budgeteer.HouseholdsFixtures, only: [household_scope_fixture: 0]
+    import Budgeteer.LedgerFixtures
+
+    # household_scope_fixture/0 registers (and confirms) a user, which sends
+    # its own "Confirmation instructions" email — drain that stray message
+    # before asserting on budget-alert emails, or assert_email_sent/
+    # refute_email_sent would match against it instead.
+    defp drain_mailbox do
+      receive do
+        _ -> drain_mailbox()
+      after
+        0 -> :ok
+      end
+    end
+
+    test "emails every household member once spend meets the category's budget" do
+      scope = household_scope_fixture()
+      drain_mailbox()
+      account = account_fixture(scope)
+      category = category_fixture(scope, %{type: :expense, budget: "50.00"})
+
+      Ledger.create_transaction(scope, %{
+        account_id: account.id,
+        category_id: category.id,
+        amount: "-50.00",
+        date: Date.utc_today()
+      })
+
+      assert_email_sent(subject: "Budget alert: #{category.name}")
+
+      assert Ledger.get_category!(scope, category.id).budget_alert_sent_for ==
+               Date.beginning_of_month(Date.utc_today())
+    end
+
+    test "does not email while under budget" do
+      scope = household_scope_fixture()
+      drain_mailbox()
+      account = account_fixture(scope)
+      category = category_fixture(scope, %{type: :expense, budget: "50.00"})
+
+      Ledger.create_transaction(scope, %{
+        account_id: account.id,
+        category_id: category.id,
+        amount: "-10.00",
+        date: Date.utc_today()
+      })
+
+      refute_email_sent()
+      assert Ledger.get_category!(scope, category.id).budget_alert_sent_for == nil
+    end
+
+    test "does not email again for a second transaction in the same month" do
+      scope = household_scope_fixture()
+      drain_mailbox()
+      account = account_fixture(scope)
+      category = category_fixture(scope, %{type: :expense, budget: "50.00"})
+
+      Ledger.create_transaction(scope, %{
+        account_id: account.id,
+        category_id: category.id,
+        amount: "-50.00",
+        date: Date.utc_today()
+      })
+
+      assert_email_sent(subject: "Budget alert: #{category.name}")
+
+      Ledger.create_transaction(scope, %{
+        account_id: account.id,
+        category_id: category.id,
+        amount: "-10.00",
+        date: Date.utc_today()
+      })
+
+      refute_email_sent()
+    end
+
+    test "does not email for income categories, even past their budget" do
+      scope = household_scope_fixture()
+      drain_mailbox()
+      account = account_fixture(scope)
+      category = category_fixture(scope, %{type: :income, budget: "50.00"})
+
+      Ledger.create_transaction(scope, %{
+        account_id: account.id,
+        category_id: category.id,
+        amount: "100.00",
+        date: Date.utc_today()
+      })
+
+      refute_email_sent()
+    end
+
+    test "does not email for a category with no budget set" do
+      scope = household_scope_fixture()
+      drain_mailbox()
+      account = account_fixture(scope)
+      category = category_fixture(scope, %{type: :expense, budget: nil})
+
+      Ledger.create_transaction(scope, %{
+        account_id: account.id,
+        category_id: category.id,
+        amount: "-1000.00",
+        date: Date.utc_today()
+      })
+
+      refute_email_sent()
     end
   end
 end

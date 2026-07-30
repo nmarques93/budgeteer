@@ -73,6 +73,8 @@ defmodule BudgeteerWeb.Router do
       live "/accounts/:id", AccountLive.Show, :show
       live "/accounts/:id/edit", AccountLive.Form, :edit
 
+      live "/transactions", TransactionLive.Search, :index
+
       live "/accounts/:account_id/transactions", TransactionLive.Index, :index
       live "/accounts/:account_id/transactions/new", TransactionLive.Form, :new
       live "/accounts/:account_id/transactions/:id", TransactionLive.Show, :show

@@ -153,20 +153,76 @@ defmodule Budgeteer.Ledger do
   """
   def current_balance_cents(%Account{} = account) do
     sum =
-      Repo.aggregate(from(t in Transaction, where: t.account_id == ^account.id), :sum, :amount_cents)
+      Repo.aggregate(
+        from(t in Transaction, where: t.account_id == ^account.id),
+        :sum,
+        :amount_cents
+      )
 
     sum_cents = if sum, do: Decimal.to_integer(sum), else: 0
     account.starting_balance_cents + sum_cents
   end
 
   @doc """
-  Returns the list of transactions for a specific account.
-  """
-  def list_account_transactions(%Scope{} = scope, %Account{} = account) do
-    true = account.household_id == scope.user.household_id
+  Searches the household's transactions, optionally narrowed to a single
+  account, by any combination of filters. Supported keys in `filters`:
 
-    Repo.all_by(Transaction, account_id: account.id, household_id: scope.user.household_id)
+    * `:account_id` — restrict to one account
+    * `:category_id` — restrict to one category, or `"uncategorized"` for
+      transactions with no category
+    * `:query` — case-insensitive substring match against merchant,
+      description, or notes
+    * `:date_from` / `:date_to` — inclusive `Date` range
+    * `:amount_min` / `:amount_max` — inclusive range, in cents, matched
+      against the transaction's absolute amount (so a search for "around
+      €45" finds both an expense and an income of that size)
+
+  Blank/nil values are ignored. Results are ordered most recent first.
+  """
+  def search_transactions(%Scope{} = scope, filters \\ %{}) do
+    from(t in Transaction, where: t.household_id == ^scope.user.household_id)
+    |> apply_transaction_filters(filters)
+    |> order_by([t], desc: t.date, desc: t.inserted_at)
+    |> Repo.all()
   end
+
+  defp apply_transaction_filters(query, filters) do
+    Enum.reduce(filters, query, &apply_transaction_filter/2)
+  end
+
+  defp apply_transaction_filter({_key, nil}, query), do: query
+  defp apply_transaction_filter({_key, ""}, query), do: query
+
+  defp apply_transaction_filter({:account_id, account_id}, query),
+    do: where(query, [t], t.account_id == ^account_id)
+
+  defp apply_transaction_filter({:category_id, "uncategorized"}, query),
+    do: where(query, [t], is_nil(t.category_id))
+
+  defp apply_transaction_filter({:category_id, category_id}, query),
+    do: where(query, [t], t.category_id == ^category_id)
+
+  defp apply_transaction_filter({:query, text}, query) do
+    pattern = "%#{text}%"
+
+    where(
+      query,
+      [t],
+      ilike(t.merchant, ^pattern) or ilike(t.description, ^pattern) or ilike(t.notes, ^pattern)
+    )
+  end
+
+  defp apply_transaction_filter({:date_from, %Date{} = date}, query),
+    do: where(query, [t], t.date >= ^date)
+
+  defp apply_transaction_filter({:date_to, %Date{} = date}, query),
+    do: where(query, [t], t.date <= ^date)
+
+  defp apply_transaction_filter({:amount_min, cents}, query) when is_integer(cents),
+    do: where(query, [t], fragment("abs(?)", t.amount_cents) >= ^cents)
+
+  defp apply_transaction_filter({:amount_max, cents}, query) when is_integer(cents),
+    do: where(query, [t], fragment("abs(?)", t.amount_cents) <= ^cents)
 
   @doc """
   Subscribes to scoped notifications about any transaction changes.
@@ -239,6 +295,7 @@ defmodule Budgeteer.Ledger do
            |> Transaction.changeset(attrs, scope)
            |> Repo.insert() do
       broadcast_transaction(scope, {:created, transaction})
+      maybe_send_budget_alert(scope, transaction.category_id)
       {:ok, transaction}
     end
   end
@@ -263,6 +320,7 @@ defmodule Budgeteer.Ledger do
            |> Transaction.changeset(attrs, scope)
            |> Repo.update() do
       broadcast_transaction(scope, {:updated, transaction})
+      maybe_send_budget_alert(scope, transaction.category_id)
       {:ok, transaction}
     end
   end
@@ -368,6 +426,15 @@ defmodule Budgeteer.Ledger do
   """
   def get_category!(%Scope{} = scope, id) do
     Repo.get_by!(Category, id: id, household_id: scope.user.household_id)
+  end
+
+  @doc """
+  Gets a single category, by id (no scope). For use by
+  `Budgeteer.Ledger.BudgetAlertWorker`, which runs outside a request/user
+  context.
+  """
+  def get_category!(id) do
+    Repo.get!(Category, id)
   end
 
   @doc """
@@ -507,7 +574,9 @@ defmodule Budgeteer.Ledger do
   def balance_history(%Scope{} = scope, days \\ 30) do
     today = Date.utc_today()
     start_date = Date.add(today, -(days - 1))
-    starting_total = scope |> list_accounts() |> Enum.map(& &1.starting_balance_cents) |> Enum.sum()
+
+    starting_total =
+      scope |> list_accounts() |> Enum.map(& &1.starting_balance_cents) |> Enum.sum()
 
     pre_start_sum =
       Repo.aggregate(
@@ -531,11 +600,77 @@ defmodule Budgeteer.Ledger do
       |> Map.new(fn {date, sum} -> {date, Decimal.to_integer(sum)} end)
 
     {history, _final} =
-      Enum.map_reduce(Date.range(start_date, today), starting_total + pre_start_cents, fn date, running ->
+      Enum.map_reduce(Date.range(start_date, today), starting_total + pre_start_cents, fn date,
+                                                                                          running ->
         running = running + Map.get(daily_deltas, date, 0)
         {%{date: date, balance_cents: running}, running}
       end)
 
     history
+  end
+
+  # Fires once per category per month, the first time a categorized expense
+  # transaction pushes that category's spend-to-date at or past its budget.
+  # Dedup is an atomic conditional `update_all` (not a read-then-write) so
+  # concurrent/bulk transaction creation (e.g. a statement review saving 30
+  # rows at once) can't enqueue duplicate emails.
+  defp maybe_send_budget_alert(_scope, nil), do: :ok
+
+  defp maybe_send_budget_alert(%Scope{} = scope, category_id) do
+    case Repo.get_by(Category, id: category_id, household_id: scope.user.household_id) do
+      %Category{type: :expense, budget_cents: budget_cents} = category
+      when is_integer(budget_cents) ->
+        month_start = Date.beginning_of_month(Date.utc_today())
+        spent_cents = category_month_spent_cents(scope, category.id, month_start)
+
+        if spent_cents >= budget_cents do
+          claim_budget_alert(category, month_start, spent_cents)
+        end
+
+      _ ->
+        :ok
+    end
+  end
+
+  defp category_month_spent_cents(%Scope{} = scope, category_id, month_start) do
+    month_end = Date.end_of_month(month_start)
+
+    sum =
+      Repo.aggregate(
+        from(t in Transaction,
+          where: t.household_id == ^scope.user.household_id,
+          where: t.category_id == ^category_id,
+          where: t.date >= ^month_start and t.date <= ^month_end
+        ),
+        :sum,
+        :amount_cents
+      )
+
+    case sum do
+      nil -> 0
+      decimal -> decimal |> Decimal.to_integer() |> abs()
+    end
+  end
+
+  defp claim_budget_alert(%Category{} = category, month_start, spent_cents) do
+    {claimed, _} =
+      Repo.update_all(
+        from(c in Category,
+          where: c.id == ^category.id,
+          where: is_nil(c.budget_alert_sent_for) or c.budget_alert_sent_for != ^month_start
+        ),
+        set: [budget_alert_sent_for: month_start]
+      )
+
+    if claimed > 0 do
+      %{
+        "category_id" => category.id,
+        "spent_cents" => spent_cents
+      }
+      |> Budgeteer.Ledger.BudgetAlertWorker.new()
+      |> Oban.insert()
+    end
+
+    :ok
   end
 end

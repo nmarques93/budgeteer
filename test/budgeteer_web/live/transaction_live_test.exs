@@ -4,8 +4,20 @@ defmodule BudgeteerWeb.TransactionLiveTest do
   import Phoenix.LiveViewTest
   import Budgeteer.LedgerFixtures
 
-  @create_attrs %{date: "2026-07-25", description: "some description", amount: "0.42", merchant: "some merchant", notes: "some notes"}
-  @update_attrs %{date: "2026-07-26", description: "some updated description", amount: "0.43", merchant: "some updated merchant", notes: "some updated notes"}
+  @create_attrs %{
+    date: "2026-07-25",
+    description: "some description",
+    amount: "0.42",
+    merchant: "some merchant",
+    notes: "some notes"
+  }
+  @update_attrs %{
+    date: "2026-07-26",
+    description: "some updated description",
+    amount: "0.43",
+    merchant: "some updated merchant",
+    notes: "some updated notes"
+  }
   @invalid_attrs %{date: nil, description: nil, amount: nil, merchant: nil, notes: nil}
 
   setup :register_and_log_in_user
@@ -53,7 +65,11 @@ defmodule BudgeteerWeb.TransactionLiveTest do
       assert html =~ "some merchant"
     end
 
-    test "updates transaction in listing", %{conn: conn, account: account, transaction: transaction} do
+    test "updates transaction in listing", %{
+      conn: conn,
+      account: account,
+      transaction: transaction
+    } do
       {:ok, index_live, _html} = live(conn, ~p"/accounts/#{account}/transactions")
 
       assert {:ok, form_live, _html} =
@@ -79,11 +95,60 @@ defmodule BudgeteerWeb.TransactionLiveTest do
       assert html =~ "some updated merchant"
     end
 
-    test "deletes transaction in listing", %{conn: conn, account: account, transaction: transaction} do
+    test "deletes transaction in listing", %{
+      conn: conn,
+      account: account,
+      transaction: transaction
+    } do
       {:ok, index_live, _html} = live(conn, ~p"/accounts/#{account}/transactions")
 
-      assert index_live |> element("#transactions-#{transaction.id} a", "Delete") |> render_click()
+      assert index_live
+             |> element("#transactions-#{transaction.id} a", "Delete")
+             |> render_click()
+
       refute has_element?(index_live, "#transactions-#{transaction.id}")
+    end
+  end
+
+  describe "Index filtering" do
+    setup [:create_transaction]
+
+    test "filters the list by merchant query", %{
+      conn: conn,
+      account: account,
+      transaction: transaction
+    } do
+      {:ok, index_live, _html} = live(conn, ~p"/accounts/#{account}/transactions")
+
+      html =
+        index_live
+        |> form("#transaction-filters", %{"query" => "nonexistent merchant"})
+        |> render_change()
+
+      refute html =~ transaction.merchant
+      assert html =~ "No transactions match"
+
+      html =
+        index_live
+        |> form("#transaction-filters", %{"query" => transaction.merchant})
+        |> render_change()
+
+      assert html =~ transaction.merchant
+    end
+
+    test "filters the list by category, including uncategorized", %{
+      conn: conn,
+      account: account,
+      transaction: transaction
+    } do
+      {:ok, index_live, _html} = live(conn, ~p"/accounts/#{account}/transactions")
+
+      html =
+        index_live
+        |> form("#transaction-filters", %{"category_id" => "uncategorized"})
+        |> render_change()
+
+      assert html =~ transaction.merchant
     end
   end
 
@@ -97,7 +162,11 @@ defmodule BudgeteerWeb.TransactionLiveTest do
       assert html =~ transaction.merchant
     end
 
-    test "updates transaction and returns to show", %{conn: conn, account: account, transaction: transaction} do
+    test "updates transaction and returns to show", %{
+      conn: conn,
+      account: account,
+      transaction: transaction
+    } do
       {:ok, show_live, _html} = live(conn, ~p"/accounts/#{account}/transactions/#{transaction}")
 
       assert {:ok, form_live, _} =

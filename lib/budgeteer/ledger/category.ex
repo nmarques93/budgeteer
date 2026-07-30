@@ -11,6 +11,7 @@ defmodule Budgeteer.Ledger.Category do
     field :budget, :string, virtual: true
     field :type, Ecto.Enum, values: [:income, :expense]
     field :household_id, :binary_id
+    field :budget_alert_sent_for, :date
 
     timestamps(type: :utc_datetime)
   end

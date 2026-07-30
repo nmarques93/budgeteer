@@ -39,7 +39,7 @@ config :budgeteer, Oban,
   engine: Oban.Engines.Basic,
   notifier: Oban.Notifiers.Postgres,
   repo: Budgeteer.Repo,
-  queues: [statements: 5],
+  queues: [statements: 5, notifications: 5],
   plugins: [{Oban.Plugins.Pruner, max_age: 60 * 60 * 24 * 7}]
 
 # Local-disk storage for uploaded statements (Phase 1/2). Revisit for S3

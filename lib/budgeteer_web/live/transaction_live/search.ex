@@ -1,0 +1,112 @@
+defmodule BudgeteerWeb.TransactionLive.Search do
+  use BudgeteerWeb, :live_view
+
+  alias Budgeteer.Ledger
+  alias BudgeteerWeb.TransactionLive.FilterForm
+
+  @impl true
+  def render(assigns) do
+    ~H"""
+    <Layouts.app flash={@flash} current_scope={@current_scope} online_members={@online_members}>
+      <.header>
+        Search Transactions
+        <:subtitle>Search across every account in the household.</:subtitle>
+      </.header>
+
+      <FilterForm.filter_form filters={@filter_params} categories={@categories} accounts={@accounts} />
+
+      <p :if={@result_count == 0} class="text-base-content/60">
+        No transactions match these filters.
+      </p>
+
+      <.table
+        :if={@result_count > 0}
+        id="transactions"
+        rows={@streams.transactions}
+        row_click={
+          fn {_id, transaction} ->
+            JS.navigate(~p"/accounts/#{transaction.account_id}/transactions/#{transaction}")
+          end
+        }
+      >
+        <:col :let={{_id, transaction}} label="Date">{transaction.date}</:col>
+        <:col :let={{_id, transaction}} label="Account">
+          {account_name(@accounts_by_id, transaction.account_id)}
+        </:col>
+        <:col :let={{_id, transaction}} label="Amount">
+          <.money cents={transaction.amount_cents} />
+        </:col>
+        <:col :let={{_id, transaction}} label="Merchant">{transaction.merchant}</:col>
+        <:col :let={{_id, transaction}} label="Description">{transaction.description}</:col>
+        <:col :let={{_id, transaction}} label="Category">
+          {category_name(@categories_by_id, transaction.category_id)}
+        </:col>
+      </.table>
+    </Layouts.app>
+    """
+  end
+
+  @impl true
+  def mount(_params, _session, socket) do
+    scope = socket.assigns.current_scope
+
+    if connected?(socket) do
+      Ledger.subscribe_transactions(scope)
+    end
+
+    accounts = Ledger.list_accounts(scope)
+    categories = Ledger.list_categories(scope)
+    filter_params = FilterForm.normalize_params(%{})
+    results = Ledger.search_transactions(scope, FilterForm.to_filters(filter_params))
+
+    {:ok,
+     socket
+     |> assign(:page_title, "Search Transactions")
+     |> assign(:accounts, accounts)
+     |> assign(:accounts_by_id, Map.new(accounts, &{&1.id, &1.name}))
+     |> assign(:categories, categories)
+     |> assign(:categories_by_id, Map.new(categories, &{&1.id, &1.name}))
+     |> assign(:filter_params, filter_params)
+     |> assign(:result_count, length(results))
+     |> stream(:transactions, results)}
+  end
+
+  @impl true
+  def handle_event("filter", params, socket) do
+    filter_params = FilterForm.normalize_params(params)
+
+    results =
+      Ledger.search_transactions(
+        socket.assigns.current_scope,
+        FilterForm.to_filters(filter_params)
+      )
+
+    {:noreply,
+     socket
+     |> assign(:filter_params, filter_params)
+     |> assign(:result_count, length(results))
+     |> stream(:transactions, results, reset: true)}
+  end
+
+  @impl true
+  def handle_info({type, %Budgeteer.Ledger.Transaction{}}, socket)
+      when type in [:created, :updated, :deleted] do
+    results =
+      Ledger.search_transactions(
+        socket.assigns.current_scope,
+        FilterForm.to_filters(socket.assigns.filter_params)
+      )
+
+    {:noreply,
+     socket
+     |> assign(:result_count, length(results))
+     |> stream(:transactions, results, reset: true)}
+  end
+
+  defp category_name(_categories_by_id, nil), do: "Uncategorized"
+
+  defp category_name(categories_by_id, category_id),
+    do: Map.get(categories_by_id, category_id, "Uncategorized")
+
+  defp account_name(accounts_by_id, account_id), do: Map.get(accounts_by_id, account_id, "—")
+end

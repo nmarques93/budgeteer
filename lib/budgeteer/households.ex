@@ -60,6 +60,15 @@ defmodule Budgeteer.Households do
   """
   def get_user!(id), do: Repo.get!(User, id)
 
+  @doc """
+  Returns every member's email for a household, by id (no scope). For use by
+  contexts like `Budgeteer.Ledger` that need to notify a whole household
+  (e.g. a budget alert) rather than a single scoped user.
+  """
+  def list_household_emails(household_id) do
+    Repo.all(from u in User, where: u.household_id == ^household_id, select: u.email)
+  end
+
   ## Households
 
   @doc """
@@ -429,7 +438,12 @@ defmodule Budgeteer.Households do
       when is_function(invite_url_fun, 1) do
     {encoded_token, user_token} = UserToken.build_household_invite_token(inviter, invitee_email)
     Repo.insert!(user_token)
-    UserNotifier.deliver_household_invite_instructions(inviter, invitee_email, invite_url_fun.(encoded_token))
+
+    UserNotifier.deliver_household_invite_instructions(
+      inviter,
+      invitee_email,
+      invite_url_fun.(encoded_token)
+    )
   end
 
   @doc """
