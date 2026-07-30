@@ -16,7 +16,8 @@ defmodule Budgeteer.Statements.ParseWorker do
     {:ok, statement} = Statements.mark_processing(statement)
     category_names = Ledger.list_category_names(statement.household_id)
 
-    with {:ok, file_bytes} <- File.read(statement.storage_path),
+    with {:ok, encrypted_bytes} <- File.read(statement.storage_path),
+         {:ok, file_bytes} <- Budgeteer.Vault.decrypt(encrypted_bytes),
          media_type <- media_type(statement.filename),
          {:ok, parsed} <- ai_client().parse_statement(file_bytes, media_type, category_names) do
       Statements.mark_processed(statement, parsed)

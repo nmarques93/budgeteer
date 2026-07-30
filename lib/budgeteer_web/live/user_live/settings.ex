@@ -4,6 +4,12 @@ defmodule BudgeteerWeb.UserLive.Settings do
   on_mount {BudgeteerWeb.UserAuth, :require_sudo_mode}
 
   alias Budgeteer.Households
+  alias Budgeteer.RateLimit
+
+  @invite_scale :timer.hours(1)
+  @invite_limit 10
+  @access_token_scale :timer.hours(1)
+  @access_token_limit 10
 
   @impl true
   def render(assigns) do
@@ -219,31 +225,41 @@ defmodule BudgeteerWeb.UserLive.Settings do
   end
 
   def handle_event("send_invite", %{"invite" => %{"email" => email}}, socket) do
-    Households.deliver_household_invite(
-      socket.assigns.current_scope.user,
-      email,
-      &url(~p"/users/register?#{[token: &1]}")
-    )
+    user = socket.assigns.current_scope.user
 
-    {:noreply,
-     socket
-     |> put_flash(:info, "An invite was sent to #{email}.")
-     |> assign(:invite_form, to_form(%{"email" => ""}, as: "invite"))}
+    if RateLimit.check("invite:#{user.id}", @invite_scale, @invite_limit) == :ok do
+      Households.deliver_household_invite(
+        user,
+        email,
+        &url(~p"/users/register?#{[token: &1]}")
+      )
+
+      {:noreply,
+       socket
+       |> put_flash(:info, "An invite was sent to #{email}.")
+       |> assign(:invite_form, to_form(%{"email" => ""}, as: "invite"))}
+    else
+      {:noreply, put_flash(socket, :error, "Too many invites sent — please wait a while and try again.")}
+    end
   end
 
   def handle_event("create_access_token", %{"access_token" => %{"name" => name}}, socket) do
     scope = socket.assigns.current_scope
 
-    case Households.create_access_token(scope, name) do
-      {:ok, raw_token, _access_token} ->
-        {:noreply,
-         socket
-         |> assign(:new_token, raw_token)
-         |> assign(:access_token_form, to_form(%{"name" => ""}, as: "access_token"))
-         |> assign(:access_tokens, Households.list_access_tokens(scope))}
+    if RateLimit.check("access_token:#{scope.user.id}", @access_token_scale, @access_token_limit) == :ok do
+      case Households.create_access_token(scope, name) do
+        {:ok, raw_token, _access_token} ->
+          {:noreply,
+           socket
+           |> assign(:new_token, raw_token)
+           |> assign(:access_token_form, to_form(%{"name" => ""}, as: "access_token"))
+           |> assign(:access_tokens, Households.list_access_tokens(scope))}
 
-      {:error, _changeset} ->
-        {:noreply, put_flash(socket, :error, "Couldn't create the token — please try again.")}
+        {:error, _changeset} ->
+          {:noreply, put_flash(socket, :error, "Couldn't create the token — please try again.")}
+      end
+    else
+      {:noreply, put_flash(socket, :error, "Too many tokens created — please wait a while and try again.")}
     end
   end
 

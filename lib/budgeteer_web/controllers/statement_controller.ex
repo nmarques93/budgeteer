@@ -12,6 +12,17 @@ defmodule BudgeteerWeb.StatementController do
   @max_file_size 15_000_000
   @allowed_extensions ~w(.pdf .jpg .jpeg .png)
 
+  # Extension alone is trivially spoofable (rename anything to .png) — this
+  # confirms the file's actual bytes match one of the formats we claim to
+  # accept, via the same magic-number signatures browsers/OSes use, before
+  # anything gets written to disk or handed to the AI client.
+  @magic_bytes %{
+    ".pdf" => "%PDF-",
+    ".jpg" => <<0xFF, 0xD8, 0xFF>>,
+    ".jpeg" => <<0xFF, 0xD8, 0xFF>>,
+    ".png" => <<0x89, "PNG", 0x0D, 0x0A, 0x1A, 0x0A>>
+  }
+
   def create(conn, %{"account_id" => account_id} = params) do
     scope = conn.assigns.current_scope
     account = Ledger.get_account!(scope, account_id)
@@ -41,9 +52,20 @@ defmodule BudgeteerWeb.StatementController do
         |> put_flash(:error, "File is too large (max 15 MB)")
         |> redirect(to: ~p"/accounts/#{account}/statements/new")
 
+      not matches_magic_bytes?(ext, upload.path) ->
+        conn
+        |> put_flash(:error, "File content doesn't match its extension — use a real PDF, JPG, or PNG")
+        |> redirect(to: ~p"/accounts/#{account}/statements/new")
+
       true ->
         save_statement(conn, scope, account, upload)
     end
+  end
+
+  defp matches_magic_bytes?(ext, path) do
+    signature = Map.fetch!(@magic_bytes, ext)
+    header = File.open!(path, [:read, :binary], &IO.binread(&1, byte_size(signature)))
+    header == signature
   end
 
   defp save_statement(conn, scope, account, upload) do
@@ -53,7 +75,10 @@ defmodule BudgeteerWeb.StatementController do
     storage_dir = Path.join(Application.fetch_env!(:budgeteer, :statement_storage_path), account.id)
     File.mkdir_p!(storage_dir)
     storage_path = Path.join(storage_dir, file_hash <> Path.extname(upload.filename))
-    File.write!(storage_path, file_bytes)
+    # The raw bank statement itself (not just the AI-extracted JSON) is
+    # sensitive — encrypted at rest with the same Vault as raw_ai_output,
+    # so a compromised disk/volume doesn't expose plaintext statements.
+    File.write!(storage_path, Budgeteer.Vault.encrypt!(file_bytes))
 
     attrs = %{
       "filename" => upload.filename,

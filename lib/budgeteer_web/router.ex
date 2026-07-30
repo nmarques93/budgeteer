@@ -9,7 +9,7 @@ defmodule BudgeteerWeb.Router do
     plug :fetch_live_flash
     plug :put_root_layout, html: {BudgeteerWeb.Layouts, :root}
     plug :protect_from_forgery
-    plug :put_secure_browser_headers
+    plug BudgeteerWeb.Plugs.ContentSecurityPolicy
     plug :fetch_current_scope_for_user
   end
 

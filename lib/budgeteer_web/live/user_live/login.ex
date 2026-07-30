@@ -2,6 +2,15 @@ defmodule BudgeteerWeb.UserLive.Login do
   use BudgeteerWeb, :live_view
 
   alias Budgeteer.Households
+  alias Budgeteer.RateLimit
+
+  # Keyed by the target email, not the requester — this guards against
+  # spamming someone else's inbox with login-link emails, which an IP-based
+  # limit wouldn't catch (a single requester could still target many
+  # emails from one IP, but that's a smaller nuisance than one email
+  # getting flooded).
+  @magic_link_scale :timer.minutes(15)
+  @magic_link_limit 5
 
   @impl true
   def render(assigns) do
@@ -121,11 +130,13 @@ defmodule BudgeteerWeb.UserLive.Login do
   end
 
   def handle_event("submit_magic", %{"user" => %{"email" => email}}, socket) do
-    if user = Households.get_user_by_email(email) do
-      Households.deliver_login_instructions(
-        user,
-        &url(~p"/users/log-in/#{&1}?#{[return_to: socket.assigns.return_to]}")
-      )
+    if RateLimit.check("magic_link:#{email}", @magic_link_scale, @magic_link_limit) == :ok do
+      if user = Households.get_user_by_email(email) do
+        Households.deliver_login_instructions(
+          user,
+          &url(~p"/users/log-in/#{&1}?#{[return_to: socket.assigns.return_to]}")
+        )
+      end
     end
 
     info =

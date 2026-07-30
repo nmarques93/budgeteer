@@ -35,12 +35,14 @@ defmodule Budgeteer.StatementsFixtures do
   end
 
   @doc """
-  Writes `contents` to a real temp file and returns its path — for tests
-  that exercise `ParseWorker`, which reads the file from disk.
+  Writes `contents` to a real temp file, encrypted the same way
+  `StatementController` encrypts a real upload, and returns its path — for
+  tests that exercise `ParseWorker`, which reads (and decrypts) the file
+  from disk.
   """
   def write_temp_statement_file!(contents \\ "fake pdf bytes") do
     path = Path.join(System.tmp_dir!(), "statement-#{System.unique_integer([:positive])}.pdf")
-    File.write!(path, contents)
+    File.write!(path, Budgeteer.Vault.encrypt!(contents))
     path
   end
 end

@@ -41,6 +41,7 @@ defmodule Budgeteer.MixProject do
   defp deps do
     [
       {:bcrypt_elixir, "~> 3.0"},
+      {:hammer, "~> 7.0"},
       {:ueberauth, "~> 0.10"},
       {:ueberauth_google, "~> 0.10"},
       {:anubis_mcp, "~> 1.10"},
