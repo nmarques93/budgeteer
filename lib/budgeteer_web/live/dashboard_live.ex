@@ -93,7 +93,9 @@ defmodule BudgeteerWeb.DashboardLive do
   @doc """
   Renders the household's balance trend as a hairline SVG line chart with a
   faint fill, matching the "Ledger" theme rather than a typical
-  charting-library look (no gradients, no drop shadows).
+  charting-library look (no gradients, no drop shadows). Includes a
+  crosshair + tooltip on hover/focus — the static line alone shows the
+  shape of the trend but not any actual date/balance value.
   """
   attr :history, :list, required: true
 
@@ -102,23 +104,94 @@ defmodule BudgeteerWeb.DashboardLive do
     assigns = assign(assigns, :points, points)
 
     ~H"""
-    <svg viewBox="0 0 100 32" preserveAspectRatio="none" class="w-full h-10 mt-2 text-primary">
-      <line x1="0" y1="31.5" x2="100" y2="31.5" class="stroke-base-300" stroke-width="0.5" />
-      <polygon :if={@points.line != ""} points={@points.area} fill="currentColor" class="opacity-10" />
-      <polyline
-        :if={@points.line != ""}
-        points={@points.line}
-        fill="none"
-        stroke="currentColor"
-        stroke-width="1"
-        vector-effect="non-scaling-stroke"
-      />
-      <circle :if={@points.last} cx={elem(@points.last, 0)} cy={elem(@points.last, 1)} r="1.5" fill="currentColor" />
-    </svg>
+    <div id="balance-sparkline" phx-hook=".Sparkline" data-points={Jason.encode!(@points.hover)} class="relative mt-2">
+      <svg viewBox="0 0 100 32" preserveAspectRatio="none" class="w-full h-10 text-primary" data-sparkline-svg>
+        <line x1="0" y1="31.5" x2="100" y2="31.5" class="stroke-base-300" stroke-width="0.5" />
+        <polygon :if={@points.line != ""} points={@points.area} fill="currentColor" class="opacity-10" />
+        <polyline
+          :if={@points.line != ""}
+          points={@points.line}
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1"
+          vector-effect="non-scaling-stroke"
+        />
+        <circle :if={@points.last} cx={elem(@points.last, 0)} cy={elem(@points.last, 1)} r="1.5" fill="currentColor" />
+        <line
+          data-crosshair
+          class="hidden stroke-base-content/40"
+          x1="0"
+          y1="1"
+          x2="0"
+          y2="31"
+          stroke-width="0.5"
+          vector-effect="non-scaling-stroke"
+        />
+      </svg>
+      <div
+        data-tooltip
+        class="hidden absolute -top-9 pointer-events-none text-xs bg-base-100 border border-base-300 rounded px-2 py-1 shadow-sm whitespace-nowrap z-10"
+      >
+        <span data-tooltip-date class="opacity-60"></span>
+        <span data-tooltip-value class="font-mono font-semibold ml-1"></span>
+      </div>
+      <script :type={Phoenix.LiveView.ColocatedHook} name=".Sparkline">
+        export default {
+          mounted() {
+            this.points = JSON.parse(this.el.dataset.points || "[]")
+            this.svg = this.el.querySelector("[data-sparkline-svg]")
+            this.crosshair = this.el.querySelector("[data-crosshair]")
+            this.tooltip = this.el.querySelector("[data-tooltip]")
+            this.tooltipDate = this.el.querySelector("[data-tooltip-date]")
+            this.tooltipValue = this.el.querySelector("[data-tooltip-value]")
+
+            this.onMove = (e) => this.handleMove(e)
+            this.onLeave = () => this.hideAll()
+
+            this.el.addEventListener("pointermove", this.onMove)
+            this.el.addEventListener("pointerleave", this.onLeave)
+          },
+
+          updated() {
+            this.points = JSON.parse(this.el.dataset.points || "[]")
+          },
+
+          destroyed() {
+            this.el.removeEventListener("pointermove", this.onMove)
+            this.el.removeEventListener("pointerleave", this.onLeave)
+          },
+
+          handleMove(e) {
+            if (this.points.length === 0) return
+
+            const rect = this.svg.getBoundingClientRect()
+            const ratio = Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), 1)
+            const index = Math.round(ratio * (this.points.length - 1))
+            const point = this.points[index]
+            if (!point) return
+
+            this.crosshair.setAttribute("x1", point.x)
+            this.crosshair.setAttribute("x2", point.x)
+            this.crosshair.classList.remove("hidden")
+
+            this.tooltipDate.textContent = point.date
+            this.tooltipValue.textContent = point.value
+            this.tooltip.classList.remove("hidden")
+            this.tooltip.style.left = `${point.x}%`
+            this.tooltip.style.transform = point.x > 70 ? "translateX(-100%)" : "translateX(0)"
+          },
+
+          hideAll() {
+            this.crosshair.classList.add("hidden")
+            this.tooltip.classList.add("hidden")
+          }
+        }
+      </script>
+    </div>
     """
   end
 
-  defp spark_points(history) when length(history) < 2, do: %{line: "", area: "", last: nil}
+  defp spark_points(history) when length(history) < 2, do: %{line: "", area: "", last: nil, hover: []}
 
   defp spark_points(history) do
     values = Enum.map(history, & &1.balance_cents)
@@ -140,7 +213,14 @@ defmodule BudgeteerWeb.DashboardLive do
     {first_x, _} = List.first(coords)
     {last_x, _} = List.last(coords)
 
-    %{line: line, area: line <> " #{last_x},30 #{first_x},30", last: List.last(coords)}
+    hover =
+      history
+      |> Enum.zip(coords)
+      |> Enum.map(fn {%{date: date, balance_cents: cents}, {x, _y}} ->
+        %{x: x, date: Calendar.strftime(date, "%b %-d"), value: Budgeteer.Money.format(cents)}
+      end)
+
+    %{line: line, area: line <> " #{last_x},30 #{first_x},30", last: List.last(coords), hover: hover}
   end
 
   @doc """
