@@ -86,7 +86,7 @@ defmodule BudgeteerWeb.UserLive.Settings do
         <.header>
           API access
           <:subtitle>
-            Personal access tokens for read-only MCP clients (Claude Desktop, etc.) to query your household's data.
+            Personal access tokens for MCP clients (Claude Desktop, etc.) to query your household's data — read-only, except for creating recipes and planning meals.
           </:subtitle>
         </.header>
 
