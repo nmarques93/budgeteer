@@ -69,6 +69,20 @@ defmodule Budgeteer.Households do
     Repo.all(from u in User, where: u.household_id == ^household_id, select: u.email)
   end
 
+  @doc """
+  Returns every member of the current scope's household, ordered by name
+  (falling back to email — `name` is optional, e.g. for a password
+  registration that never set one). Used to color-code and assign calendar
+  events per person.
+  """
+  def list_household_members(%Scope{} = scope) do
+    Repo.all(
+      from u in User,
+        where: u.household_id == ^scope.user.household_id,
+        order_by: [asc: fragment("coalesce(?, ?)", u.name, u.email)]
+    )
+  end
+
   ## Households
 
   @doc """

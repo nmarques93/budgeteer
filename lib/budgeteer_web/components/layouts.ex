@@ -33,6 +33,11 @@ defmodule BudgeteerWeb.Layouts do
 
   attr :online_members, :list, default: [], doc: "other household members currently connected"
 
+  attr :container_class, :string,
+    default: "max-w-2xl",
+    doc:
+      "override for pages that need more width than the default reading-width column (e.g. a calendar grid)"
+
   slot :inner_block, required: true
 
   def app(assigns) do
@@ -44,7 +49,7 @@ defmodule BudgeteerWeb.Layouts do
     </div>
 
     <main class="px-4 py-20 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-2xl space-y-4">
+      <div class={["mx-auto space-y-4", @container_class]}>
         {render_slot(@inner_block)}
       </div>
     </main>

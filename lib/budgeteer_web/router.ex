@@ -105,6 +105,10 @@ defmodule BudgeteerWeb.Router do
       live "/meal-plan", MealPlanLive.Index, :index
 
       live "/subscriptions", SubscriptionLive.Index, :index
+
+      live "/calendar", CalendarLive.Index, :index
+      live "/calendar/new", CalendarLive.Form, :new
+      live "/calendar/:id/edit", CalendarLive.Form, :edit
     end
 
     post "/users/update-password", UserSessionController, :update_password

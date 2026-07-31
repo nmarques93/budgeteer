@@ -1,0 +1,208 @@
+defmodule BudgeteerWeb.CalendarLive.Index do
+  use BudgeteerWeb, :live_view
+
+  alias Budgeteer.Events
+  alias Budgeteer.Households
+
+  @impl true
+  def render(assigns) do
+    ~H"""
+    <Layouts.app
+      flash={@flash}
+      current_scope={@current_scope}
+      online_members={@online_members}
+      container_class="max-w-4xl"
+    >
+      <.header>
+        Calendar
+        <:actions>
+          <.button
+            variant="primary"
+            navigate={~p"/calendar/new?#{[date: Date.to_iso8601(Date.utc_today())]}"}
+          >
+            <.icon name="hero-plus" /> New Event
+          </.button>
+        </:actions>
+      </.header>
+
+      <div class="flex items-center justify-between mt-4">
+        <.link
+          patch={~p"/calendar?#{[month: Date.to_iso8601(shift_month(@month, -1))]}"}
+          class="btn btn-sm btn-ghost"
+          aria-label="Previous month"
+        >
+          <.icon name="hero-chevron-left" />
+        </.link>
+        <div class="flex items-center gap-3">
+          <h2 class="text-lg font-semibold">{Calendar.strftime(@month, "%B %Y")}</h2>
+          <.link patch={~p"/calendar"} class="btn btn-xs btn-outline">Today</.link>
+        </div>
+        <.link
+          patch={~p"/calendar?#{[month: Date.to_iso8601(shift_month(@month, 1))]}"}
+          class="btn btn-sm btn-ghost"
+          aria-label="Next month"
+        >
+          <.icon name="hero-chevron-right" />
+        </.link>
+      </div>
+
+      <div :if={@members != []} class="flex flex-wrap gap-x-4 gap-y-1 mt-4 text-xs">
+        <div class="flex items-center gap-1.5">
+          <span class="inline-block size-2 rounded-full bg-base-content/50"></span>
+          <span class="opacity-70">Whole household</span>
+        </div>
+        <div :for={member <- @members} class="flex items-center gap-1.5">
+          <span
+            class="inline-block size-2 rounded-full"
+            style={"background-color: #{member_color(@member_colors, member.id)}"}
+          ></span>
+          <span class="opacity-70">{display_name(member)}</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-7 gap-px mt-4 bg-base-300 border border-base-300 rounded overflow-hidden text-xs">
+        <div
+          :for={label <- ~w(Mon Tue Wed Thu Fri Sat Sun)}
+          class="bg-base-200 px-2 py-1 text-center font-semibold opacity-70"
+        >
+          {label}
+        </div>
+        <div
+          :for={date <- @grid_dates}
+          class={[
+            "bg-base-100 p-1 min-h-24 flex flex-col gap-0.5",
+            date.month != @month.month && "opacity-40"
+          ]}
+        >
+          <.link
+            navigate={~p"/calendar/new?#{[date: Date.to_iso8601(date)]}"}
+            class={["text-right block px-0.5", date == @today && "font-bold text-primary"]}
+          >
+            {date.day}
+          </.link>
+          <.link
+            :for={event <- Enum.take(Map.get(@events_by_date, date, []), 3)}
+            navigate={~p"/calendar/#{event}/edit"}
+            class="block truncate rounded px-1 py-0.5 text-left text-white"
+            style={"background-color: #{event_color(@member_colors, event)}"}
+            title={event.title}
+          >
+            {event.title}
+          </.link>
+          <div
+            :if={length(Map.get(@events_by_date, date, [])) > 3}
+            class="px-1 text-[10px] opacity-60"
+          >
+            +{length(Map.get(@events_by_date, date, [])) - 3} more
+          </div>
+        </div>
+      </div>
+    </Layouts.app>
+    """
+  end
+
+  @impl true
+  def mount(_params, _session, socket) do
+    scope = socket.assigns.current_scope
+
+    if connected?(socket) do
+      Events.subscribe_events(scope)
+    end
+
+    members = Households.list_household_members(scope)
+
+    {:ok,
+     socket
+     |> assign(:page_title, "Calendar")
+     |> assign(:today, Date.utc_today())
+     |> assign(:members, members)
+     |> assign(:member_colors, member_colors(members))}
+  end
+
+  @impl true
+  def handle_params(params, _uri, socket) do
+    month = parse_month(params["month"])
+    grid_dates = grid_dates(month)
+
+    {:noreply,
+     socket
+     |> assign(:month, month)
+     |> assign(:grid_dates, grid_dates)
+     |> assign(
+       :events_by_date,
+       Enum.group_by(
+         Events.list_events(
+           socket.assigns.current_scope,
+           List.first(grid_dates),
+           List.last(grid_dates)
+         ),
+         & &1.date
+       )
+     )}
+  end
+
+  @impl true
+  def handle_info({type, _event}, socket) when type in [:created, :updated, :deleted] do
+    {:noreply, socket |> assign(:events_by_date, reload_events(socket))}
+  end
+
+  defp reload_events(socket) do
+    grid_dates = socket.assigns.grid_dates
+
+    Events.list_events(
+      socket.assigns.current_scope,
+      List.first(grid_dates),
+      List.last(grid_dates)
+    )
+    |> Enum.group_by(& &1.date)
+  end
+
+  defp parse_month(nil), do: Date.beginning_of_month(Date.utc_today())
+
+  defp parse_month(month_string) do
+    case Date.from_iso8601(month_string) do
+      {:ok, date} -> Date.beginning_of_month(date)
+      {:error, _} -> Date.beginning_of_month(Date.utc_today())
+    end
+  end
+
+  # `month` is always already the 1st of its month, so stepping via a fixed
+  # day count (e.g. +15) doesn't reliably cross the boundary — a 31-day
+  # month needs +31, a 28-day one only +28. Going through the *end* of the
+  # month (for +1) or a single day before the 1st (for -1) always lands on
+  # the right month regardless of its length.
+  defp shift_month(month, 1), do: Date.add(Date.end_of_month(month), 1)
+  defp shift_month(month, -1), do: month |> Date.add(-1) |> Date.beginning_of_month()
+
+  # Pads a month's dates out to full Monday-Sunday weeks, so the grid never
+  # shows a partial first/last row.
+  defp grid_dates(month) do
+    last_day = Date.end_of_month(month)
+    grid_start = Date.add(month, -(Date.day_of_week(month) - 1))
+    grid_end = Date.add(last_day, 7 - Date.day_of_week(last_day))
+
+    Date.range(grid_start, grid_end) |> Enum.to_list()
+  end
+
+  # Stable color-slot assignment by alphabetical order among the
+  # household's members — same "color follows the entity, never its rank"
+  # rule as the dashboard's category-breakdown chart, reusing the same
+  # validated `--series-*` palette rather than inventing a second one.
+  defp member_colors(members) do
+    members
+    |> Enum.with_index(1)
+    |> Map.new(fn {member, index} -> {member.id, color_for_slot(index)} end)
+  end
+
+  defp color_for_slot(index) when index <= 8, do: "var(--series-#{index})"
+  defp color_for_slot(_index), do: "var(--series-other)"
+
+  defp member_color(_member_colors, nil), do: "var(--color-base-content)"
+
+  defp member_color(member_colors, user_id),
+    do: Map.get(member_colors, user_id, "var(--color-base-content)")
+
+  defp event_color(member_colors, event), do: member_color(member_colors, event.user_id)
+
+  defp display_name(user), do: user.name || user.email
+end
