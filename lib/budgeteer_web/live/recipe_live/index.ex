@@ -10,6 +10,9 @@ defmodule BudgeteerWeb.RecipeLive.Index do
       <.header>
         Recipes
         <:actions>
+          <.button navigate={~p"/recipes/extract"}>
+            <.icon name="hero-sparkles" /> Extract from text
+          </.button>
           <.button variant="primary" navigate={~p"/recipes/new"}>
             <.icon name="hero-plus" /> New recipe
           </.button>
@@ -59,6 +62,7 @@ defmodule BudgeteerWeb.RecipeLive.Index do
   @impl true
   def handle_info({type, %Budgeteer.Meals.Recipe{}}, socket)
       when type in [:created, :updated, :deleted] do
-    {:noreply, stream(socket, :recipes, Meals.list_recipes(socket.assigns.current_scope), reset: true)}
+    {:noreply,
+     stream(socket, :recipes, Meals.list_recipes(socket.assigns.current_scope), reset: true)}
   end
 end

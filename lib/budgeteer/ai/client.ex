@@ -45,7 +45,8 @@ defmodule Budgeteer.AI.Client do
             "description" => %{"type" => "string"},
             "category" => %{
               "type" => "string",
-              "description" => "Best-matching existing category name, a newly suggested one, or empty string"
+              "description" =>
+                "Best-matching existing category name, a newly suggested one, or empty string"
             }
           },
           "required" => ["date", "amount_cents", "merchant", "description", "category"],
@@ -86,13 +87,99 @@ defmodule Budgeteer.AI.Client do
     # document analysis (structured extraction over several pages can easily
     # take longer than that, especially on a cold prompt cache).
     case Req.post(@api_url, json: body, headers: headers(), receive_timeout: 120_000) do
-      {:ok, %Req.Response{status: 200, body: response_body}} -> handle_success(response_body)
-      {:ok, %Req.Response{status: status, body: response_body}} -> {:error, {:http_error, status, response_body}}
-      {:error, exception} -> {:error, exception}
+      {:ok, %Req.Response{status: 200, body: response_body}} ->
+        handle_success(response_body)
+
+      {:ok, %Req.Response{status: status, body: response_body}} ->
+        {:error, {:http_error, status, response_body}}
+
+      {:error, exception} ->
+        {:error, exception}
     end
   end
 
-  defp categories_hint([]), do: "This household has no existing categories yet — suggest reasonable new ones."
+  @recipe_system_prompt """
+  You are a recipe parser. Extract the recipe's name, any brief notes
+  (servings, prep/cook time, method), and its ingredients from the
+  provided recipe (plain text, or an image/PDF of one). Do not invent
+  ingredients — only extract what is explicitly present.
+
+  For each ingredient's quantity, use a plain numeric string (e.g. "2",
+  "0.5") only when the recipe states a numeric amount. For a non-numeric
+  or vague amount ("a pinch", "to taste", "a handful"), leave quantity as
+  an empty string and put the descriptive amount in unit instead (e.g.
+  unit: "pinch"). If no amount is given at all, leave both empty.
+  """
+
+  @recipe_output_schema %{
+    "type" => "object",
+    "properties" => %{
+      "name" => %{"type" => "string"},
+      "notes" => %{
+        "type" => "string",
+        "description" =>
+          "Brief prep notes, servings, or timing if mentioned; empty string if none"
+      },
+      "ingredients" => %{
+        "type" => "array",
+        "items" => %{
+          "type" => "object",
+          "properties" => %{
+            "name" => %{"type" => "string"},
+            "quantity" => %{
+              "type" => "string",
+              "description" => "A plain numeric amount if stated, else empty string"
+            },
+            "unit" => %{"type" => "string"}
+          },
+          "required" => ["name", "quantity", "unit"],
+          "additionalProperties" => false
+        }
+      }
+    },
+    "required" => ["name", "notes", "ingredients"],
+    "additionalProperties" => false
+  }
+
+  @impl true
+  def parse_recipe({:text, text}) when is_binary(text) do
+    request_recipe([
+      %{type: "text", text: "Extract the recipe from the following text:\n\n" <> text}
+    ])
+  end
+
+  def parse_recipe({:file, file_bytes, media_type})
+      when is_binary(file_bytes) and is_binary(media_type) do
+    request_recipe([
+      document_block(file_bytes, media_type),
+      %{type: "text", text: "Extract the recipe from this image/document."}
+    ])
+  end
+
+  defp request_recipe(content_blocks) do
+    body = %{
+      model: @model,
+      max_tokens: 4000,
+      temperature: 0,
+      system: @recipe_system_prompt,
+      output_config: %{format: %{type: "json_schema", schema: @recipe_output_schema}},
+      messages: [%{role: "user", content: content_blocks}]
+    }
+
+    case Req.post(@api_url, json: body, headers: headers(), receive_timeout: 120_000) do
+      {:ok, %Req.Response{status: 200, body: response_body}} ->
+        handle_success(response_body)
+
+      {:ok, %Req.Response{status: status, body: response_body}} ->
+        {:error, {:http_error, status, response_body}}
+
+      {:error, exception} ->
+        {:error, exception}
+    end
+  end
+
+  defp categories_hint([]),
+    do: "This household has no existing categories yet — suggest reasonable new ones."
 
   defp categories_hint(category_names) do
     "This household's existing categories are: " <> Enum.join(category_names, ", ")
