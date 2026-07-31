@@ -54,6 +54,31 @@
         });
       })();
     </script>
+    <script nonce={@csp_nonce}>
+      // iOS exposes no beforeinstallprompt-equivalent API — a PWA can never
+      // trigger "Add to Home Screen" itself, so this nudges iOS visitors who
+      // aren't already running standalone toward the Share-sheet action
+      // manually. Dismissal is remembered so it doesn't nag every visit.
+      document.addEventListener("DOMContentLoaded", () => {
+        const banner = document.getElementById("ios-install-banner");
+        if (!banner) return;
+
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isStandalone =
+          window.navigator.standalone === true ||
+          window.matchMedia("(display-mode: standalone)").matches;
+        const dismissed = localStorage.getItem("budgeteer:ios-install-dismissed") === "1";
+
+        if (isIOS && !isStandalone && !dismissed) {
+          banner.classList.remove("hidden");
+        }
+
+        document.getElementById("ios-install-banner-dismiss").addEventListener("click", () => {
+          localStorage.setItem("budgeteer:ios-install-dismissed", "1");
+          banner.classList.add("hidden");
+        });
+      });
+    </script>
   </head>
   <body>
     <ul class="menu menu-horizontal w-full relative z-10 flex flex-wrap items-center gap-4 px-4 sm:px-6 lg:px-8">
@@ -140,6 +165,28 @@
         </li>
       <% end %>
     </ul>
+
+    <div
+      :if={@current_scope}
+      id="ios-install-banner"
+      class="hidden fixed inset-x-0 bottom-0 z-30 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
+    >
+      <div class="alert alert-info shadow-lg max-w-md mx-auto flex items-center gap-3">
+        <.icon name="hero-arrow-up-on-square" class="size-5 shrink-0" />
+        <span class="text-sm">
+          Install Budgeteer: tap <strong>Share</strong>, then <strong>Add to Home Screen</strong>.
+        </span>
+        <button
+          type="button"
+          id="ios-install-banner-dismiss"
+          class="btn btn-ghost btn-xs btn-circle ml-auto shrink-0"
+          aria-label="Dismiss"
+        >
+          <.icon name="hero-x-mark" class="size-4" />
+        </button>
+      </div>
+    </div>
+
     {@inner_content}
   </body>
 </html>

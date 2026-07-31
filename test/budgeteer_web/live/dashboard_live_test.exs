@@ -16,6 +16,13 @@ defmodule BudgeteerWeb.DashboardLiveTest do
     assert html =~ "polyline"
   end
 
+  test "renders the (client-side gated, hidden by default) iOS install-nudge banner",
+       %{conn: conn} do
+    {:ok, _live, html} = live(conn, ~p"/dashboard")
+
+    assert html =~ "id=\"ios-install-banner\""
+  end
+
   test "shows an over-budget meter in red and an under-budget meter in brass", %{conn: conn, scope: scope} do
     account = account_fixture(scope, %{starting_balance: "1000.00"})
     today = Date.utc_today()
