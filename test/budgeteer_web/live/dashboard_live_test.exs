@@ -23,15 +23,53 @@ defmodule BudgeteerWeb.DashboardLiveTest do
     assert html =~ "id=\"ios-install-banner\""
   end
 
-  test "shows an over-budget meter in red and an under-budget meter in brass", %{conn: conn, scope: scope} do
+  test "shows a recurring-charges card once a subscription is detected, not before", %{
+    conn: conn,
+    scope: scope
+  } do
+    account = account_fixture(scope, %{starting_balance: "1000.00"})
+
+    {:ok, _live, html} = live(conn, ~p"/dashboard")
+    refute html =~ "Recurring charges detected"
+
+    for date <- [~D[2026-05-01], ~D[2026-06-01], ~D[2026-07-01]] do
+      transaction_fixture(scope, %{
+        account_id: account.id,
+        date: date,
+        amount: "-9.99",
+        merchant: "Netflix"
+      })
+    end
+
+    {:ok, _live, html} = live(conn, ~p"/dashboard")
+    assert html =~ "Recurring charges detected"
+    assert html =~ "1 ·"
+  end
+
+  test "shows an over-budget meter in red and an under-budget meter in brass", %{
+    conn: conn,
+    scope: scope
+  } do
     account = account_fixture(scope, %{starting_balance: "1000.00"})
     today = Date.utc_today()
 
     over = category_fixture(scope, %{name: "Groceries", type: :expense, budget: "50.00"})
-    transaction_fixture(scope, %{account_id: account.id, category_id: over.id, amount: "-80.00", date: today})
+
+    transaction_fixture(scope, %{
+      account_id: account.id,
+      category_id: over.id,
+      amount: "-80.00",
+      date: today
+    })
 
     under = category_fixture(scope, %{name: "Transport", type: :expense, budget: "60.00"})
-    transaction_fixture(scope, %{account_id: account.id, category_id: under.id, amount: "-20.00", date: today})
+
+    transaction_fixture(scope, %{
+      account_id: account.id,
+      category_id: under.id,
+      amount: "-20.00",
+      date: today
+    })
 
     {:ok, _live, html} = live(conn, ~p"/dashboard")
 
@@ -39,15 +77,30 @@ defmodule BudgeteerWeb.DashboardLiveTest do
     assert html =~ "bg-primary"
   end
 
-  test "does not render a meter for an income category or a budgetless category", %{conn: conn, scope: scope} do
+  test "does not render a meter for an income category or a budgetless category", %{
+    conn: conn,
+    scope: scope
+  } do
     account = account_fixture(scope, %{starting_balance: "1000.00"})
     today = Date.utc_today()
 
     income = category_fixture(scope, %{name: "Salary", type: :income, budget: nil})
-    transaction_fixture(scope, %{account_id: account.id, category_id: income.id, amount: "1000.00", date: today})
+
+    transaction_fixture(scope, %{
+      account_id: account.id,
+      category_id: income.id,
+      amount: "1000.00",
+      date: today
+    })
 
     no_budget = category_fixture(scope, %{name: "Misc", type: :expense, budget: nil})
-    transaction_fixture(scope, %{account_id: account.id, category_id: no_budget.id, amount: "-5.00", date: today})
+
+    transaction_fixture(scope, %{
+      account_id: account.id,
+      category_id: no_budget.id,
+      amount: "-5.00",
+      date: today
+    })
 
     {:ok, _live, html} = live(conn, ~p"/dashboard")
 
@@ -56,18 +109,31 @@ defmodule BudgeteerWeb.DashboardLiveTest do
   end
 
   describe "category spend breakdown chart" do
-    test "shows one segment per expense category, excludes income, does not render with no expense spend", %{
-      conn: conn,
-      scope: scope
-    } do
+    test "shows one segment per expense category, excludes income, does not render with no expense spend",
+         %{
+           conn: conn,
+           scope: scope
+         } do
       account = account_fixture(scope, %{starting_balance: "1000.00"})
       today = Date.utc_today()
 
       groceries = category_fixture(scope, %{name: "Groceries", type: :expense})
-      transaction_fixture(scope, %{account_id: account.id, category_id: groceries.id, amount: "-75.00", date: today})
+
+      transaction_fixture(scope, %{
+        account_id: account.id,
+        category_id: groceries.id,
+        amount: "-75.00",
+        date: today
+      })
 
       salary = category_fixture(scope, %{name: "Salary", type: :income})
-      transaction_fixture(scope, %{account_id: account.id, category_id: salary.id, amount: "1000.00", date: today})
+
+      transaction_fixture(scope, %{
+        account_id: account.id,
+        category_id: salary.id,
+        amount: "1000.00",
+        date: today
+      })
 
       {:ok, _live, html} = live(conn, ~p"/dashboard")
 
@@ -82,14 +148,23 @@ defmodule BudgeteerWeb.DashboardLiveTest do
       today = Date.utc_today()
 
       salary = category_fixture(scope, %{name: "Salary", type: :income})
-      transaction_fixture(scope, %{account_id: account.id, category_id: salary.id, amount: "1000.00", date: today})
+
+      transaction_fixture(scope, %{
+        account_id: account.id,
+        category_id: salary.id,
+        amount: "1000.00",
+        date: today
+      })
 
       {:ok, _live, html} = live(conn, ~p"/dashboard")
 
       refute html =~ "category-breakdown"
     end
 
-    test "folds categories beyond the 8-slot cap into a single Other segment", %{conn: conn, scope: scope} do
+    test "folds categories beyond the 8-slot cap into a single Other segment", %{
+      conn: conn,
+      scope: scope
+    } do
       account = account_fixture(scope, %{starting_balance: "1000.00"})
       today = Date.utc_today()
 

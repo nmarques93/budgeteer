@@ -2,6 +2,7 @@ defmodule BudgeteerWeb.DashboardLive do
   use BudgeteerWeb, :live_view
 
   alias Budgeteer.Ledger
+  alias Budgeteer.Subscriptions
 
   @impl true
   def render(assigns) do
@@ -18,6 +19,19 @@ defmodule BudgeteerWeb.DashboardLive do
         <.sparkline history={@balance_history} />
       </div>
 
+      <div
+        :if={@subscription_count > 0}
+        class="mt-8 rounded border border-base-300 p-4 flex items-center justify-between gap-4"
+      >
+        <div>
+          <div class="text-sm opacity-70">Recurring charges detected</div>
+          <div class="text-xl font-bold">
+            {@subscription_count} · <.money cents={@subscription_monthly_cents} /> / mo
+          </div>
+        </div>
+        <.link navigate={~p"/subscriptions"} class="btn btn-sm btn-outline shrink-0">View all</.link>
+      </div>
+
       <h2 class="text-lg font-semibold mt-8">This month by category</h2>
       <.category_breakdown_chart breakdown={@category_breakdown} />
       <.table id="category-totals" rows={@category_totals}>
@@ -31,10 +45,14 @@ defmodule BudgeteerWeb.DashboardLive do
       <h2 class="text-lg font-semibold mt-8">Recent transactions</h2>
       <.table id="recent-transactions" rows={@recent_transactions}>
         <:col :let={transaction} label="Date">{transaction.date}</:col>
-        <:col :let={transaction} label="Account">{account_name(@accounts_by_id, transaction.account_id)}</:col>
+        <:col :let={transaction} label="Account">
+          {account_name(@accounts_by_id, transaction.account_id)}
+        </:col>
         <:col :let={transaction} label="Merchant">{transaction.merchant}</:col>
         <:col :let={transaction} label="Amount"><.money cents={transaction.amount_cents} /></:col>
-        <:col :let={transaction} label="Category">{category_name(@categories_by_id, transaction.category_id)}</:col>
+        <:col :let={transaction} label="Category">
+          {category_name(@categories_by_id, transaction.category_id)}
+        </:col>
       </.table>
     </Layouts.app>
     """
@@ -48,6 +66,7 @@ defmodule BudgeteerWeb.DashboardLive do
       Ledger.subscribe_accounts(scope)
       Ledger.subscribe_transactions(scope)
       Ledger.subscribe_categories(scope)
+      Subscriptions.subscribe_subscriptions(scope)
     end
 
     categories = Ledger.list_categories(scope)
@@ -62,7 +81,8 @@ defmodule BudgeteerWeb.DashboardLive do
   end
 
   @impl true
-  def handle_info({type, _record}, socket) when type in [:created, :updated, :deleted] do
+  def handle_info({type, _record}, socket)
+      when type in [:created, :updated, :deleted, :dismissed, :undismissed] do
     scope = socket.assigns.current_scope
     categories = Ledger.list_categories(scope)
 
@@ -77,6 +97,7 @@ defmodule BudgeteerWeb.DashboardLive do
   defp load_data(socket) do
     scope = socket.assigns.current_scope
     category_totals = decimal_totals(Ledger.monthly_category_totals(scope))
+    subscriptions = Subscriptions.list_subscriptions(scope)
 
     socket
     |> assign(:total_balance_cents, Ledger.total_balance_cents(scope))
@@ -84,6 +105,11 @@ defmodule BudgeteerWeb.DashboardLive do
     |> assign(:category_totals, category_totals)
     |> assign(:category_breakdown, category_breakdown(socket.assigns.categories, category_totals))
     |> assign(:recent_transactions, Ledger.list_recent_transactions(scope))
+    |> assign(:subscription_count, length(subscriptions))
+    |> assign(
+      :subscription_monthly_cents,
+      Enum.sum(Enum.map(subscriptions, &Subscriptions.monthly_equivalent_cents/1))
+    )
   end
 
   # Stable color-slot assignment: categories are given a fixed slot by
@@ -120,11 +146,17 @@ defmodule BudgeteerWeb.DashboardLive do
       main_segments =
         main
         |> Enum.sort_by(fn {_name, _cents, slot} -> slot end)
-        |> Enum.map(fn {name, cents, slot} -> breakdown_segment(name, cents, total_cents, "var(--series-#{slot})") end)
+        |> Enum.map(fn {name, cents, slot} ->
+          breakdown_segment(name, cents, total_cents, "var(--series-#{slot})")
+        end)
 
       case Enum.sum(Enum.map(other, fn {_name, cents, _slot} -> cents end)) do
-        0 -> main_segments
-        other_cents -> main_segments ++ [breakdown_segment("Other", other_cents, total_cents, "var(--series-other)")]
+        0 ->
+          main_segments
+
+        other_cents ->
+          main_segments ++
+            [breakdown_segment("Other", other_cents, total_cents, "var(--series-other)")]
       end
     end
   end
@@ -142,10 +174,13 @@ defmodule BudgeteerWeb.DashboardLive do
     Enum.map(rows, &Map.update!(&1, :total_cents, fn d -> Decimal.to_integer(d) end))
   end
 
-  defp account_name(accounts_by_id, account_id), do: Map.get(accounts_by_id, account_id, "Unknown account")
+  defp account_name(accounts_by_id, account_id),
+    do: Map.get(accounts_by_id, account_id, "Unknown account")
 
   defp category_name(_categories_by_id, nil), do: "Uncategorized"
-  defp category_name(categories_by_id, category_id), do: Map.get(categories_by_id, category_id, "Uncategorized")
+
+  defp category_name(categories_by_id, category_id),
+    do: Map.get(categories_by_id, category_id, "Uncategorized")
 
   @doc """
   Renders the household's balance trend as a hairline SVG line chart with a
@@ -161,10 +196,25 @@ defmodule BudgeteerWeb.DashboardLive do
     assigns = assign(assigns, :points, points)
 
     ~H"""
-    <div id="balance-sparkline" phx-hook=".Sparkline" data-points={Jason.encode!(@points.hover)} class="relative mt-2">
-      <svg viewBox="0 0 100 32" preserveAspectRatio="none" class="w-full h-10 text-primary" data-sparkline-svg>
+    <div
+      id="balance-sparkline"
+      phx-hook=".Sparkline"
+      data-points={Jason.encode!(@points.hover)}
+      class="relative mt-2"
+    >
+      <svg
+        viewBox="0 0 100 32"
+        preserveAspectRatio="none"
+        class="w-full h-10 text-primary"
+        data-sparkline-svg
+      >
         <line x1="0" y1="31.5" x2="100" y2="31.5" class="stroke-base-300" stroke-width="0.5" />
-        <polygon :if={@points.line != ""} points={@points.area} fill="currentColor" class="opacity-10" />
+        <polygon
+          :if={@points.line != ""}
+          points={@points.area}
+          fill="currentColor"
+          class="opacity-10"
+        />
         <polyline
           :if={@points.line != ""}
           points={@points.line}
@@ -173,7 +223,13 @@ defmodule BudgeteerWeb.DashboardLive do
           stroke-width="1"
           vector-effect="non-scaling-stroke"
         />
-        <circle :if={@points.last} cx={elem(@points.last, 0)} cy={elem(@points.last, 1)} r="1.5" fill="currentColor" />
+        <circle
+          :if={@points.last}
+          cx={elem(@points.last, 0)}
+          cy={elem(@points.last, 1)}
+          r="1.5"
+          fill="currentColor"
+        />
         <line
           data-crosshair
           class="hidden stroke-base-content/40"
@@ -248,7 +304,8 @@ defmodule BudgeteerWeb.DashboardLive do
     """
   end
 
-  defp spark_points(history) when length(history) < 2, do: %{line: "", area: "", last: nil, hover: []}
+  defp spark_points(history) when length(history) < 2,
+    do: %{line: "", area: "", last: nil, hover: []}
 
   defp spark_points(history) do
     values = Enum.map(history, & &1.balance_cents)
@@ -277,7 +334,12 @@ defmodule BudgeteerWeb.DashboardLive do
         %{x: x, date: Calendar.strftime(date, "%b %-d"), value: Budgeteer.Money.format(cents)}
       end)
 
-    %{line: line, area: line <> " #{last_x},30 #{first_x},30", last: List.last(coords), hover: hover}
+    %{
+      line: line,
+      area: line <> " #{last_x},30 #{first_x},30",
+      last: List.last(coords),
+      hover: hover
+    }
   end
 
   @doc """
@@ -295,7 +357,12 @@ defmodule BudgeteerWeb.DashboardLive do
 
   def category_breakdown_chart(assigns) do
     ~H"""
-    <div :if={@breakdown != []} id="category-breakdown" phx-hook=".CategoryBreakdown" class="relative mt-2 mb-6">
+    <div
+      :if={@breakdown != []}
+      id="category-breakdown"
+      phx-hook=".CategoryBreakdown"
+      class="relative mt-2 mb-6"
+    >
       <div data-bar class="flex gap-0.5 h-4 rounded-full overflow-hidden">
         <div
           :for={segment <- @breakdown}
@@ -316,7 +383,10 @@ defmodule BudgeteerWeb.DashboardLive do
       </div>
       <div class="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs">
         <div :for={segment <- @breakdown} class="flex items-center gap-1.5">
-          <span class="inline-block size-2 rounded-full shrink-0" style={"background-color: #{segment.color}"}></span>
+          <span
+            class="inline-block size-2 rounded-full shrink-0"
+            style={"background-color: #{segment.color}"}
+          ></span>
           <span class="opacity-70">{segment.name}</span>
           <span class="font-mono">{segment.formatted}</span>
         </div>
@@ -381,12 +451,17 @@ defmodule BudgeteerWeb.DashboardLive do
   def budget_meter(assigns) do
     ~H"""
     <div :if={meter_visible?(@row)} class="w-32 h-2 rounded-full bg-base-300 overflow-hidden">
-      <div class={["h-full rounded-full", meter_color(@row)]} style={"width: #{meter_percent(@row)}%"} />
+      <div
+        class={["h-full rounded-full", meter_color(@row)]}
+        style={"width: #{meter_percent(@row)}%"}
+      />
     </div>
     """
   end
 
-  defp meter_visible?(%{type: :expense, budget_cents: budget}) when is_integer(budget) and budget > 0, do: true
+  defp meter_visible?(%{type: :expense, budget_cents: budget})
+       when is_integer(budget) and budget > 0, do: true
+
   defp meter_visible?(_row), do: false
 
   defp meter_percent(%{total_cents: spent, budget_cents: budget}) do

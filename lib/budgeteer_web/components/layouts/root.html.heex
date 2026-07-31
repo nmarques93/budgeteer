@@ -106,6 +106,7 @@
             <summary>More</summary>
             <ul class="bg-base-100 rounded-box z-20">
               <li><.link href={~p"/transactions"}>Search Transactions</.link></li>
+              <li><.link href={~p"/subscriptions"}>Recurring Charges</.link></li>
               <li><.link href={~p"/recipes"}>Recipes</.link></li>
               <li><.link href={~p"/meal-plan"}>Meal Plan</.link></li>
             </ul>
@@ -113,7 +114,11 @@
         </li>
       <% end %>
       <li>
-        <div class="flex items-center gap-0.5 rounded-full border border-base-300 p-0.5" role="group" aria-label="Theme">
+        <div
+          class="flex items-center gap-0.5 rounded-full border border-base-300 p-0.5"
+          role="group"
+          aria-label="Theme"
+        >
           <button
             type="button"
             phx-click={JS.dispatch("phx:set-theme")}
