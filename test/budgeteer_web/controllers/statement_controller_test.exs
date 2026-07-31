@@ -23,7 +23,9 @@ defmodule BudgeteerWeb.StatementControllerTest do
       scope: scope,
       account: account
     } do
-      expect(Budgeteer.AI.ClientMock, :parse_statement, fn _bytes, "application/pdf", _category_names ->
+      expect(Budgeteer.AI.ClientMock, :parse_statement, fn _bytes,
+                                                           "application/pdf",
+                                                           _category_names ->
         {:ok, %{"currency" => "EUR", "transactions" => []}}
       end)
 
@@ -50,8 +52,15 @@ defmodule BudgeteerWeb.StatementControllerTest do
       assert Phoenix.Flash.get(conn.assigns.flash, :error) =~ "Please select a file"
     end
 
-    test "with an unsupported file type, redirects back with an error flash", %{conn: conn, account: account} do
-      upload = %Plug.Upload{path: temp_file!("hi"), filename: "statement.txt", content_type: "text/plain"}
+    test "with an unsupported file type, redirects back with an error flash", %{
+      conn: conn,
+      account: account
+    } do
+      upload = %Plug.Upload{
+        path: temp_file!("hi"),
+        filename: "statement.txt",
+        content_type: "text/plain"
+      }
 
       conn = post(conn, ~p"/accounts/#{account}/statements", statement: %{"file" => upload})
 
@@ -71,7 +80,11 @@ defmodule BudgeteerWeb.StatementControllerTest do
       file_hash = :crypto.hash(:sha256, "%PDF-" <> content) |> Base.encode16(case: :lower)
       statement_fixture(scope, %{account: account, file_hash: file_hash})
 
-      upload = %Plug.Upload{path: temp_file!(content), filename: "statement.pdf", content_type: "application/pdf"}
+      upload = %Plug.Upload{
+        path: temp_file!(content),
+        filename: "statement.pdf",
+        content_type: "application/pdf"
+      }
 
       conn = post(conn, ~p"/accounts/#{account}/statements", statement: %{"file" => upload})
 
@@ -81,7 +94,12 @@ defmodule BudgeteerWeb.StatementControllerTest do
   end
 
   defp temp_file!(contents) do
-    path = Path.join(System.tmp_dir!(), "statement-controller-test-#{System.unique_integer([:positive])}.pdf")
+    path =
+      Path.join(
+        System.tmp_dir!(),
+        "statement-controller-test-#{System.unique_integer([:positive])}.pdf"
+      )
+
     # "%PDF-" magic bytes so this passes StatementController's content-sniff
     # validation, same as a real PDF upload would.
     File.write!(path, "%PDF-" <> contents)

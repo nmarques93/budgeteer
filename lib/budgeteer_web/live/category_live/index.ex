@@ -8,10 +8,10 @@ defmodule BudgeteerWeb.CategoryLive.Index do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} online_members={@online_members}>
       <.header>
-        Listing Categories
+        {gettext("Listing Categories")}
         <:actions>
           <.button variant="primary" navigate={~p"/categories/new"}>
-            <.icon name="hero-plus" /> New Category
+            <.icon name="hero-plus" /> {gettext("New Category")}
           </.button>
         </:actions>
       </.header>
@@ -21,22 +21,24 @@ defmodule BudgeteerWeb.CategoryLive.Index do
         rows={@streams.categories}
         row_click={fn {_id, category} -> JS.navigate(~p"/categories/#{category}") end}
       >
-        <:col :let={{_id, category}} label="Name">{category.name}</:col>
-        <:col :let={{_id, category}} label="Color">{category.color}</:col>
-        <:col :let={{_id, category}} label="Budget"><.money cents={category.budget_cents} /></:col>
-        <:col :let={{_id, category}} label="Type">{category.type}</:col>
+        <:col :let={{_id, category}} label={gettext("Name")}>{category.name}</:col>
+        <:col :let={{_id, category}} label={gettext("Color")}>{category.color}</:col>
+        <:col :let={{_id, category}} label={gettext("Budget")}>
+          <.money cents={category.budget_cents} />
+        </:col>
+        <:col :let={{_id, category}} label={gettext("Type")}>{category.type}</:col>
         <:action :let={{_id, category}}>
           <div class="sr-only">
-            <.link navigate={~p"/categories/#{category}"}>Show</.link>
+            <.link navigate={~p"/categories/#{category}"}>{gettext("Show")}</.link>
           </div>
-          <.link navigate={~p"/categories/#{category}/edit"}>Edit</.link>
+          <.link navigate={~p"/categories/#{category}/edit"}>{gettext("Edit")}</.link>
         </:action>
         <:action :let={{id, category}}>
           <.link
             phx-click={JS.push("delete", value: %{id: category.id}) |> hide("##{id}")}
-            data-confirm="Are you sure?"
+            data-confirm={gettext("Are you sure?")}
           >
-            Delete
+            {gettext("Delete")}
           </.link>
         </:action>
       </.table>
@@ -52,7 +54,7 @@ defmodule BudgeteerWeb.CategoryLive.Index do
 
     {:ok,
      socket
-     |> assign(:page_title, "Listing Categories")
+     |> assign(:page_title, gettext("Listing Categories"))
      |> stream(:categories, list_categories(socket.assigns.current_scope))}
   end
 
@@ -67,7 +69,8 @@ defmodule BudgeteerWeb.CategoryLive.Index do
   @impl true
   def handle_info({type, %Budgeteer.Ledger.Category{}}, socket)
       when type in [:created, :updated, :deleted] do
-    {:noreply, stream(socket, :categories, list_categories(socket.assigns.current_scope), reset: true)}
+    {:noreply,
+     stream(socket, :categories, list_categories(socket.assigns.current_scope), reset: true)}
   end
 
   defp list_categories(current_scope) do

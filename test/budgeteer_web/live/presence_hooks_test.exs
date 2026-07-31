@@ -4,7 +4,9 @@ defmodule BudgeteerWeb.PresenceHooksTest do
   import Phoenix.LiveViewTest
   import Budgeteer.HouseholdsFixtures
 
-  test "shows another connected household member as online, and removes them on disconnect", %{conn: conn} do
+  test "shows another connected household member as online, and removes them on disconnect", %{
+    conn: conn
+  } do
     owner = user_fixture()
     member = second_household_member_fixture(owner)
 

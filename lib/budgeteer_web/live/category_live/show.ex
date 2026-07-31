@@ -8,23 +8,22 @@ defmodule BudgeteerWeb.CategoryLive.Show do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} online_members={@online_members}>
       <.header>
-        Category {@category.id}
-        <:subtitle>This is a category record from your database.</:subtitle>
+        {@category.name}
         <:actions>
           <.button navigate={~p"/categories"}>
             <.icon name="hero-arrow-left" />
           </.button>
           <.button variant="primary" navigate={~p"/categories/#{@category}/edit?return_to=show"}>
-            <.icon name="hero-pencil-square" /> Edit category
+            <.icon name="hero-pencil-square" /> {gettext("Edit category")}
           </.button>
         </:actions>
       </.header>
 
       <.list>
-        <:item title="Name">{@category.name}</:item>
-        <:item title="Color">{@category.color}</:item>
-        <:item title="Budget"><.money cents={@category.budget_cents} /></:item>
-        <:item title="Type">{@category.type}</:item>
+        <:item title={gettext("Name")}>{@category.name}</:item>
+        <:item title={gettext("Color")}>{@category.color}</:item>
+        <:item title={gettext("Budget")}><.money cents={@category.budget_cents} /></:item>
+        <:item title={gettext("Type")}>{@category.type}</:item>
       </.list>
     </Layouts.app>
     """
@@ -38,7 +37,7 @@ defmodule BudgeteerWeb.CategoryLive.Show do
 
     {:ok,
      socket
-     |> assign(:page_title, "Show Category")
+     |> assign(:page_title, gettext("Show Category"))
      |> assign(:category, Ledger.get_category!(socket.assigns.current_scope, id))}
   end
 
@@ -56,7 +55,7 @@ defmodule BudgeteerWeb.CategoryLive.Show do
       ) do
     {:noreply,
      socket
-     |> put_flash(:error, "The current category was deleted.")
+     |> put_flash(:error, gettext("The current category was deleted."))
      |> push_navigate(to: ~p"/categories")}
   end
 

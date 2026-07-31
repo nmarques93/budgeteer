@@ -14,13 +14,13 @@ defmodule BudgeteerWeb.CalendarLive.Index do
       container_class="max-w-4xl"
     >
       <.header>
-        Calendar
+        {gettext("Calendar")}
         <:actions>
           <.button
             variant="primary"
             navigate={~p"/calendar/new?#{[date: Date.to_iso8601(Date.utc_today())]}"}
           >
-            <.icon name="hero-plus" /> New Event
+            <.icon name="hero-plus" /> {gettext("New Event")}
           </.button>
         </:actions>
       </.header>
@@ -29,18 +29,18 @@ defmodule BudgeteerWeb.CalendarLive.Index do
         <.link
           patch={~p"/calendar?#{[month: Date.to_iso8601(shift_month(@month, -1))]}"}
           class="btn btn-sm btn-ghost"
-          aria-label="Previous month"
+          aria-label={gettext("Previous month")}
         >
           <.icon name="hero-chevron-left" />
         </.link>
         <div class="flex items-center gap-3">
-          <h2 class="text-lg font-semibold">{Calendar.strftime(@month, "%B %Y")}</h2>
-          <.link patch={~p"/calendar"} class="btn btn-xs btn-outline">Today</.link>
+          <h2 class="text-lg font-semibold">{month_label(@month)}</h2>
+          <.link patch={~p"/calendar"} class="btn btn-xs btn-outline">{gettext("Today")}</.link>
         </div>
         <.link
           patch={~p"/calendar?#{[month: Date.to_iso8601(shift_month(@month, 1))]}"}
           class="btn btn-sm btn-ghost"
-          aria-label="Next month"
+          aria-label={gettext("Next month")}
         >
           <.icon name="hero-chevron-right" />
         </.link>
@@ -49,7 +49,7 @@ defmodule BudgeteerWeb.CalendarLive.Index do
       <div :if={@members != []} class="flex flex-wrap gap-x-4 gap-y-1 mt-4 text-xs">
         <div class="flex items-center gap-1.5">
           <span class="inline-block size-2 rounded-full bg-base-content/50"></span>
-          <span class="opacity-70">Whole household</span>
+          <span class="opacity-70">{gettext("Whole household")}</span>
         </div>
         <div :for={member <- @members} class="flex items-center gap-1.5">
           <span
@@ -62,7 +62,7 @@ defmodule BudgeteerWeb.CalendarLive.Index do
 
       <div class="grid grid-cols-7 gap-px mt-4 bg-base-300 border border-base-300 rounded overflow-hidden text-xs">
         <div
-          :for={label <- ~w(Mon Tue Wed Thu Fri Sat Sun)}
+          :for={label <- weekday_labels()}
           class="bg-base-200 px-2 py-1 text-center font-semibold opacity-70"
         >
           {label}
@@ -93,7 +93,7 @@ defmodule BudgeteerWeb.CalendarLive.Index do
             :if={length(Map.get(@events_by_date, date, [])) > 3}
             class="px-1 text-[10px] opacity-60"
           >
-            +{length(Map.get(@events_by_date, date, [])) - 3} more
+            {gettext("+%{count} more", count: length(Map.get(@events_by_date, date, [])) - 3)}
           </div>
         </div>
       </div>
@@ -113,7 +113,7 @@ defmodule BudgeteerWeb.CalendarLive.Index do
 
     {:ok,
      socket
-     |> assign(:page_title, "Calendar")
+     |> assign(:page_title, gettext("Calendar"))
      |> assign(:today, Date.utc_today())
      |> assign(:members, members)
      |> assign(:member_colors, member_colors(members))}
@@ -205,4 +205,40 @@ defmodule BudgeteerWeb.CalendarLive.Index do
   defp event_color(member_colors, event), do: member_color(member_colors, event.user_id)
 
   defp display_name(user), do: user.name || user.email
+
+  # Elixir's Calendar.strftime/3 has no built-in locale awareness — "%B"
+  # always renders English month names — so the month names are routed
+  # through gettext explicitly via the `:month_names` callback instead.
+  defp month_label(month), do: Calendar.strftime(month, "%B %Y", month_names: &month_name/1)
+
+  defp month_name(month_number), do: Enum.at(month_names(), month_number - 1)
+
+  defp month_names do
+    [
+      gettext("January"),
+      gettext("February"),
+      gettext("March"),
+      gettext("April"),
+      gettext("May"),
+      gettext("June"),
+      gettext("July"),
+      gettext("August"),
+      gettext("September"),
+      gettext("October"),
+      gettext("November"),
+      gettext("December")
+    ]
+  end
+
+  defp weekday_labels do
+    [
+      gettext("Mon"),
+      gettext("Tue"),
+      gettext("Wed"),
+      gettext("Thu"),
+      gettext("Fri"),
+      gettext("Sat"),
+      gettext("Sun")
+    ]
+  end
 end

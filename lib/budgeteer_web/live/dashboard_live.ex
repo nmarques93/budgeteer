@@ -9,13 +9,13 @@ defmodule BudgeteerWeb.DashboardLive do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} online_members={@online_members}>
       <.header>
-        Dashboard
+        {gettext("Dashboard")}
       </.header>
 
       <div class="mt-4">
-        <div class="text-sm opacity-70">Total balance</div>
+        <div class="text-sm opacity-70">{gettext("Total balance")}</div>
         <div class="text-3xl font-bold"><.money cents={@total_balance_cents} /></div>
-        <div class="text-xs opacity-60 mt-1">Last 30 days</div>
+        <div class="text-xs opacity-60 mt-1">{gettext("Last 30 days")}</div>
         <.sparkline history={@balance_history} />
       </div>
 
@@ -24,33 +24,37 @@ defmodule BudgeteerWeb.DashboardLive do
         class="mt-8 rounded border border-base-300 p-4 flex items-center justify-between gap-4"
       >
         <div>
-          <div class="text-sm opacity-70">Recurring charges detected</div>
+          <div class="text-sm opacity-70">{gettext("Recurring charges detected")}</div>
           <div class="text-xl font-bold">
-            {@subscription_count} · <.money cents={@subscription_monthly_cents} /> / mo
+            {@subscription_count} · <.money cents={@subscription_monthly_cents} /> {gettext("/ mo")}
           </div>
         </div>
-        <.link navigate={~p"/subscriptions"} class="btn btn-sm btn-outline shrink-0">View all</.link>
+        <.link navigate={~p"/subscriptions"} class="btn btn-sm btn-outline shrink-0">
+          {gettext("View all")}
+        </.link>
       </div>
 
-      <h2 class="text-lg font-semibold mt-8">This month by category</h2>
+      <h2 class="text-lg font-semibold mt-8">{gettext("This month by category")}</h2>
       <.category_breakdown_chart breakdown={@category_breakdown} />
       <.table id="category-totals" rows={@category_totals}>
-        <:col :let={row} label="Category">{row.name}</:col>
-        <:col :let={row} label="Type">{row.type}</:col>
-        <:col :let={row} label="Spent"><.money cents={row.total_cents} /></:col>
-        <:col :let={row} label="Budget"><.money cents={row.budget_cents} /></:col>
-        <:col :let={row} label="Progress"><.budget_meter row={row} /></:col>
+        <:col :let={row} label={gettext("Category")}>{row.name}</:col>
+        <:col :let={row} label={gettext("Type")}>{row.type}</:col>
+        <:col :let={row} label={gettext("Spent")}><.money cents={row.total_cents} /></:col>
+        <:col :let={row} label={gettext("Budget")}><.money cents={row.budget_cents} /></:col>
+        <:col :let={row} label={gettext("Progress")}><.budget_meter row={row} /></:col>
       </.table>
 
-      <h2 class="text-lg font-semibold mt-8">Recent transactions</h2>
+      <h2 class="text-lg font-semibold mt-8">{gettext("Recent transactions")}</h2>
       <.table id="recent-transactions" rows={@recent_transactions}>
-        <:col :let={transaction} label="Date">{transaction.date}</:col>
-        <:col :let={transaction} label="Account">
+        <:col :let={transaction} label={gettext("Date")}>{transaction.date}</:col>
+        <:col :let={transaction} label={gettext("Account")}>
           {account_name(@accounts_by_id, transaction.account_id)}
         </:col>
-        <:col :let={transaction} label="Merchant">{transaction.merchant}</:col>
-        <:col :let={transaction} label="Amount"><.money cents={transaction.amount_cents} /></:col>
-        <:col :let={transaction} label="Category">
+        <:col :let={transaction} label={gettext("Merchant")}>{transaction.merchant}</:col>
+        <:col :let={transaction} label={gettext("Amount")}>
+          <.money cents={transaction.amount_cents} />
+        </:col>
+        <:col :let={transaction} label={gettext("Category")}>
           {category_name(@categories_by_id, transaction.category_id)}
         </:col>
       </.table>
@@ -73,7 +77,7 @@ defmodule BudgeteerWeb.DashboardLive do
 
     {:ok,
      socket
-     |> assign(:page_title, "Dashboard")
+     |> assign(:page_title, gettext("Dashboard"))
      |> assign(:accounts_by_id, Map.new(Ledger.list_accounts(scope), &{&1.id, &1.name}))
      |> assign(:categories_by_id, Map.new(categories, &{&1.id, &1.name}))
      |> assign(:categories, categories)
@@ -156,7 +160,7 @@ defmodule BudgeteerWeb.DashboardLive do
 
         other_cents ->
           main_segments ++
-            [breakdown_segment("Other", other_cents, total_cents, "var(--series-other)")]
+            [breakdown_segment(gettext("Other"), other_cents, total_cents, "var(--series-other)")]
       end
     end
   end
@@ -174,13 +178,39 @@ defmodule BudgeteerWeb.DashboardLive do
     Enum.map(rows, &Map.update!(&1, :total_cents, fn d -> Decimal.to_integer(d) end))
   end
 
-  defp account_name(accounts_by_id, account_id),
-    do: Map.get(accounts_by_id, account_id, "Unknown account")
+  # Elixir's Calendar.strftime/3 has no built-in locale awareness — "%b"
+  # always renders English abbreviated month names — so the month name is
+  # routed through gettext explicitly, same approach as CalendarLive.Index.
+  defp short_date(date),
+    do: Calendar.strftime(date, "%b %-d", abbreviated_month_names: &abbreviated_month_name/1)
 
-  defp category_name(_categories_by_id, nil), do: "Uncategorized"
+  defp abbreviated_month_name(month_number),
+    do: Enum.at(abbreviated_month_names(), month_number - 1)
+
+  defp abbreviated_month_names do
+    [
+      gettext("Jan"),
+      gettext("Feb"),
+      gettext("Mar"),
+      gettext("Apr"),
+      gettext("May"),
+      gettext("Jun"),
+      gettext("Jul"),
+      gettext("Aug"),
+      gettext("Sep"),
+      gettext("Oct"),
+      gettext("Nov"),
+      gettext("Dec")
+    ]
+  end
+
+  defp account_name(accounts_by_id, account_id),
+    do: Map.get(accounts_by_id, account_id, gettext("Unknown account"))
+
+  defp category_name(_categories_by_id, nil), do: gettext("Uncategorized")
 
   defp category_name(categories_by_id, category_id),
-    do: Map.get(categories_by_id, category_id, "Uncategorized")
+    do: Map.get(categories_by_id, category_id, gettext("Uncategorized"))
 
   @doc """
   Renders the household's balance trend as a hairline SVG line chart with a
@@ -331,7 +361,7 @@ defmodule BudgeteerWeb.DashboardLive do
       history
       |> Enum.zip(coords)
       |> Enum.map(fn {%{date: date, balance_cents: cents}, {x, _y}} ->
-        %{x: x, date: Calendar.strftime(date, "%b %-d"), value: Budgeteer.Money.format(cents)}
+        %{x: x, date: short_date(date), value: Budgeteer.Money.format(cents)}
       end)
 
     %{

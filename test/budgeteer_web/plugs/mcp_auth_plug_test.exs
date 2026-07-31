@@ -8,7 +8,9 @@ defmodule BudgeteerWeb.MCPAuthPlugTest do
   describe "call/2" do
     test "assigns :scope for a valid token", %{conn: conn} do
       user = user_fixture()
-      {:ok, raw_token, _access_token} = Households.create_access_token(Households.Scope.for_user(user), "Test")
+
+      {:ok, raw_token, _access_token} =
+        Households.create_access_token(Households.Scope.for_user(user), "Test")
 
       conn =
         conn

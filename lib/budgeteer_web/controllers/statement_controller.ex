@@ -33,7 +33,7 @@ defmodule BudgeteerWeb.StatementController do
 
       _ ->
         conn
-        |> put_flash(:error, "Please select a file to upload")
+        |> put_flash(:error, gettext("Please select a file to upload"))
         |> redirect(to: ~p"/accounts/#{account}/statements/new")
     end
   end
@@ -44,17 +44,20 @@ defmodule BudgeteerWeb.StatementController do
     cond do
       ext not in @allowed_extensions ->
         conn
-        |> put_flash(:error, "Unsupported file type — use PDF, JPG, or PNG")
+        |> put_flash(:error, gettext("Unsupported file type — use PDF, JPG, or PNG"))
         |> redirect(to: ~p"/accounts/#{account}/statements/new")
 
       File.stat!(upload.path).size > @max_file_size ->
         conn
-        |> put_flash(:error, "File is too large (max 15 MB)")
+        |> put_flash(:error, gettext("File is too large (max 15 MB)"))
         |> redirect(to: ~p"/accounts/#{account}/statements/new")
 
       not matches_magic_bytes?(ext, upload.path) ->
         conn
-        |> put_flash(:error, "File content doesn't match its extension — use a real PDF, JPG, or PNG")
+        |> put_flash(
+          :error,
+          gettext("File content doesn't match its extension — use a real PDF, JPG, or PNG")
+        )
         |> redirect(to: ~p"/accounts/#{account}/statements/new")
 
       true ->
@@ -72,7 +75,9 @@ defmodule BudgeteerWeb.StatementController do
     file_bytes = File.read!(upload.path)
     file_hash = :crypto.hash(:sha256, file_bytes) |> Base.encode16(case: :lower)
 
-    storage_dir = Path.join(Application.fetch_env!(:budgeteer, :statement_storage_path), account.id)
+    storage_dir =
+      Path.join(Application.fetch_env!(:budgeteer, :statement_storage_path), account.id)
+
     File.mkdir_p!(storage_dir)
     storage_path = Path.join(storage_dir, file_hash <> Path.extname(upload.filename))
     # The raw bank statement itself (not just the AI-extracted JSON) is
@@ -91,7 +96,7 @@ defmodule BudgeteerWeb.StatementController do
     case Statements.create_statement(scope, attrs) do
       {:ok, _statement} ->
         conn
-        |> put_flash(:info, "Statement uploaded — processing will begin shortly")
+        |> put_flash(:info, gettext("Statement uploaded — processing will begin shortly"))
         |> redirect(to: ~p"/accounts/#{account}/statements")
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -103,8 +108,11 @@ defmodule BudgeteerWeb.StatementController do
 
   defp changeset_error_message(changeset) do
     case changeset.errors[:file_hash] do
-      {msg, _opts} -> "File #{msg}"
-      nil -> "Could not save statement"
+      {_msg, _opts} = error ->
+        gettext("File %{message}", message: BudgeteerWeb.CoreComponents.translate_error(error))
+
+      nil ->
+        gettext("Could not save statement")
     end
   end
 end

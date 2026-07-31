@@ -61,12 +61,19 @@ defmodule Budgeteer.Households do
   def get_user!(id), do: Repo.get!(User, id)
 
   @doc """
-  Returns every member's email for a household, by id (no scope). For use by
-  contexts like `Budgeteer.Ledger` that need to notify a whole household
-  (e.g. a budget alert) rather than a single scoped user.
+  Returns every member's email + locale for a household, by id (no scope).
+  For use by contexts like `Budgeteer.Ledger` that need to notify a whole
+  household (e.g. a budget alert) rather than a single scoped user — the
+  locale lets each notification go out in that member's own saved language
+  preference, not whatever locale happens to be active in the sending
+  process.
   """
   def list_household_emails(household_id) do
-    Repo.all(from u in User, where: u.household_id == ^household_id, select: u.email)
+    Repo.all(
+      from u in User,
+        where: u.household_id == ^household_id,
+        select: %{email: u.email, locale: u.locale}
+    )
   end
 
   @doc """
@@ -337,6 +344,17 @@ defmodule Budgeteer.Households do
     user
     |> User.password_changeset(attrs)
     |> update_user_and_delete_all_tokens()
+  end
+
+  @doc """
+  Sets the user's locale preference (e.g. from the language switcher), so it
+  follows them across devices/sessions. Never fed untrusted form input, so
+  no changeset validation is needed — same precedent as `Statement.status`.
+  """
+  def update_user_locale(%User{} = user, locale) when is_binary(locale) do
+    user
+    |> Ecto.Changeset.change(locale: locale)
+    |> Repo.update()
   end
 
   ## Session

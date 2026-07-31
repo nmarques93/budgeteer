@@ -4,6 +4,8 @@ defmodule Budgeteer.Ledger.BudgetNotifier do
   `Budgeteer.Households.UserNotifier`'s plain-text delivery pattern.
   """
 
+  use Gettext, backend: BudgeteerWeb.Gettext
+
   import Swoosh.Email
 
   alias Budgeteer.Mailer
@@ -24,18 +26,30 @@ defmodule Budgeteer.Ledger.BudgetNotifier do
   @doc """
   Notifies a household member that a category has gone over its monthly
   budget. `spent_cents` is the absolute amount spent so far this month.
+  `recipient_locale` is that member's own saved preference (may be `nil`,
+  meaning "en") — this runs in an Oban job process, which has no locale of
+  its own, so each recipient's email must explicitly request its language
+  rather than relying on whatever the process happens to default to.
   """
-  def deliver_budget_alert(recipient_email, category, spent_cents) do
-    deliver(recipient_email, "Budget alert: #{category.name}", """
+  def deliver_budget_alert(recipient_email, recipient_locale, category, spent_cents) do
+    Gettext.with_locale(BudgeteerWeb.Gettext, recipient_locale || "en", fn ->
+      deliver(
+        recipient_email,
+        gettext("Budget alert: %{name}", name: category.name),
+        """
 
-    ==============================
+        ==============================
 
-    Hi,
+        #{gettext("Hi,")}
 
-    Your "#{category.name}" budget for this month is #{Budgeteer.Money.format(category.budget_cents)}.
-    You've spent #{Budgeteer.Money.format(spent_cents)} so far this month.
+        #{gettext("Your \"%{name}\" budget for this month is %{budget}.",
+        name: category.name,
+        budget: Budgeteer.Money.format(category.budget_cents))}
+        #{gettext("You've spent %{amount} so far this month.", amount: Budgeteer.Money.format(spent_cents))}
 
-    ==============================
-    """)
+        ==============================
+        """
+      )
+    end)
   end
 end

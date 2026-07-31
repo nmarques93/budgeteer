@@ -24,11 +24,12 @@ defmodule BudgeteerWeb.StatementLive.ReviewTest do
   describe "Review" do
     setup [:create_account]
 
-    test "renders one row per extracted transaction, pre-filled, with category matched case-insensitively", %{
-      conn: conn,
-      scope: scope,
-      account: account
-    } do
+    test "renders one row per extracted transaction, pre-filled, with category matched case-insensitively",
+         %{
+           conn: conn,
+           scope: scope,
+           account: account
+         } do
       category = category_fixture(scope, %{name: "Groceries"})
 
       raw_ai_output = %{
@@ -53,7 +54,8 @@ defmodule BudgeteerWeb.StatementLive.ReviewTest do
 
       statement = processed_statement_fixture(scope, account, raw_ai_output)
 
-      {:ok, review_live, html} = live(conn, ~p"/accounts/#{account}/statements/#{statement}/review")
+      {:ok, review_live, html} =
+        live(conn, ~p"/accounts/#{account}/statements/#{statement}/review")
 
       assert html =~ "Review #{statement.filename}"
       assert html =~ "Continente"
@@ -97,7 +99,8 @@ defmodule BudgeteerWeb.StatementLive.ReviewTest do
 
       statement = processed_statement_fixture(scope, account, raw_ai_output)
 
-      {:ok, review_live, _html} = live(conn, ~p"/accounts/#{account}/statements/#{statement}/review")
+      {:ok, review_live, _html} =
+        live(conn, ~p"/accounts/#{account}/statements/#{statement}/review")
 
       html =
         review_live
@@ -111,8 +114,17 @@ defmodule BudgeteerWeb.StatementLive.ReviewTest do
                Ledger.list_categories(scope)
 
       # both rows (case-insensitive match) got assigned, not just the one clicked
-      assert has_element?(review_live, ~s{select[name="rows[0][category_id]"] option[selected]}, "Restaurants")
-      assert has_element?(review_live, ~s{select[name="rows[1][category_id]"] option[selected]}, "Restaurants")
+      assert has_element?(
+               review_live,
+               ~s{select[name="rows[0][category_id]"] option[selected]},
+               "Restaurants"
+             )
+
+      assert has_element?(
+               review_live,
+               ~s{select[name="rows[1][category_id]"] option[selected]},
+               "Restaurants"
+             )
     end
 
     test "shows a message and no form when the statement hasn't been processed yet", %{
@@ -122,13 +134,18 @@ defmodule BudgeteerWeb.StatementLive.ReviewTest do
     } do
       statement = statement_fixture(scope, %{account: account})
 
-      {:ok, _review_live, html} = live(conn, ~p"/accounts/#{account}/statements/#{statement}/review")
+      {:ok, _review_live, html} =
+        live(conn, ~p"/accounts/#{account}/statements/#{statement}/review")
 
-      assert html =~ "hasn&#39;t finished processing yet"
+      assert html =~ "isn&#39;t ready to review yet"
       refute html =~ "review-form"
     end
 
-    test "submitting saves only the checked rows as transactions", %{conn: conn, scope: scope, account: account} do
+    test "submitting saves only the checked rows as transactions", %{
+      conn: conn,
+      scope: scope,
+      account: account
+    } do
       raw_ai_output = %{
         "currency" => "EUR",
         "transactions" => [
@@ -151,7 +168,8 @@ defmodule BudgeteerWeb.StatementLive.ReviewTest do
 
       statement = processed_statement_fixture(scope, account, raw_ai_output)
 
-      {:ok, review_live, _html} = live(conn, ~p"/accounts/#{account}/statements/#{statement}/review")
+      {:ok, review_live, _html} =
+        live(conn, ~p"/accounts/#{account}/statements/#{statement}/review")
 
       params = %{
         "rows" => %{
@@ -179,7 +197,7 @@ defmodule BudgeteerWeb.StatementLive.ReviewTest do
                |> render_submit("save", params)
                |> follow_redirect(conn, ~p"/accounts/#{account}/transactions")
 
-      assert html =~ "1 transaction(s) saved"
+      assert html =~ "1 transaction saved"
 
       assert [transaction] = Ledger.list_transactions(scope)
       assert transaction.merchant == "Continente"

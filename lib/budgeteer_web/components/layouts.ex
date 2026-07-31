@@ -44,7 +44,9 @@ defmodule BudgeteerWeb.Layouts do
     ~H"""
     <div :if={@online_members != []} class="flex flex-wrap gap-1 px-4 pt-4 sm:px-6 lg:px-8">
       <span :for={member <- @online_members} class="badge badge-success badge-outline gap-1">
-        <span class="size-2 rounded-full bg-success"></span> {member.name || member.email} online
+        <span class="size-2 rounded-full bg-success"></span> {gettext("%{name} online",
+          name: member.name || member.email
+        )}
       </span>
     </div>
 

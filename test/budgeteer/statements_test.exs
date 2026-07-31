@@ -31,7 +31,10 @@ defmodule Budgeteer.StatementsTest do
       other_scope = household_scope_fixture()
 
       assert Statements.get_statement!(scope, statement.id) == statement
-      assert_raise Ecto.NoResultsError, fn -> Statements.get_statement!(other_scope, statement.id) end
+
+      assert_raise Ecto.NoResultsError, fn ->
+        Statements.get_statement!(other_scope, statement.id)
+      end
     end
 
     test "get_statement!/1 returns the statement with no scoping" do
@@ -56,7 +59,9 @@ defmodule Budgeteer.StatementsTest do
       account = account_fixture(scope)
       path = write_temp_statement_file!()
 
-      expect(Budgeteer.AI.ClientMock, :parse_statement, fn _bytes, "application/pdf", _category_names ->
+      expect(Budgeteer.AI.ClientMock, :parse_statement, fn _bytes,
+                                                           "application/pdf",
+                                                           _category_names ->
         {:ok, %{"currency" => "EUR", "transactions" => []}}
       end)
 
@@ -123,7 +128,9 @@ defmodule Budgeteer.StatementsTest do
       path = write_temp_statement_file!()
       statement = statement_fixture(scope, %{storage_path: path, filename: "statement.pdf"})
 
-      expect(Budgeteer.AI.ClientMock, :parse_statement, fn _bytes, "application/pdf", _category_names ->
+      expect(Budgeteer.AI.ClientMock, :parse_statement, fn _bytes,
+                                                           "application/pdf",
+                                                           _category_names ->
         {:ok, %{"currency" => "EUR", "transactions" => []}}
       end)
 
@@ -139,7 +146,9 @@ defmodule Budgeteer.StatementsTest do
       path = write_temp_statement_file!()
       statement = statement_fixture(scope, %{storage_path: path, filename: "statement.pdf"})
 
-      expect(Budgeteer.AI.ClientMock, :parse_statement, fn _bytes, "application/pdf", category_names ->
+      expect(Budgeteer.AI.ClientMock, :parse_statement, fn _bytes,
+                                                           "application/pdf",
+                                                           category_names ->
         assert category_names == [category.name]
         {:ok, %{"currency" => "EUR", "transactions" => []}}
       end)
@@ -151,10 +160,15 @@ defmodule Budgeteer.StatementsTest do
       scope = household_scope_fixture()
 
       statement =
-        statement_fixture(scope, %{storage_path: "/tmp/does-not-exist-#{System.unique_integer([:positive])}.pdf"})
+        statement_fixture(scope, %{
+          storage_path: "/tmp/does-not-exist-#{System.unique_integer([:positive])}.pdf"
+        })
 
       assert {:error, _reason} =
-               perform_job(ParseWorker, %{"statement_id" => statement.id}, attempt: 3, max_attempts: 3)
+               perform_job(ParseWorker, %{"statement_id" => statement.id},
+                 attempt: 3,
+                 max_attempts: 3
+               )
 
       updated = Statements.get_statement!(statement.id)
       assert updated.status == :failed
@@ -165,10 +179,15 @@ defmodule Budgeteer.StatementsTest do
       scope = household_scope_fixture()
 
       statement =
-        statement_fixture(scope, %{storage_path: "/tmp/does-not-exist-#{System.unique_integer([:positive])}.pdf"})
+        statement_fixture(scope, %{
+          storage_path: "/tmp/does-not-exist-#{System.unique_integer([:positive])}.pdf"
+        })
 
       assert {:error, _reason} =
-               perform_job(ParseWorker, %{"statement_id" => statement.id}, attempt: 1, max_attempts: 3)
+               perform_job(ParseWorker, %{"statement_id" => statement.id},
+                 attempt: 1,
+                 max_attempts: 3
+               )
 
       updated = Statements.get_statement!(statement.id)
       assert updated.status == :processing

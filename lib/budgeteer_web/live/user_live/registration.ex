@@ -11,28 +11,28 @@ defmodule BudgeteerWeb.UserLive.Registration do
       <div class="mx-auto max-w-sm">
         <div class="text-center">
           <.header>
-            Register for an account
+            {gettext("Register for an account")}
             <:subtitle>
-              Already registered?
+              {gettext("Already registered?")}
               <.link navigate={~p"/users/log-in"} class="font-semibold text-brand hover:underline">
-                Log in
+                {gettext("Log in")}
               </.link>
-              to your account now.
+              {gettext("to your account now.")}
             </:subtitle>
           </.header>
         </div>
 
         <.form for={@form} id="registration_form" phx-submit="save" phx-change="validate">
           <p :if={@invite} class="mb-4">
-            You're joining <strong>{@invite.household.name}</strong>.
+            {gettext("You're joining")} <strong>{@invite.household.name}</strong>.
           </p>
 
           <.input
             :if={!@invite}
             field={@form[:household_name]}
             type="text"
-            label="Household name"
-            placeholder="e.g. The Marques Family"
+            label={gettext("Household name")}
+            placeholder={gettext("e.g. The Marques Family")}
             required
             phx-mounted={JS.focus()}
           />
@@ -40,23 +40,23 @@ defmodule BudgeteerWeb.UserLive.Registration do
           <.input
             field={@form[:email]}
             type="email"
-            label="Email"
+            label={gettext("Email")}
             autocomplete="username"
             spellcheck="false"
             readonly={!!@invite}
             required
           />
 
-          <.button phx-disable-with="Creating account..." class="btn btn-primary w-full">
-            Create an account
+          <.button phx-disable-with={gettext("Creating account...")} class="btn btn-primary w-full">
+            {gettext("Create an account")}
           </.button>
         </.form>
 
         <div>
-          <div class="divider">or</div>
+          <div class="divider">{gettext("or")}</div>
 
           <.link href={~p"/auth/google?#{[token: @invite_token]}"} class="btn btn-outline w-full">
-            Continue with Google
+            {gettext("Continue with Google")}
           </.link>
         </div>
       </div>
@@ -75,14 +75,16 @@ defmodule BudgeteerWeb.UserLive.Registration do
 
     socket =
       if params["token"] && !invite do
-        put_flash(socket, :error, "This invite link is invalid or has expired.")
+        put_flash(socket, :error, gettext("This invite link is invalid or has expired."))
       else
         socket
       end
 
     changeset =
       if invite do
-        Households.change_invited_user_registration(%User{}, %{"email" => invite.email}, validate_unique: false)
+        Households.change_invited_user_registration(%User{}, %{"email" => invite.email},
+          validate_unique: false
+        )
       else
         Households.change_user_registration(%User{}, %{}, validate_unique: false)
       end
@@ -123,7 +125,10 @@ defmodule BudgeteerWeb.UserLive.Registration do
          socket
          |> put_flash(
            :info,
-           "An email was sent to #{user.email}, please access it to confirm your account."
+           gettext(
+             "An email was sent to %{email}, please access it to confirm your account.",
+             email: user.email
+           )
          )
          |> push_navigate(to: ~p"/users/log-in")}
 
@@ -135,8 +140,13 @@ defmodule BudgeteerWeb.UserLive.Registration do
   def handle_event("validate", %{"user" => user_params}, socket) do
     changeset =
       case socket.assigns.invite do
-        %{} -> Households.change_invited_user_registration(%User{}, user_params, validate_unique: false)
-        nil -> Households.change_user_registration(%User{}, user_params, validate_unique: false)
+        %{} ->
+          Households.change_invited_user_registration(%User{}, user_params,
+            validate_unique: false
+          )
+
+        nil ->
+          Households.change_user_registration(%User{}, user_params, validate_unique: false)
       end
 
     {:noreply, assign_form(socket, Map.put(changeset, :action, :validate))}

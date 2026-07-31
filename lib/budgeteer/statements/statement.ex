@@ -8,7 +8,11 @@ defmodule Budgeteer.Statements.Statement do
     field :filename, :string
     field :storage_path, :string
     field :file_hash, :string
-    field :status, Ecto.Enum, values: [:pending, :processing, :processed, :failed], default: :pending
+
+    field :status, Ecto.Enum,
+      values: [:pending, :processing, :processed, :failed],
+      default: :pending
+
     field :raw_ai_output, Budgeteer.Encrypted.Map
     field :error_message, :string
     field :account_id, :binary_id
@@ -27,7 +31,10 @@ defmodule Budgeteer.Statements.Statement do
     |> cast(attrs, [:filename, :storage_path, :file_hash, :account_id, :uploaded_by_id])
     |> validate_required([:filename, :storage_path, :file_hash, :account_id])
     |> put_change(:household_id, household_scope.user.household_id)
-    |> unique_constraint(:file_hash, name: :statements_account_id_file_hash_index, message: "has already been uploaded for this account")
+    |> unique_constraint(:file_hash,
+      name: :statements_account_id_file_hash_index,
+      message: "has already been uploaded for this account"
+    )
   end
 
   @doc """

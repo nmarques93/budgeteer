@@ -40,7 +40,6 @@ config :budgeteer, BudgeteerWeb.Endpoint,
     tailwind: {Tailwind, :install_and_run, [:budgeteer, ~w(--watch)]}
   ]
 
-
 # Enable dev routes for dashboard and mailbox
 config :budgeteer, dev_routes: true
 

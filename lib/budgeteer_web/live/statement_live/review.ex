@@ -9,18 +9,18 @@ defmodule BudgeteerWeb.StatementLive.Review do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} online_members={@online_members}>
       <.header>
-        Review {@statement.filename}
+        {gettext("Review %{filename}", filename: @statement.filename)}
         <:subtitle>
-          <.link navigate={~p"/accounts/#{@account}/statements"}>Back to statements</.link>
+          <.link navigate={~p"/accounts/#{@account}/statements"}>{gettext("Back to statements")}</.link>
         </:subtitle>
       </.header>
 
       <p :if={@statement.status != :processed} class="text-warning">
-        This statement hasn't finished processing yet — nothing to review.
+        {gettext("This statement isn't ready to review yet.")}
       </p>
 
       <p :if={@statement.status == :processed and @rows == []}>
-        No transactions were extracted from this statement.
+        {gettext("No transactions were extracted from this statement.")}
       </p>
 
       <form :if={@rows != []} id="review-form" phx-submit="save">
@@ -28,12 +28,12 @@ defmodule BudgeteerWeb.StatementLive.Review do
           <table class="table">
             <thead>
               <tr>
-                <th>Include</th>
-                <th>Date</th>
-                <th>Amount</th>
-                <th>Merchant</th>
-                <th>Description</th>
-                <th>Category</th>
+                <th>{gettext("Include")}</th>
+                <th>{gettext("Date")}</th>
+                <th>{gettext("Amount")}</th>
+                <th>{gettext("Merchant")}</th>
+                <th>{gettext("Description")}</th>
+                <th>{gettext("Category")}</th>
               </tr>
             </thead>
             <tbody>
@@ -82,7 +82,7 @@ defmodule BudgeteerWeb.StatementLive.Review do
                 </td>
                 <td class="align-top min-w-56">
                   <select class="w-full select min-w-40" name={"rows[#{row.index}][category_id]"}>
-                    <option value="">Uncategorized</option>
+                    <option value="">{gettext("Uncategorized")}</option>
                     <option
                       :for={category <- @categories}
                       value={category.id}
@@ -95,7 +95,9 @@ defmodule BudgeteerWeb.StatementLive.Review do
                     :if={row.category_id == nil and row.suggested_category not in [nil, ""]}
                     class="text-xs opacity-70 mt-1 max-w-56"
                   >
-                    Suggested: "{row.suggested_category}" — not yet a category.
+                    {gettext("Suggested: \"%{name}\" — not yet a category.",
+                      name: row.suggested_category
+                    )}
                     <button
                       type="button"
                       class="link"
@@ -103,7 +105,7 @@ defmodule BudgeteerWeb.StatementLive.Review do
                       phx-value-index={row.index}
                       phx-value-name={row.suggested_category}
                     >
-                      Create it
+                      {gettext("Create it")}
                     </button>
                   </p>
                 </td>
@@ -113,8 +115,10 @@ defmodule BudgeteerWeb.StatementLive.Review do
         </div>
 
         <footer class="mt-4">
-          <.button phx-disable-with="Saving..." variant="primary">Save transactions</.button>
-          <.button navigate={~p"/accounts/#{@account}/statements"}>Cancel</.button>
+          <.button phx-disable-with={gettext("Saving...")} variant="primary">
+            {gettext("Save transactions")}
+          </.button>
+          <.button navigate={~p"/accounts/#{@account}/statements"}>{gettext("Cancel")}</.button>
         </footer>
       </form>
     </Layouts.app>
@@ -130,7 +134,7 @@ defmodule BudgeteerWeb.StatementLive.Review do
 
     {:ok,
      socket
-     |> assign(:page_title, "Review Statement")
+     |> assign(:page_title, gettext("Review Statement"))
      |> assign(:account, account)
      |> assign(:statement, statement)
      |> assign(:categories, categories)
@@ -152,7 +156,7 @@ defmodule BudgeteerWeb.StatementLive.Review do
          socket
          |> assign(:categories, socket.assigns.categories ++ [category])
          |> assign(:rows, rows)
-         |> put_flash(:info, "Created category \"#{category.name}\"")}
+         |> put_flash(:info, gettext("Created category \"%{name}\"", name: category.name))}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, put_flash(socket, :error, category_error_message(changeset))}
@@ -177,7 +181,10 @@ defmodule BudgeteerWeb.StatementLive.Review do
 
         {:noreply,
          socket
-         |> put_flash(:info, "#{length(oks)} transaction(s) saved")
+         |> put_flash(
+           :info,
+           ngettext("1 transaction saved", "%{count} transactions saved", length(oks))
+         )
          |> push_navigate(to: ~p"/accounts/#{account}/transactions")}
 
       _ ->
@@ -185,7 +192,11 @@ defmodule BudgeteerWeb.StatementLive.Review do
          put_flash(
            socket,
            :error,
-           "Saved #{length(oks)}, #{length(errors)} row(s) failed — check the values and try again"
+           gettext(
+             "Saved %{ok_count}, %{error_count} row(s) failed — check the values and try again",
+             ok_count: length(oks),
+             error_count: length(errors)
+           )
          )}
     end
   end
@@ -222,8 +233,13 @@ defmodule BudgeteerWeb.StatementLive.Review do
 
   defp category_error_message(changeset) do
     case changeset.errors[:name] do
-      {msg, _opts} -> "Category name #{msg}"
-      nil -> "Could not create category"
+      {_msg, _opts} = error ->
+        gettext("Category name %{message}",
+          message: BudgeteerWeb.CoreComponents.translate_error(error)
+        )
+
+      nil ->
+        gettext("Could not create category")
     end
   end
 

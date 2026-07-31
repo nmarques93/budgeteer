@@ -75,7 +75,9 @@ defmodule BudgeteerWeb.RecipeLiveTest do
     end
 
     test "clicking 'Remove' drops that ingredient row", %{conn: conn, scope: scope} do
-      recipe = recipe_fixture(scope, %{ingredients: [%{"name" => "Onion"}, %{"name" => "Garlic"}]})
+      recipe =
+        recipe_fixture(scope, %{ingredients: [%{"name" => "Onion"}, %{"name" => "Garlic"}]})
+
       {:ok, form_live, _html} = live(conn, ~p"/recipes/#{recipe}/edit")
 
       html =

@@ -8,31 +8,29 @@ defmodule BudgeteerWeb.GroceryListLive.Index do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} online_members={@online_members}>
       <.header>
-        {if @show_archived, do: "Archived grocery lists", else: "Grocery lists"}
+        {if @show_archived, do: gettext("Archived grocery lists"), else: gettext("Grocery lists")}
         <:actions>
           <.button navigate={~p"/groceries?#{[archived: !@show_archived]}"}>
-            {if @show_archived, do: "Show active", else: "Show archived"}
+            {if @show_archived, do: gettext("Show active"), else: gettext("Show archived")}
           </.button>
           <.button variant="primary" navigate={~p"/groceries/new"}>
-            <.icon name="hero-plus" /> New list
+            <.icon name="hero-plus" /> {gettext("New list")}
           </.button>
         </:actions>
       </.header>
 
-      <.table id="grocery-lists" rows={@streams.grocery_lists} row_click={fn {_id, list} -> JS.navigate(~p"/groceries/#{list}") end}>
-        <:col :let={{_id, list}} label="Name">{list.name}</:col>
+      <.table
+        id="grocery-lists"
+        rows={@streams.grocery_lists}
+        row_click={fn {_id, list} -> JS.navigate(~p"/groceries/#{list}") end}
+      >
+        <:col :let={{_id, list}} label={gettext("Name")}>{list.name}</:col>
         <:action :let={{_id, list}}>
-          <.link
-            :if={!@show_archived}
-            phx-click={JS.push("archive", value: %{id: list.id})}
-          >
-            Archive
+          <.link :if={!@show_archived} phx-click={JS.push("archive", value: %{id: list.id})}>
+            {gettext("Archive")}
           </.link>
-          <.link
-            :if={@show_archived}
-            phx-click={JS.push("unarchive", value: %{id: list.id})}
-          >
-            Unarchive
+          <.link :if={@show_archived} phx-click={JS.push("unarchive", value: %{id: list.id})}>
+            {gettext("Unarchive")}
           </.link>
         </:action>
       </.table>
@@ -55,9 +53,11 @@ defmodule BudgeteerWeb.GroceryListLive.Index do
 
     {:noreply,
      socket
-     |> assign(:page_title, "Grocery lists")
+     |> assign(:page_title, gettext("Grocery lists"))
      |> assign(:show_archived, show_archived)
-     |> stream(:grocery_lists, list_grocery_lists(socket.assigns.current_scope, show_archived), reset: true)}
+     |> stream(:grocery_lists, list_grocery_lists(socket.assigns.current_scope, show_archived),
+       reset: true
+     )}
   end
 
   @impl true
@@ -79,7 +79,12 @@ defmodule BudgeteerWeb.GroceryListLive.Index do
   def handle_info({type, %Budgeteer.Groceries.GroceryList{}}, socket)
       when type in [:created, :updated] do
     {:noreply,
-     stream(socket, :grocery_lists, list_grocery_lists(socket.assigns.current_scope, socket.assigns.show_archived), reset: true)}
+     stream(
+       socket,
+       :grocery_lists,
+       list_grocery_lists(socket.assigns.current_scope, socket.assigns.show_archived),
+       reset: true
+     )}
   end
 
   defp list_grocery_lists(current_scope, show_archived) do

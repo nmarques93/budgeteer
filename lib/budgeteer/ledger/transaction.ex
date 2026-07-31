@@ -22,7 +22,16 @@ defmodule Budgeteer.Ledger.Transaction do
   @doc false
   def changeset(transaction, attrs, household_scope) do
     transaction
-    |> cast(attrs, [:date, :amount, :merchant, :description, :notes, :account_id, :category_id, :statement_id])
+    |> cast(attrs, [
+      :date,
+      :amount,
+      :merchant,
+      :description,
+      :notes,
+      :account_id,
+      :category_id,
+      :statement_id
+    ])
     |> validate_required([:date, :amount, :account_id])
     |> put_amount_cents()
     |> put_change(:household_id, household_scope.user.household_id)

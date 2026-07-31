@@ -38,7 +38,7 @@ defmodule BudgeteerWeb.RecipeLive.ShowTest do
         |> form("#add-to-list-form", add_to_list: %{grocery_list_id: grocery_list.id})
         |> render_submit()
 
-      assert html =~ "Added 2 ingredient(s)"
+      assert html =~ "Added 2 ingredients"
 
       names = Groceries.list_items(scope, grocery_list) |> Enum.map(& &1.name) |> Enum.sort()
       assert names == ["Carrot", "Onion"]

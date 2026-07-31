@@ -11,11 +11,11 @@ defmodule BudgeteerWeb.RecipeLive.Show do
       <.header>
         {@recipe.name}
         <:subtitle>
-          <.link navigate={~p"/recipes"}>Back to recipes</.link>
+          <.link navigate={~p"/recipes"}>{gettext("Back to recipes")}</.link>
         </:subtitle>
         <:actions>
           <.button navigate={~p"/recipes/#{@recipe}/edit?return_to=show"}>
-            <.icon name="hero-pencil-square" /> Edit recipe
+            <.icon name="hero-pencil-square" /> {gettext("Edit recipe")}
           </.button>
         </:actions>
       </.header>
@@ -32,18 +32,27 @@ defmodule BudgeteerWeb.RecipeLive.Show do
       </ul>
 
       <div :if={@recipe.ingredients != []} class="mt-6">
-        <.form for={@add_form} id="add-to-list-form" phx-submit="add_to_grocery_list" class="flex gap-2 items-end">
+        <.form
+          for={@add_form}
+          id="add-to-list-form"
+          phx-submit="add_to_grocery_list"
+          class="flex gap-2 items-end"
+        >
           <.input
             field={@add_form[:grocery_list_id]}
             type="select"
-            label="Add ingredients to"
+            label={gettext("Add ingredients to")}
             options={Enum.map(@grocery_lists, &{&1.name, &1.id})}
-            prompt="Choose a list"
+            prompt={gettext("Choose a list")}
           />
-          <.button phx-disable-with="Adding..." variant="primary">Add ingredients</.button>
+          <.button phx-disable-with={gettext("Adding...")} variant="primary">
+            {gettext("Add ingredients")}
+          </.button>
         </.form>
         <p :if={@grocery_lists == []} class="text-sm opacity-70 mt-1">
-          You don't have a grocery list yet — <.link navigate={~p"/groceries/new"} class="link">create one</.link> first.
+          {gettext("You don't have a grocery list yet —")}
+          <.link navigate={~p"/groceries/new"} class="link">{gettext("create one")}</.link>
+          {gettext("first.")}
         </p>
       </div>
     </Layouts.app>
@@ -64,12 +73,27 @@ defmodule BudgeteerWeb.RecipeLive.Show do
   end
 
   @impl true
-  def handle_event("add_to_grocery_list", %{"add_to_list" => %{"grocery_list_id" => grocery_list_id}}, socket) do
+  def handle_event(
+        "add_to_grocery_list",
+        %{"add_to_list" => %{"grocery_list_id" => grocery_list_id}},
+        socket
+      ) do
     scope = socket.assigns.current_scope
     grocery_list = Groceries.get_grocery_list!(scope, grocery_list_id)
 
-    {:ok, count} = Meals.add_ingredients_to_grocery_list(scope, [socket.assigns.recipe], grocery_list)
+    {:ok, count} =
+      Meals.add_ingredients_to_grocery_list(scope, [socket.assigns.recipe], grocery_list)
 
-    {:noreply, put_flash(socket, :info, "Added #{count} ingredient(s) to \"#{grocery_list.name}\"")}
+    {:noreply,
+     put_flash(
+       socket,
+       :info,
+       ngettext(
+         "Added 1 ingredient to \"%{list}\"",
+         "Added %{count} ingredients to \"%{list}\"",
+         count,
+         list: grocery_list.name
+       )
+     )}
   end
 end

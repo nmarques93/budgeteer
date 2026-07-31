@@ -2412,6 +2412,9 @@
       --alert-color: var(--color-warning);
     }
   }
+  .text-base-content {
+    color: var(--color-base-content);
+  }
   .text-base-content\/60 {
     color: var(--color-base-content);
     @supports (color: color-mix(in lab, red, red)) {

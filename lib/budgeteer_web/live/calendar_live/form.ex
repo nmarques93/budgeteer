@@ -12,28 +12,30 @@ defmodule BudgeteerWeb.CalendarLive.Form do
       <.header>{@page_title}</.header>
 
       <.form for={@form} id="event-form" phx-change="validate" phx-submit="save">
-        <.input field={@form[:title]} type="text" label="Title" />
-        <.input field={@form[:date]} type="date" label="Date" />
-        <.input field={@form[:start_time]} type="time" label="Start time" />
-        <.input field={@form[:end_time]} type="time" label="End time" />
+        <.input field={@form[:title]} type="text" label={gettext("Title")} />
+        <.input field={@form[:date]} type="date" label={gettext("Date")} />
+        <.input field={@form[:start_time]} type="time" label={gettext("Start time")} />
+        <.input field={@form[:end_time]} type="time" label={gettext("End time")} />
         <.input
           field={@form[:user_id]}
           type="select"
-          label="For"
-          prompt="Whole household"
+          label={gettext("For")}
+          prompt={gettext("Whole household")}
           options={Enum.map(@members, &{display_name(&1), &1.id})}
         />
-        <.input field={@form[:description]} type="textarea" label="Description" />
+        <.input field={@form[:description]} type="textarea" label={gettext("Description")} />
         <footer class="flex items-center gap-2">
-          <.button phx-disable-with="Saving..." variant="primary">Save Event</.button>
-          <.button navigate={~p"/calendar"}>Cancel</.button>
+          <.button phx-disable-with={gettext("Saving...")} variant="primary">
+            {gettext("Save Event")}
+          </.button>
+          <.button navigate={~p"/calendar"}>{gettext("Cancel")}</.button>
           <.link
             :if={@live_action == :edit}
             phx-click={JS.push("delete")}
-            data-confirm="Are you sure you want to delete this event?"
+            data-confirm={gettext("Are you sure you want to delete this event?")}
             class="ml-auto text-error"
           >
-            Delete
+            {gettext("Delete")}
           </.link>
         </footer>
       </.form>
@@ -56,7 +58,7 @@ defmodule BudgeteerWeb.CalendarLive.Form do
     event = Events.get_event!(scope, id)
 
     socket
-    |> assign(:page_title, "Edit Event")
+    |> assign(:page_title, gettext("Edit Event"))
     |> assign(:event, event)
     |> assign(:form, to_form(Events.change_event(scope, event)))
   end
@@ -66,7 +68,7 @@ defmodule BudgeteerWeb.CalendarLive.Form do
     event = %Event{household_id: scope.user.household_id, date: prefill_date(params["date"])}
 
     socket
-    |> assign(:page_title, "New Event")
+    |> assign(:page_title, gettext("New Event"))
     |> assign(:event, event)
     |> assign(:form, to_form(Events.change_event(scope, event)))
   end
@@ -97,7 +99,7 @@ defmodule BudgeteerWeb.CalendarLive.Form do
 
     {:noreply,
      socket
-     |> put_flash(:info, "Event deleted successfully")
+     |> put_flash(:info, gettext("Event deleted successfully"))
      |> push_navigate(to: ~p"/calendar")}
   end
 
@@ -106,7 +108,7 @@ defmodule BudgeteerWeb.CalendarLive.Form do
       {:ok, _event} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Event updated successfully")
+         |> put_flash(:info, gettext("Event updated successfully"))
          |> push_navigate(to: ~p"/calendar")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -119,7 +121,7 @@ defmodule BudgeteerWeb.CalendarLive.Form do
       {:ok, _event} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Event created successfully")
+         |> put_flash(:info, gettext("Event created successfully"))
          |> push_navigate(to: ~p"/calendar")}
 
       {:error, %Ecto.Changeset{} = changeset} ->

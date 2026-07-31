@@ -2,45 +2,55 @@
 
 <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 pt-8">
   <section class="text-center py-16 sm:py-24">
-    <span class="badge badge-primary badge-outline gap-2 mb-6">Built for Portuguese households</span>
+    <span class="badge badge-primary badge-outline gap-2 mb-6">
+      {gettext("Built for Portuguese households")}
+    </span>
     <h1 class="text-4xl sm:text-5xl font-bold max-w-2xl mx-auto text-balance">
-      Your bank statement, turned into a ledger you can trust.
+      {gettext("Your bank statement, turned into a ledger you can trust.")}
     </h1>
     <p class="mt-4 text-lg opacity-70 max-w-xl mx-auto">
-      Upload your bank account statements. Budgeteer reads every transaction, suggests
-      a category, and asks you to confirm before anything touches your ledger — nothing is
-      added automatically.
+      {gettext(
+        "Upload your bank statements and Budgeteer reads every transaction, suggesting a category for each one."
+      )}
     </p>
     <div class="mt-8 flex items-center justify-center gap-3">
-      <.button variant="primary" navigate={~p"/users/register"}>Create a household</.button>
-      <.button href="#how-it-works">See how it works</.button>
+      <.button variant="primary" navigate={~p"/users/register"}>
+        {gettext("Create a household")}
+      </.button>
+      <.button href="#how-it-works">{gettext("See how it works")}</.button>
     </div>
 
     <div class="mt-14 max-w-2xl mx-auto rounded-box border border-base-300 bg-base-200 p-6 text-left">
       <div class="grid grid-cols-[1fr_auto_1fr] gap-4 items-center">
         <div>
-          <p class="text-xs uppercase font-bold opacity-60 mb-2">Your statement</p>
+          <p class="text-xs uppercase font-bold opacity-60 mb-2">{gettext("Your statement")}</p>
           <div class="rounded border border-base-300 bg-base-100 p-3 text-xs opacity-60 leading-loose">
-            <div class="flex justify-between"><span>15/07 COMPRA CONTINENTE</span><span>-42,50</span></div>
-            <div class="flex justify-between"><span>16/07 COMPRA PINGO DOCE</span><span>-18,20</span></div>
-            <div class="flex justify-between"><span>27/07 ORDENADO</span><span>+1000,00</span></div>
+            <div class="flex justify-between">
+              <span>15/07 COMPRA CONTINENTE</span><span>-42,50</span>
+            </div>
+            <div class="flex justify-between">
+              <span>16/07 COMPRA PINGO DOCE</span><span>-18,20</span>
+            </div>
+            <div class="flex justify-between">
+              <span>27/07 ORDENADO</span><span>+1000,00</span>
+            </div>
           </div>
         </div>
         <.icon name="hero-arrow-right" class="text-primary size-5" />
         <div>
-          <p class="text-xs uppercase font-bold opacity-60 mb-2">Your ledger</p>
+          <p class="text-xs uppercase font-bold opacity-60 mb-2">{gettext("Your ledger")}</p>
           <div class="rounded border border-base-300 bg-base-100 p-3 text-xs leading-loose">
             <div class="flex justify-between items-center">
               <span class="font-semibold">Continente</span>
-              <span class="badge badge-primary badge-sm badge-outline">Groceries</span>
+              <span class="badge badge-primary badge-sm badge-outline">{gettext("Groceries")}</span>
             </div>
             <div class="flex justify-between items-center">
               <span class="font-semibold">Pingo Doce</span>
-              <span class="badge badge-primary badge-sm badge-outline">Groceries</span>
+              <span class="badge badge-primary badge-sm badge-outline">{gettext("Groceries")}</span>
             </div>
             <div class="flex justify-between items-center">
-              <span class="font-semibold">Salary</span>
-              <span class="badge badge-primary badge-sm badge-outline">Income</span>
+              <span class="font-semibold">{gettext("Salary")}</span>
+              <span class="badge badge-primary badge-sm badge-outline">{gettext("Income")}</span>
             </div>
           </div>
         </div>
@@ -48,70 +58,83 @@
     </div>
   </section>
 
-  <section id="how-it-works" class="border-t border-base-300 py-16 grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+  <section
+    id="how-it-works"
+    class="border-t border-base-300 py-16 grid sm:grid-cols-2 lg:grid-cols-4 gap-10"
+  >
     <div>
       <p class="text-xs font-bold text-primary mb-2">01</p>
-      <h3 class="font-semibold text-lg mb-1">One ledger, whole household</h3>
+      <h3 class="font-semibold text-lg mb-1">{gettext("One ledger, whole household")}</h3>
       <p class="opacity-70 text-sm leading-relaxed">
-        Invite your partner. Every account, category, and transaction is shared and updates
-        for both of you in real time — no spreadsheet to pass back and forth.
+        {gettext(
+          "Invite your partner. Every account, category, and transaction is shared and updates for both of you in real time — no spreadsheet to pass back and forth."
+        )}
       </p>
     </div>
     <div>
       <p class="text-xs font-bold text-primary mb-2">02</p>
-      <h3 class="font-semibold text-lg mb-1">The grocery list, together</h3>
+      <h3 class="font-semibold text-lg mb-1">{gettext("The grocery list, together")}</h3>
       <p class="opacity-70 text-sm leading-relaxed">
-        Check off milk while your partner adds bread from the other room. One shared list
-        per shop, not three different apps.
+        {gettext(
+          "Check off milk while your partner adds bread from the other room. One shared list per shop, not three different apps."
+        )}
       </p>
     </div>
     <div>
       <p class="text-xs font-bold text-primary mb-2">03</p>
-      <h3 class="font-semibold text-lg mb-1">You approve every entry</h3>
+      <h3 class="font-semibold text-lg mb-1">{gettext("You approve every entry")}</h3>
       <p class="opacity-70 text-sm leading-relaxed">
-        Statement parsing suggests categories and drafts transactions — nothing posts to
-        your ledger until you review and confirm it.
+        {gettext(
+          "Statement parsing suggests categories and drafts transactions — nothing posts to your ledger until you review and confirm it."
+        )}
       </p>
     </div>
     <div>
       <p class="text-xs font-bold text-primary mb-2">04</p>
-      <h3 class="font-semibold text-lg mb-1">Plan meals, shop from them</h3>
+      <h3 class="font-semibold text-lg mb-1">{gettext("Plan meals, shop from them")}</h3>
       <p class="opacity-70 text-sm leading-relaxed">
-        Save a recipe, add it to the week's meal plan, and push every ingredient to the
-        grocery list in one click.
+        {gettext(
+          "Save a recipe, add it to the week's meal plan, and push every ingredient to the grocery list in one click."
+        )}
       </p>
     </div>
   </section>
 
   <section class="border-t border-base-300 py-16 grid sm:grid-cols-2 gap-10 items-center">
     <div>
-      <p class="text-xs font-bold text-primary mb-2 uppercase tracking-wide">This month, at a glance</p>
-      <h2 class="text-2xl font-bold mb-3">See where the money actually went</h2>
+      <p class="text-xs font-bold text-primary mb-2 uppercase tracking-wide">
+        {gettext("This month, at a glance")}
+      </p>
+      <h2 class="text-2xl font-bold mb-3">{gettext("See where the money actually went")}</h2>
       <p class="opacity-70 mb-4">
-        Every category rolls up against a budget you set — not a generic benchmark, yours.
+        {gettext(
+          "Every category rolls up against a budget you set — not a generic benchmark, yours."
+        )}
       </p>
       <ul class="list-disc list-inside text-sm space-y-2 opacity-90">
-        <li>Total balance across every account</li>
-        <li>Spend vs. budget, per category</li>
-        <li>An email the moment a category goes over budget</li>
-        <li>Recent transactions, whoever added them</li>
+        <li>{gettext("Total balance across every account")}</li>
+        <li>{gettext("Spend vs. budget, per category")}</li>
+        <li>{gettext("An email the moment a category goes over budget")}</li>
+        <li>{gettext("Recent transactions, whoever added them")}</li>
       </ul>
     </div>
     <div class="rounded-box border border-base-300 bg-base-200 p-6">
-      <p class="text-xs uppercase opacity-70 mb-1">Total balance</p>
+      <p class="text-xs uppercase opacity-70 mb-1">{gettext("Total balance")}</p>
       <p class="text-2xl font-bold mb-4"><.money cents={334_851} /></p>
       <table class="w-full text-sm">
         <tbody>
           <tr class="border-t border-base-300">
-            <td class="py-2">Groceries</td>
-            <td class="py-2 text-right"><.money cents={-13_240} /> / <.money cents={15_000} /></td>
+            <td class="py-2">{gettext("Groceries")}</td>
+            <td class="py-2 text-right">
+              <.money cents={-13_240} /> / <.money cents={15_000} />
+            </td>
           </tr>
           <tr class="border-t border-base-300">
-            <td class="py-2">Transport</td>
+            <td class="py-2">{gettext("Transport")}</td>
             <td class="py-2 text-right"><.money cents={-3_820} /> / <.money cents={6_000} /></td>
           </tr>
           <tr class="border-t border-base-300">
-            <td class="py-2">Salary</td>
+            <td class="py-2">{gettext("Salary")}</td>
             <td class="py-2 text-right text-success"><.money cents={100_000} /></td>
           </tr>
         </tbody>
@@ -120,12 +143,14 @@
   </section>
 
   <section class="border-t border-base-300 py-16 text-center">
-    <h2 class="text-2xl font-bold mb-6">Import your first statement in under a minute.</h2>
-    <.button variant="primary" navigate={~p"/users/register"}>Create a household</.button>
+    <h2 class="text-2xl font-bold mb-6">
+      {gettext("Import your first statement in under a minute.")}
+    </h2>
+    <.button variant="primary" navigate={~p"/users/register"}>{gettext("Create a household")}</.button>
   </section>
 
   <footer class="border-t border-base-300 py-6 flex justify-between text-sm opacity-70">
     <span>Budgeteer</span>
-    <span>Made for real households.</span>
+    <span>{gettext("Made for real households.")}</span>
   </footer>
 </div>

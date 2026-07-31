@@ -19,16 +19,16 @@ defmodule BudgeteerWeb.UserLive.Login do
       <div class="mx-auto max-w-sm space-y-4">
         <div class="text-center">
           <.header>
-            <p>Log in</p>
+            <p>{gettext("Log in")}</p>
             <:subtitle>
               <%= if @current_scope do %>
-                You need to reauthenticate to perform sensitive actions on your account.
+                {gettext("You need to reauthenticate to perform sensitive actions on your account.")}
               <% else %>
-                Don't have an account? <.link
+                {gettext("Don't have an account?")} <.link
                   navigate={~p"/users/register"}
                   class="font-semibold text-brand hover:underline"
                   phx-no-format
-                >Sign up</.link> for an account now.
+                >{gettext("Sign up")}</.link> {gettext("for an account now.")}
               <% end %>
             </:subtitle>
           </.header>
@@ -37,9 +37,9 @@ defmodule BudgeteerWeb.UserLive.Login do
         <div :if={local_mail_adapter?()} class="alert alert-info">
           <.icon name="hero-information-circle" class="size-6 shrink-0" />
           <div>
-            <p>You are running the local mail adapter.</p>
+            <p>{gettext("Emails aren't actually being sent in this environment.")}</p>
             <p>
-              To see sent emails, visit <.link href="/dev/mailbox" class="underline">the mailbox page</.link>.
+              {gettext("View them at")} <.link href="/dev/mailbox" class="underline">{gettext("the mailbox page")}</.link>.
             </p>
           </div>
         </div>
@@ -55,18 +55,18 @@ defmodule BudgeteerWeb.UserLive.Login do
             readonly={!!@current_scope}
             field={f[:email]}
             type="email"
-            label="Email"
+            label={gettext("Email")}
             autocomplete="username"
             spellcheck="false"
             required
             phx-mounted={JS.focus()}
           />
           <.button class="btn btn-primary w-full">
-            Log in with email <span aria-hidden="true">→</span>
+            {gettext("Log in with email")} <span aria-hidden="true">→</span>
           </.button>
         </.form>
 
-        <div class="divider">or</div>
+        <div class="divider">{gettext("or")}</div>
 
         <.form
           :let={f}
@@ -81,7 +81,7 @@ defmodule BudgeteerWeb.UserLive.Login do
             readonly={!!@current_scope}
             field={f[:email]}
             type="email"
-            label="Email"
+            label={gettext("Email")}
             autocomplete="username"
             spellcheck="false"
             required
@@ -89,23 +89,23 @@ defmodule BudgeteerWeb.UserLive.Login do
           <.input
             field={@form[:password]}
             type="password"
-            label="Password"
+            label={gettext("Password")}
             autocomplete="current-password"
             spellcheck="false"
           />
           <.button class="btn btn-primary w-full" name={@form[:remember_me].name} value="true">
-            Log in and stay logged in <span aria-hidden="true">→</span>
+            {gettext("Log in and stay logged in")} <span aria-hidden="true">→</span>
           </.button>
           <.button class="btn btn-primary btn-soft w-full mt-2">
-            Log in only this time
+            {gettext("Log in only this time")}
           </.button>
         </.form>
 
         <div>
-          <div class="divider">or</div>
+          <div class="divider">{gettext("or")}</div>
 
           <.link href={~p"/auth/google?#{[return_to: @return_to]}"} class="btn btn-outline w-full">
-            Continue with Google
+            {gettext("Continue with Google")}
           </.link>
         </div>
       </div>
@@ -121,7 +121,12 @@ defmodule BudgeteerWeb.UserLive.Login do
 
     form = to_form(%{"email" => email}, as: "user")
 
-    {:ok, assign(socket, form: form, trigger_submit: false, return_to: safe_return_to(params["return_to"]))}
+    {:ok,
+     assign(socket,
+       form: form,
+       trigger_submit: false,
+       return_to: safe_return_to(params["return_to"])
+     )}
   end
 
   @impl true
@@ -140,7 +145,7 @@ defmodule BudgeteerWeb.UserLive.Login do
     end
 
     info =
-      "If your email is in our system, you will receive instructions for logging in shortly."
+      gettext("If your email is in our system, you will receive instructions for logging in shortly.")
 
     {:noreply,
      socket

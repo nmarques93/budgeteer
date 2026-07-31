@@ -10,35 +10,52 @@ defmodule BudgeteerWeb.RecipeLive.Form do
     <Layouts.app flash={@flash} current_scope={@current_scope} online_members={@online_members}>
       <.header>
         {@page_title}
-        <:subtitle>Use this form to manage recipes.</:subtitle>
+        <:subtitle>{gettext("Use this form to manage recipes.")}</:subtitle>
       </.header>
 
       <.form for={@form} id="recipe-form" phx-change="validate" phx-submit="save">
-        <.input field={@form[:name]} type="text" label="Name" />
-        <.input field={@form[:notes]} type="textarea" label="Notes" />
+        <.input field={@form[:name]} type="text" label={gettext("Name")} />
+        <.input field={@form[:notes]} type="textarea" label={gettext("Notes")} />
 
         <fieldset class="fieldset mt-4">
-          <legend class="fieldset-legend">Ingredients</legend>
+          <legend class="fieldset-legend">{gettext("Ingredients")}</legend>
 
           <.inputs_for :let={ingredient_form} field={@form[:ingredients]}>
             <div class="flex gap-2 items-end mb-2">
-              <.input field={ingredient_form[:name]} type="text" label="Name" placeholder="e.g. Onion" />
-              <.input field={ingredient_form[:quantity]} type="text" label="Qty" />
-              <.input field={ingredient_form[:unit]} type="text" label="Unit" placeholder="kg, l, units" />
-              <.button type="button" phx-click="remove_ingredient" phx-value-index={ingredient_form.index} class="mb-2">
-                Remove
+              <.input
+                field={ingredient_form[:name]}
+                type="text"
+                label={gettext("Name")}
+                placeholder={gettext("e.g. Onion")}
+              />
+              <.input field={ingredient_form[:quantity]} type="text" label={gettext("Qty")} />
+              <.input
+                field={ingredient_form[:unit]}
+                type="text"
+                label={gettext("Unit")}
+                placeholder={gettext("kg, l, units")}
+              />
+              <.button
+                type="button"
+                phx-click="remove_ingredient"
+                phx-value-index={ingredient_form.index}
+                class="mb-2"
+              >
+                {gettext("Remove")}
               </.button>
             </div>
           </.inputs_for>
 
           <.button type="button" phx-click="add_ingredient">
-            <.icon name="hero-plus" /> Add ingredient
+            <.icon name="hero-plus" /> {gettext("Add ingredient")}
           </.button>
         </fieldset>
 
         <footer class="mt-4">
-          <.button phx-disable-with="Saving..." variant="primary">Save recipe</.button>
-          <.button navigate={return_path(@return_to, @recipe)}>Cancel</.button>
+          <.button phx-disable-with={gettext("Saving...")} variant="primary">
+            {gettext("Save recipe")}
+          </.button>
+          <.button navigate={return_path(@return_to, @recipe)}>{gettext("Cancel")}</.button>
         </footer>
       </.form>
     </Layouts.app>
@@ -60,33 +77,43 @@ defmodule BudgeteerWeb.RecipeLive.Form do
     recipe = Meals.get_recipe!(socket.assigns.current_scope, id)
 
     socket
-    |> assign(:page_title, "Edit recipe")
+    |> assign(:page_title, gettext("Edit recipe"))
     |> assign(:recipe, recipe)
     |> assign(:form, to_form(Meals.change_recipe(socket.assigns.current_scope, recipe)))
   end
 
   defp apply_action(socket, :new, _params) do
-    recipe = %Recipe{household_id: socket.assigns.current_scope.user.household_id, ingredients: []}
+    recipe = %Recipe{
+      household_id: socket.assigns.current_scope.user.household_id,
+      ingredients: []
+    }
 
     socket
-    |> assign(:page_title, "New recipe")
+    |> assign(:page_title, gettext("New recipe"))
     |> assign(:recipe, recipe)
     |> assign(:form, to_form(Meals.change_recipe(socket.assigns.current_scope, recipe)))
   end
 
   @impl true
   def handle_event("validate", %{"recipe" => recipe_params}, socket) do
-    changeset = Meals.change_recipe(socket.assigns.current_scope, socket.assigns.recipe, recipe_params)
+    changeset =
+      Meals.change_recipe(socket.assigns.current_scope, socket.assigns.recipe, recipe_params)
+
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
 
   def handle_event("add_ingredient", _params, socket) do
-    {:noreply, assign(socket, form: to_form(update_ingredients(socket, &(&1 ++ [%Budgeteer.Meals.Ingredient{}]))))}
+    {:noreply,
+     assign(socket,
+       form: to_form(update_ingredients(socket, &(&1 ++ [%Budgeteer.Meals.Ingredient{}])))
+     )}
   end
 
   def handle_event("remove_ingredient", %{"index" => index_str}, socket) do
     index = String.to_integer(index_str)
-    {:noreply, assign(socket, form: to_form(update_ingredients(socket, &List.delete_at(&1, index))))}
+
+    {:noreply,
+     assign(socket, form: to_form(update_ingredients(socket, &List.delete_at(&1, index))))}
   end
 
   def handle_event("save", %{"recipe" => recipe_params}, socket) do
@@ -104,7 +131,7 @@ defmodule BudgeteerWeb.RecipeLive.Form do
       {:ok, recipe} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Recipe updated successfully")
+         |> put_flash(:info, gettext("Recipe updated successfully"))
          |> push_navigate(to: return_path(socket.assigns.return_to, recipe))}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -117,7 +144,7 @@ defmodule BudgeteerWeb.RecipeLive.Form do
       {:ok, recipe} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Recipe created successfully")
+         |> put_flash(:info, gettext("Recipe created successfully"))
          |> push_navigate(to: return_path(socket.assigns.return_to, recipe))}
 
       {:error, %Ecto.Changeset{} = changeset} ->

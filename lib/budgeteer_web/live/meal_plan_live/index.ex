@@ -10,48 +10,75 @@ defmodule BudgeteerWeb.MealPlanLive.Index do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} online_members={@online_members}>
       <.header>
-        Meal plan
-        <:subtitle>Upcoming meals, soonest first</:subtitle>
+        {gettext("Meal plan")}
+        <:subtitle>{gettext("Upcoming meals, soonest first")}</:subtitle>
       </.header>
 
-      <.form for={@plan_form} id="plan-meal-form" phx-submit="plan_meal" class="flex gap-2 items-end mt-4">
-        <.input field={@plan_form[:date]} type="date" label="Date" />
+      <.form
+        for={@plan_form}
+        id="plan-meal-form"
+        phx-submit="plan_meal"
+        class="flex gap-2 items-end mt-4"
+      >
+        <.input field={@plan_form[:date]} type="date" label={gettext("Date")} />
         <.input
           field={@plan_form[:recipe_id]}
           type="select"
-          label="Recipe"
+          label={gettext("Recipe")}
           options={Enum.map(@recipes, &{&1.name, &1.id})}
-          prompt="Choose a recipe"
+          prompt={gettext("Choose a recipe")}
         />
-        <.button phx-disable-with="Adding..." variant="primary">Plan meal</.button>
+        <.button phx-disable-with={gettext("Adding...")} variant="primary">
+          {gettext("Plan meal")}
+        </.button>
       </.form>
       <p :if={@recipes == []} class="text-sm opacity-70 mt-1">
-        You don't have any recipes yet — <.link navigate={~p"/recipes/new"} class="link">create one</.link> first.
+        {gettext("You don't have any recipes yet —")}
+        <.link navigate={~p"/recipes/new"} class="link">{gettext("create one")}</.link>
+        {gettext("first.")}
       </p>
 
       <ul id="planned-meals" phx-update="stream" class="mt-6 space-y-1">
-        <li :for={{id, planned_meal} <- @streams.planned_meals} id={id} class="flex items-center gap-3">
+        <li
+          :for={{id, planned_meal} <- @streams.planned_meals}
+          id={id}
+          class="flex items-center gap-3"
+        >
           <span class="font-mono tabular-nums opacity-70">{planned_meal.date}</span>
-          <.link navigate={~p"/recipes/#{planned_meal.recipe}"} class="link">{planned_meal.recipe.name}</.link>
-          <.link phx-click={JS.push("delete", value: %{id: planned_meal.id})} data-confirm="Are you sure?">
+          <.link navigate={~p"/recipes/#{planned_meal.recipe}"} class="link">
+            {planned_meal.recipe.name}
+          </.link>
+          <.link
+            phx-click={JS.push("delete", value: %{id: planned_meal.id})}
+            data-confirm={gettext("Are you sure?")}
+          >
             <.icon name="hero-trash" class="size-4" />
           </.link>
         </li>
       </ul>
 
       <div :if={@planned_meals != []} class="mt-6">
-        <.form for={@add_form} id="add-to-list-form" phx-submit="add_to_grocery_list" class="flex gap-2 items-end">
+        <.form
+          for={@add_form}
+          id="add-to-list-form"
+          phx-submit="add_to_grocery_list"
+          class="flex gap-2 items-end"
+        >
           <.input
             field={@add_form[:grocery_list_id]}
             type="select"
-            label="Add every listed ingredient to"
+            label={gettext("Add every listed ingredient to")}
             options={Enum.map(@grocery_lists, &{&1.name, &1.id})}
-            prompt="Choose a list"
+            prompt={gettext("Choose a list")}
           />
-          <.button phx-disable-with="Adding..." variant="primary">Add ingredients</.button>
+          <.button phx-disable-with={gettext("Adding...")} variant="primary">
+            {gettext("Add ingredients")}
+          </.button>
         </.form>
         <p :if={@grocery_lists == []} class="text-sm opacity-70 mt-1">
-          You don't have a grocery list yet — <.link navigate={~p"/groceries/new"} class="link">create one</.link> first.
+          {gettext("You don't have a grocery list yet —")}
+          <.link navigate={~p"/groceries/new"} class="link">{gettext("create one")}</.link>
+          {gettext("first.")}
         </p>
       </div>
     </Layouts.app>
@@ -70,7 +97,7 @@ defmodule BudgeteerWeb.MealPlanLive.Index do
 
     {:ok,
      socket
-     |> assign(:page_title, "Meal plan")
+     |> assign(:page_title, gettext("Meal plan"))
      |> assign(:recipes, Meals.list_recipes(scope))
      |> assign(:grocery_lists, Groceries.list_grocery_lists(scope))
      |> assign(:planned_meals, planned_meals)
@@ -105,14 +132,28 @@ defmodule BudgeteerWeb.MealPlanLive.Index do
      |> assign(:planned_meals, Enum.reject(socket.assigns.planned_meals, &(&1.id == id)))}
   end
 
-  def handle_event("add_to_grocery_list", %{"add_to_list" => %{"grocery_list_id" => grocery_list_id}}, socket) do
+  def handle_event(
+        "add_to_grocery_list",
+        %{"add_to_list" => %{"grocery_list_id" => grocery_list_id}},
+        socket
+      ) do
     scope = socket.assigns.current_scope
     grocery_list = Groceries.get_grocery_list!(scope, grocery_list_id)
     recipes = Enum.map(socket.assigns.planned_meals, & &1.recipe)
 
     {:ok, count} = Meals.add_ingredients_to_grocery_list(scope, recipes, grocery_list)
 
-    {:noreply, put_flash(socket, :info, "Added #{count} ingredient(s) to \"#{grocery_list.name}\"")}
+    {:noreply,
+     put_flash(
+       socket,
+       :info,
+       ngettext(
+         "Added 1 ingredient to \"%{list}\"",
+         "Added %{count} ingredients to \"%{list}\"",
+         count,
+         list: grocery_list.name
+       )
+     )}
   end
 
   @impl true
@@ -127,7 +168,10 @@ defmodule BudgeteerWeb.MealPlanLive.Index do
     {:noreply,
      socket
      |> stream_delete(:planned_meals, planned_meal)
-     |> assign(:planned_meals, Enum.reject(socket.assigns.planned_meals, &(&1.id == planned_meal.id)))}
+     |> assign(
+       :planned_meals,
+       Enum.reject(socket.assigns.planned_meals, &(&1.id == planned_meal.id))
+     )}
   end
 
   defp put_planned_meal(socket, planned_meal) do

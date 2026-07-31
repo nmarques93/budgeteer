@@ -17,8 +17,8 @@ defmodule BudgeteerWeb.UserLive.Settings do
     <Layouts.app flash={@flash} current_scope={@current_scope} online_members={@online_members}>
       <div class="text-center">
         <.header>
-          Account Settings
-          <:subtitle>Manage your account email address and password settings</:subtitle>
+          {gettext("Account Settings")}
+          <:subtitle>{gettext("Manage your account email address and password settings")}</:subtitle>
         </.header>
       </div>
 
@@ -26,12 +26,14 @@ defmodule BudgeteerWeb.UserLive.Settings do
         <.input
           field={@email_form[:email]}
           type="email"
-          label="Email"
+          label={gettext("Email")}
           autocomplete="username"
           spellcheck="false"
           required
         />
-        <.button variant="primary" phx-disable-with="Changing...">Change Email</.button>
+        <.button variant="primary" phx-disable-with={gettext("Changing...")}>
+          {gettext("Change Email")}
+        </.button>
       </.form>
 
       <div class="divider" />
@@ -55,7 +57,7 @@ defmodule BudgeteerWeb.UserLive.Settings do
         <.input
           field={@password_form[:password]}
           type="password"
-          label="New password"
+          label={gettext("New password")}
           autocomplete="new-password"
           spellcheck="false"
           required
@@ -63,12 +65,12 @@ defmodule BudgeteerWeb.UserLive.Settings do
         <.input
           field={@password_form[:password_confirmation]}
           type="password"
-          label="Confirm new password"
+          label={gettext("Confirm new password")}
           autocomplete="new-password"
           spellcheck="false"
         />
-        <.button variant="primary" phx-disable-with="Saving...">
-          Save Password
+        <.button variant="primary" phx-disable-with={gettext("Saving...")}>
+          {gettext("Save Password")}
         </.button>
       </.form>
 
@@ -78,50 +80,69 @@ defmodule BudgeteerWeb.UserLive.Settings do
         <.input
           field={@invite_form[:email]}
           type="email"
-          label="Invite a household member"
+          label={gettext("Invite a household member")}
           placeholder="their@email.com"
           spellcheck="false"
           required
         />
-        <.button variant="primary" phx-disable-with="Sending...">Send invite</.button>
+        <.button variant="primary" phx-disable-with={gettext("Sending...")}>
+          {gettext("Send invite")}
+        </.button>
       </.form>
 
       <div class="divider" />
 
       <div>
         <.header>
-          API access
+          {gettext("API access")}
           <:subtitle>
-            Personal access tokens for MCP clients (Claude Desktop, etc.) to query your household's data — read-only, except for creating recipes and planning meals.
+            {gettext(
+              "Personal access tokens let apps you connect read your household's data — read-only, except for creating recipes and planning meals."
+            )}
           </:subtitle>
         </.header>
 
         <div :if={@new_token} class="alert alert-warning mt-4">
           <div>
-            <p class="font-semibold">Copy your token now — you won't be able to see it again.</p>
+            <p class="font-semibold">
+              {gettext("Copy your token now — you won't be able to see it again.")}
+            </p>
             <p class="font-mono text-sm break-all mt-1">{@new_token}</p>
           </div>
         </div>
 
-        <.form for={@access_token_form} id="access_token_form" phx-submit="create_access_token" class="mt-4">
+        <.form
+          for={@access_token_form}
+          id="access_token_form"
+          phx-submit="create_access_token"
+          class="mt-4"
+        >
           <.input
             field={@access_token_form[:name]}
             type="text"
-            label="Token name"
-            placeholder="e.g. Claude Desktop"
+            label={gettext("Token name")}
+            placeholder={gettext("e.g. My budgeting app")}
             required
           />
-          <.button variant="primary" phx-disable-with="Generating...">Generate token</.button>
+          <.button variant="primary" phx-disable-with={gettext("Generating...")}>
+            {gettext("Generate token")}
+          </.button>
         </.form>
 
         <div class="mt-4">
           <.table id="access-tokens" rows={@access_tokens}>
-            <:col :let={token} label="Name">{token.name}</:col>
-            <:col :let={token} label="Created">{token.inserted_at}</:col>
-            <:col :let={token} label="Last used">{token.last_used_at || "Never"}</:col>
+            <:col :let={token} label={gettext("Name")}>{token.name}</:col>
+            <:col :let={token} label={gettext("Created")}>{token.inserted_at}</:col>
+            <:col :let={token} label={gettext("Last used")}>
+              {token.last_used_at || gettext("Never")}
+            </:col>
             <:action :let={token}>
-              <.button phx-click="revoke_access_token" phx-value-id={token.id} data-confirm="Revoke this token?">
-                Revoke
+              <.button
+                phx-click="revoke_access_token"
+                phx-value-id={token.id}
+                data-confirm={gettext("Revoke this token?")}
+              >
+                {gettext("Revoke")}
               </.button>
             </:action>
           </.table>
@@ -136,10 +157,10 @@ defmodule BudgeteerWeb.UserLive.Settings do
     socket =
       case Households.update_user_email(socket.assigns.current_scope.user, token) do
         {:ok, _user} ->
-          put_flash(socket, :info, "Email changed successfully.")
+          put_flash(socket, :info, gettext("Email changed successfully."))
 
         {:error, _} ->
-          put_flash(socket, :error, "Email change link is invalid or it has expired.")
+          put_flash(socket, :error, gettext("Email change link is invalid or it has expired."))
       end
 
     {:ok, push_navigate(socket, to: ~p"/users/settings")}
@@ -190,7 +211,7 @@ defmodule BudgeteerWeb.UserLive.Settings do
           &url(~p"/users/settings/confirm-email/#{&1}")
         )
 
-        info = "A link to confirm your email change has been sent to the new address."
+        info = gettext("A link to confirm your email change has been sent to the new address.")
         {:noreply, socket |> put_flash(:info, info)}
 
       changeset ->
@@ -236,17 +257,23 @@ defmodule BudgeteerWeb.UserLive.Settings do
 
       {:noreply,
        socket
-       |> put_flash(:info, "An invite was sent to #{email}.")
+       |> put_flash(:info, gettext("An invite was sent to %{email}.", email: email))
        |> assign(:invite_form, to_form(%{"email" => ""}, as: "invite"))}
     else
-      {:noreply, put_flash(socket, :error, "Too many invites sent — please wait a while and try again.")}
+      {:noreply,
+       put_flash(
+         socket,
+         :error,
+         gettext("Too many invites sent — please wait a while and try again.")
+       )}
     end
   end
 
   def handle_event("create_access_token", %{"access_token" => %{"name" => name}}, socket) do
     scope = socket.assigns.current_scope
 
-    if RateLimit.check("access_token:#{scope.user.id}", @access_token_scale, @access_token_limit) == :ok do
+    if RateLimit.check("access_token:#{scope.user.id}", @access_token_scale, @access_token_limit) ==
+         :ok do
       case Households.create_access_token(scope, name) do
         {:ok, raw_token, _access_token} ->
           {:noreply,
@@ -256,10 +283,16 @@ defmodule BudgeteerWeb.UserLive.Settings do
            |> assign(:access_tokens, Households.list_access_tokens(scope))}
 
         {:error, _changeset} ->
-          {:noreply, put_flash(socket, :error, "Couldn't create the token — please try again.")}
+          {:noreply,
+           put_flash(socket, :error, gettext("Couldn't create the token — please try again."))}
       end
     else
-      {:noreply, put_flash(socket, :error, "Too many tokens created — please wait a while and try again.")}
+      {:noreply,
+       put_flash(
+         socket,
+         :error,
+         gettext("Too many tokens created — please wait a while and try again.")
+       )}
     end
   end
 
@@ -270,11 +303,11 @@ defmodule BudgeteerWeb.UserLive.Settings do
       {:ok, _access_token} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Token revoked.")
+         |> put_flash(:info, gettext("Token revoked."))
          |> assign(:access_tokens, Households.list_access_tokens(scope))}
 
       {:error, :not_found} ->
-        {:noreply, put_flash(socket, :error, "That token no longer exists.")}
+        {:noreply, put_flash(socket, :error, gettext("That token no longer exists."))}
     end
   end
 end

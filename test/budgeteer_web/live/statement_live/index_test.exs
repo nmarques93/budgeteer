@@ -22,7 +22,9 @@ defmodule BudgeteerWeb.StatementLive.IndexTest do
     test "lists statements scoped to the account", %{conn: conn, scope: scope, account: account} do
       statement = statement_fixture(scope, %{account: account, filename: "visible.pdf"})
       other_account = account_fixture(scope)
-      other_statement = statement_fixture(scope, %{account: other_account, filename: "hidden.pdf"})
+
+      other_statement =
+        statement_fixture(scope, %{account: other_account, filename: "hidden.pdf"})
 
       {:ok, _index_live, html} = live(conn, ~p"/accounts/#{account}/statements")
 
@@ -39,7 +41,9 @@ defmodule BudgeteerWeb.StatementLive.IndexTest do
       {:ok, index_live, html} = live(conn, ~p"/accounts/#{account}/statements")
       refute html =~ "new-statement.pdf"
 
-      expect(Budgeteer.AI.ClientMock, :parse_statement, fn _bytes, "application/pdf", _category_names ->
+      expect(Budgeteer.AI.ClientMock, :parse_statement, fn _bytes,
+                                                           "application/pdf",
+                                                           _category_names ->
         {:ok, %{"currency" => "EUR", "transactions" => []}}
       end)
 
@@ -54,7 +58,7 @@ defmodule BudgeteerWeb.StatementLive.IndexTest do
 
       html = render(index_live)
       assert html =~ "new-statement.pdf"
-      assert html =~ "processed"
+      assert html =~ "Processed"
     end
   end
 end

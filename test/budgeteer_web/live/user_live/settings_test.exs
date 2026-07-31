@@ -237,7 +237,11 @@ defmodule BudgeteerWeb.UserLive.SettingsTest do
 
       token =
         extract_user_token(fn url ->
-          Households.deliver_user_update_email_instructions(%{user | email: email}, user.email, url)
+          Households.deliver_user_update_email_instructions(
+            %{user | email: email},
+            user.email,
+            url
+          )
         end)
 
       %{conn: log_in_user(conn, user), token: token, email: email, user: user}

@@ -9,33 +9,32 @@ defmodule BudgeteerWeb.SubscriptionLive.Index do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} online_members={@online_members}>
       <.header>
-        Recurring Charges
-        <:subtitle>
-          Detected from your transaction history — the same merchant and amount, at a regular
-          interval, three times or more.
-        </:subtitle>
+        {gettext("Recurring Charges")}
+        <:subtitle>{gettext("Automatically detected from your transaction history.")}</:subtitle>
       </.header>
 
       <p :if={@subscriptions == []} class="text-base-content/60 mt-4">
-        No recurring charges detected yet.
+        {gettext("No recurring charges detected yet.")}
       </p>
 
       <div :if={@subscriptions != []} class="mt-4">
-        <div class="text-sm opacity-70">Estimated monthly cost</div>
+        <div class="text-sm opacity-70">{gettext("Estimated monthly cost")}</div>
         <div class="text-2xl font-bold"><.money cents={@total_monthly_cents} /></div>
       </div>
 
       <div :if={@subscriptions != []} class="mt-4">
         <.table id="subscriptions" rows={@subscriptions}>
-          <:col :let={sub} label="Merchant">{sub.merchant}</:col>
-          <:col :let={sub} label="Amount"><.money cents={sub.amount_cents} /></:col>
-          <:col :let={sub} label="Cadence">{cadence_label(sub.cadence)}</:col>
-          <:col :let={sub} label="≈ Monthly">
+          <:col :let={sub} label={gettext("Merchant")}>{sub.merchant}</:col>
+          <:col :let={sub} label={gettext("Amount")}><.money cents={sub.amount_cents} /></:col>
+          <:col :let={sub} label={gettext("Cadence")}>{cadence_label(sub.cadence)}</:col>
+          <:col :let={sub} label={gettext("≈ Monthly")}>
             <.money cents={Subscriptions.monthly_equivalent_cents(sub)} />
           </:col>
-          <:col :let={sub} label="Last charged">{sub.last_date}</:col>
-          <:col :let={sub} label="Next expected">{sub.next_expected_date}</:col>
-          <:col :let={sub} label="Category">{category_name(@categories_by_id, sub.category_id)}</:col>
+          <:col :let={sub} label={gettext("Last charged")}>{sub.last_date}</:col>
+          <:col :let={sub} label={gettext("Next expected")}>{sub.next_expected_date}</:col>
+          <:col :let={sub} label={gettext("Category")}>
+            {category_name(@categories_by_id, sub.category_id)}
+          </:col>
           <:action :let={sub}>
             <.link
               phx-click={
@@ -43,9 +42,9 @@ defmodule BudgeteerWeb.SubscriptionLive.Index do
                   value: %{merchant_key: sub.merchant_key, amount_cents: sub.amount_cents}
                 )
               }
-              data-confirm="Not actually a subscription? This will stop showing it."
+              data-confirm={gettext("Not actually a subscription? This will stop showing it.")}
             >
-              Dismiss
+              {gettext("Dismiss")}
             </.link>
           </:action>
         </.table>
@@ -54,14 +53,14 @@ defmodule BudgeteerWeb.SubscriptionLive.Index do
       <div :if={@dismissed != []} class="mt-8">
         <details>
           <summary class="cursor-pointer text-sm opacity-70">
-            Dismissed ({length(@dismissed)})
+            {gettext("Dismissed (%{count})", count: length(@dismissed))}
           </summary>
           <ul class="mt-2 space-y-2 text-sm">
             <li :for={dismissed <- @dismissed} class="flex items-center gap-3">
               <span class="opacity-70">{dismissed.merchant_key}</span>
               <.money cents={dismissed.amount_cents} />
               <.link phx-click={JS.push("undismiss", value: %{id: dismissed.id})} class="underline">
-                Restore
+                {gettext("Restore")}
               </.link>
             </li>
           </ul>
@@ -84,7 +83,7 @@ defmodule BudgeteerWeb.SubscriptionLive.Index do
 
     {:ok,
      socket
-     |> assign(:page_title, "Recurring Charges")
+     |> assign(:page_title, gettext("Recurring Charges"))
      |> assign(:categories_by_id, Map.new(categories, &{&1.id, &1.name}))
      |> load_data()}
   end
@@ -141,14 +140,14 @@ defmodule BudgeteerWeb.SubscriptionLive.Index do
   defp normalize_cents(cents) when is_integer(cents), do: cents
   defp normalize_cents(cents) when is_binary(cents), do: String.to_integer(cents)
 
-  defp category_name(_categories_by_id, nil), do: "Uncategorized"
+  defp category_name(_categories_by_id, nil), do: gettext("Uncategorized")
 
   defp category_name(categories_by_id, category_id),
-    do: Map.get(categories_by_id, category_id, "Uncategorized")
+    do: Map.get(categories_by_id, category_id, gettext("Uncategorized"))
 
-  defp cadence_label(:weekly), do: "Weekly"
-  defp cadence_label(:biweekly), do: "Every 2 weeks"
-  defp cadence_label(:monthly), do: "Monthly"
-  defp cadence_label(:quarterly), do: "Quarterly"
-  defp cadence_label(:yearly), do: "Yearly"
+  defp cadence_label(:weekly), do: gettext("Weekly")
+  defp cadence_label(:biweekly), do: gettext("Every 2 weeks")
+  defp cadence_label(:monthly), do: gettext("Monthly")
+  defp cadence_label(:quarterly), do: gettext("Quarterly")
+  defp cadence_label(:yearly), do: gettext("Yearly")
 end

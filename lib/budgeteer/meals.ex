@@ -107,7 +107,10 @@ defmodule Budgeteer.Meals do
 
   """
   def subscribe_planned_meals(%Scope{} = scope) do
-    Phoenix.PubSub.subscribe(Budgeteer.PubSub, "household:#{scope.user.household_id}:planned_meals")
+    Phoenix.PubSub.subscribe(
+      Budgeteer.PubSub,
+      "household:#{scope.user.household_id}:planned_meals"
+    )
   end
 
   defp broadcast_planned_meal(household_id, message) do

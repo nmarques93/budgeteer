@@ -13,6 +13,7 @@ defmodule Budgeteer.Households.User do
     field :confirmed_at, :utc_datetime
     field :authenticated_at, :utc_datetime, virtual: true
     field :household_name, :string, virtual: true
+    field :locale, :string
 
     belongs_to :household, Budgeteer.Households.Household
 

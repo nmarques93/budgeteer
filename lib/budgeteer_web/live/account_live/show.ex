@@ -8,36 +8,39 @@ defmodule BudgeteerWeb.AccountLive.Show do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} online_members={@online_members}>
       <.header>
-        Account {@account.id}
-        <:subtitle>This is a account record from your database.</:subtitle>
+        {@account.name}
         <:actions>
           <.button navigate={~p"/accounts"}>
             <.icon name="hero-arrow-left" />
           </.button>
           <.button variant="primary" navigate={~p"/accounts/#{@account}/statements/new"}>
-            <.icon name="hero-arrow-up-tray" /> Upload statement
+            <.icon name="hero-arrow-up-tray" /> {gettext("Upload statement")}
           </.button>
           <.button navigate={~p"/accounts/#{@account}/edit?return_to=show"}>
-            <.icon name="hero-pencil-square" /> Edit account
+            <.icon name="hero-pencil-square" /> {gettext("Edit account")}
           </.button>
         </:actions>
       </.header>
 
       <div class="flex gap-4 mb-4">
         <.button navigate={~p"/accounts/#{@account}/transactions"}>
-          <.icon name="hero-list-bullet" /> Transactions
+          <.icon name="hero-list-bullet" /> {gettext("Transactions")}
         </.button>
         <.button navigate={~p"/accounts/#{@account}/statements"}>
-          <.icon name="hero-document-text" /> Statements
+          <.icon name="hero-document-text" /> {gettext("Statements")}
         </.button>
       </div>
 
       <.list>
-        <:item title="Name">{@account.name}</:item>
-        <:item title="Bank name">{@account.bank_name}</:item>
-        <:item title="Currency">{@account.currency}</:item>
-        <:item title="Starting balance"><.money cents={@account.starting_balance_cents} /></:item>
-        <:item title="Current balance"><.money cents={Ledger.current_balance_cents(@account)} /></:item>
+        <:item title={gettext("Name")}>{@account.name}</:item>
+        <:item title={gettext("Bank name")}>{@account.bank_name}</:item>
+        <:item title={gettext("Currency")}>{@account.currency}</:item>
+        <:item title={gettext("Starting balance")}>
+          <.money cents={@account.starting_balance_cents} />
+        </:item>
+        <:item title={gettext("Current balance")}>
+          <.money cents={Ledger.current_balance_cents(@account)} />
+        </:item>
       </.list>
     </Layouts.app>
     """
@@ -51,7 +54,7 @@ defmodule BudgeteerWeb.AccountLive.Show do
 
     {:ok,
      socket
-     |> assign(:page_title, "Show Account")
+     |> assign(:page_title, gettext("Show Account"))
      |> assign(:account, Ledger.get_account!(socket.assigns.current_scope, id))}
   end
 
@@ -69,7 +72,7 @@ defmodule BudgeteerWeb.AccountLive.Show do
       ) do
     {:noreply,
      socket
-     |> put_flash(:error, "The current account was deleted.")
+     |> put_flash(:error, gettext("The current account was deleted."))
      |> push_navigate(to: ~p"/accounts")}
   end
 

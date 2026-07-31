@@ -8,13 +8,13 @@ defmodule BudgeteerWeb.RecipeLive.Index do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} online_members={@online_members}>
       <.header>
-        Recipes
+        {gettext("Recipes")}
         <:actions>
           <.button navigate={~p"/recipes/extract"}>
-            <.icon name="hero-sparkles" /> Extract from text
+            <.icon name="hero-sparkles" /> {gettext("Extract from text")}
           </.button>
           <.button variant="primary" navigate={~p"/recipes/new"}>
-            <.icon name="hero-plus" /> New recipe
+            <.icon name="hero-plus" /> {gettext("New recipe")}
           </.button>
         </:actions>
       </.header>
@@ -24,14 +24,14 @@ defmodule BudgeteerWeb.RecipeLive.Index do
         rows={@streams.recipes}
         row_click={fn {_id, recipe} -> JS.navigate(~p"/recipes/#{recipe}") end}
       >
-        <:col :let={{_id, recipe}} label="Name">{recipe.name}</:col>
-        <:col :let={{_id, recipe}} label="Ingredients">{length(recipe.ingredients)}</:col>
+        <:col :let={{_id, recipe}} label={gettext("Name")}>{recipe.name}</:col>
+        <:col :let={{_id, recipe}} label={gettext("Ingredients")}>{length(recipe.ingredients)}</:col>
         <:action :let={{id, recipe}}>
           <.link
             phx-click={JS.push("delete", value: %{id: recipe.id}) |> hide("##{id}")}
-            data-confirm="Are you sure?"
+            data-confirm={gettext("Are you sure?")}
           >
-            Delete
+            {gettext("Delete")}
           </.link>
         </:action>
       </.table>
@@ -47,7 +47,7 @@ defmodule BudgeteerWeb.RecipeLive.Index do
 
     {:ok,
      socket
-     |> assign(:page_title, "Recipes")
+     |> assign(:page_title, gettext("Recipes"))
      |> stream(:recipes, Meals.list_recipes(socket.assigns.current_scope))}
   end
 

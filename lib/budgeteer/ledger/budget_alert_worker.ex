@@ -19,7 +19,9 @@ defmodule Budgeteer.Ledger.BudgetAlertWorker do
 
     category.household_id
     |> Households.list_household_emails()
-    |> Enum.each(&Ledger.BudgetNotifier.deliver_budget_alert(&1, category, spent_cents))
+    |> Enum.each(fn %{email: email, locale: locale} ->
+      Ledger.BudgetNotifier.deliver_budget_alert(email, locale, category, spent_cents)
+    end)
 
     :ok
   end

@@ -29,7 +29,7 @@ defmodule BudgeteerWeb.UserOAuthController do
 
   def callback(%{assigns: %{ueberauth_failure: _failure}} = conn, _params) do
     conn
-    |> put_flash(:error, "Could not authenticate with Google.")
+    |> put_flash(:error, gettext("Could not authenticate with Google."))
     |> redirect(to: ~p"/users/log-in")
   end
 
@@ -41,17 +41,19 @@ defmodule BudgeteerWeb.UserOAuthController do
       conn
       |> delete_session(:oauth_invite_token)
       |> delete_session(:oauth_return_to)
-      |> then(fn conn -> if return_to, do: put_session(conn, :user_return_to, return_to), else: conn end)
+      |> then(fn conn ->
+        if return_to, do: put_session(conn, :user_return_to, return_to), else: conn
+      end)
 
     case Households.find_or_create_oauth_user(auth, invite_token) do
       {:ok, user} ->
         conn
-        |> put_flash(:info, "Welcome!")
+        |> put_flash(:info, gettext("Welcome!"))
         |> UserAuth.log_in_user(user, %{"remember_me" => "true"})
 
       {:error, _changeset} ->
         conn
-        |> put_flash(:error, "Could not sign you in with Google.")
+        |> put_flash(:error, gettext("Could not sign you in with Google."))
         |> redirect(to: ~p"/users/log-in")
     end
   end

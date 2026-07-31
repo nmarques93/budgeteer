@@ -20,13 +20,20 @@ defmodule BudgeteerWeb.StatementLive.UploadTest do
       assert html =~ "For #{account.name}"
     end
 
-    test "renders a plain multipart form posting to the statements controller", %{conn: conn, account: account} do
+    test "renders a plain multipart form posting to the statements controller", %{
+      conn: conn,
+      account: account
+    } do
       {:ok, upload_live, _html} = live(conn, ~p"/accounts/#{account}/statements/new")
 
       # Not a LiveView allow_upload — a real HTML form POST (see
       # BudgeteerWeb.StatementController and CLAUDE.md for why), so submission
       # itself is covered by StatementControllerTest, not here.
-      assert has_element?(upload_live, ~s{form[action="/accounts/#{account.id}/statements"][enctype="multipart/form-data"]})
+      assert has_element?(
+               upload_live,
+               ~s{form[action="/accounts/#{account.id}/statements"][enctype="multipart/form-data"]}
+             )
+
       assert has_element?(upload_live, ~s{input[type="file"][name="statement[file]"]})
     end
   end

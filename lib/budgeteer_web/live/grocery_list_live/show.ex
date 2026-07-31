@@ -11,29 +11,54 @@ defmodule BudgeteerWeb.GroceryListLive.Show do
       <.header>
         {@grocery_list.name}
         <:subtitle>
-          <.link navigate={~p"/groceries"}>Back to lists</.link>
+          <.link navigate={~p"/groceries"}>{gettext("Back to lists")}</.link>
         </:subtitle>
         <:actions>
           <.button navigate={~p"/groceries/#{@grocery_list}/edit?return_to=show"}>
-            <.icon name="hero-pencil-square" /> Rename
+            <.icon name="hero-pencil-square" /> {gettext("Rename")}
           </.button>
         </:actions>
       </.header>
 
-      <.form for={@item_form} id="add-item-form" phx-submit="add_item" class="flex gap-2 items-end mt-4">
-        <.input field={@item_form[:name]} type="text" label="Item" placeholder="e.g. Milk" />
-        <.input field={@item_form[:quantity]} type="number" step="any" label="Qty" />
-        <.input field={@item_form[:unit]} type="text" label="Unit" placeholder="kg, l, units" />
-        <.button phx-disable-with="Adding..." variant="primary">Add</.button>
+      <.form
+        for={@item_form}
+        id="add-item-form"
+        phx-submit="add_item"
+        class="flex gap-2 items-end mt-4"
+      >
+        <.input
+          field={@item_form[:name]}
+          type="text"
+          label={gettext("Item")}
+          placeholder={gettext("e.g. Milk")}
+        />
+        <.input field={@item_form[:quantity]} type="number" step="any" label={gettext("Qty")} />
+        <.input
+          field={@item_form[:unit]}
+          type="text"
+          label={gettext("Unit")}
+          placeholder={gettext("kg, l, units")}
+        />
+        <.button phx-disable-with={gettext("Adding...")} variant="primary">{gettext("Add")}</.button>
       </.form>
 
       <ul id="grocery-items" phx-update="stream" class="mt-4 space-y-1">
         <li :for={{id, item} <- @streams.items} id={id} class="flex items-center gap-3">
-          <input type="checkbox" class="checkbox checkbox-sm" checked={item.checked} phx-click="toggle_checked" phx-value-id={item.id} />
+          <input
+            type="checkbox"
+            class="checkbox checkbox-sm"
+            checked={item.checked}
+            phx-click="toggle_checked"
+            phx-value-id={item.id}
+          />
           <span class={["flex-1", item.checked && "line-through opacity-60"]}>
-            {item.name} <span :if={item.quantity} class="opacity-70 text-sm">({item.quantity} {item.unit})</span>
+            {item.name}
+            <span :if={item.quantity} class="opacity-70 text-sm">({item.quantity} {item.unit})</span>
           </span>
-          <.link phx-click={JS.push("delete_item", value: %{id: item.id})} data-confirm="Are you sure?">
+          <.link
+            phx-click={JS.push("delete_item", value: %{id: item.id})}
+            data-confirm={gettext("Are you sure?")}
+          >
             <.icon name="hero-trash" class="size-4" />
           </.link>
         </li>

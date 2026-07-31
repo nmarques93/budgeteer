@@ -156,7 +156,11 @@ defmodule Budgeteer.HouseholdsTest do
 
       token =
         extract_user_token(fn url ->
-          Households.deliver_user_update_email_instructions(%{user | email: email}, user.email, url)
+          Households.deliver_user_update_email_instructions(
+            %{user | email: email},
+            user.email,
+            url
+          )
         end)
 
       %{user: user, token: token, email: email}
@@ -549,7 +553,9 @@ defmodule Budgeteer.HouseholdsTest do
       user = user_fixture()
       scope = Budgeteer.Households.Scope.for_user(user)
 
-      assert {:ok, raw_token, access_token} = Households.create_access_token(scope, "Claude Desktop")
+      assert {:ok, raw_token, access_token} =
+               Households.create_access_token(scope, "Claude Desktop")
+
       assert String.starts_with?(raw_token, "bgtpat_")
       assert access_token.name == "Claude Desktop"
       assert access_token.token != raw_token
@@ -595,7 +601,10 @@ defmodule Budgeteer.HouseholdsTest do
 
     test "get_user_by_access_token/1 returns nil for garbage or unknown tokens" do
       refute Households.get_user_by_access_token("garbage")
-      refute Households.get_user_by_access_token("bgtpat_" <> Base.url_encode64(:crypto.strong_rand_bytes(32), padding: false))
+
+      refute Households.get_user_by_access_token(
+               "bgtpat_" <> Base.url_encode64(:crypto.strong_rand_bytes(32), padding: false)
+             )
     end
 
     test "get_user_by_access_token/1 touches last_used_at" do

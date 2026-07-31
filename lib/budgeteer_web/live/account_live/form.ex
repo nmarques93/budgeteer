@@ -8,19 +8,25 @@ defmodule BudgeteerWeb.AccountLive.Form do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} online_members={@online_members}>
-      <.header>
-        {@page_title}
-        <:subtitle>Use this form to manage account records in your database.</:subtitle>
-      </.header>
+      <.header>{@page_title}</.header>
 
       <.form for={@form} id="account-form" phx-change="validate" phx-submit="save">
-        <.input field={@form[:name]} type="text" label="Name" />
-        <.input field={@form[:bank_name]} type="text" label="Bank name" />
-        <.input field={@form[:currency]} type="text" label="Currency" />
-        <.input field={@form[:starting_balance]} type="text" label="Starting balance" placeholder="e.g. 1500.00" />
+        <.input field={@form[:name]} type="text" label={gettext("Name")} />
+        <.input field={@form[:bank_name]} type="text" label={gettext("Bank name")} />
+        <.input field={@form[:currency]} type="text" label={gettext("Currency")} />
+        <.input
+          field={@form[:starting_balance]}
+          type="text"
+          label={gettext("Starting balance")}
+          placeholder={gettext("e.g. 1500.00")}
+        />
         <footer>
-          <.button phx-disable-with="Saving..." variant="primary">Save Account</.button>
-          <.button navigate={return_path(@current_scope, @return_to, @account)}>Cancel</.button>
+          <.button phx-disable-with={gettext("Saving...")} variant="primary">
+            {gettext("Save Account")}
+          </.button>
+          <.button navigate={return_path(@current_scope, @return_to, @account)}>
+            {gettext("Cancel")}
+          </.button>
         </footer>
       </.form>
     </Layouts.app>
@@ -40,10 +46,14 @@ defmodule BudgeteerWeb.AccountLive.Form do
 
   defp apply_action(socket, :edit, %{"id" => id}) do
     account = Ledger.get_account!(socket.assigns.current_scope, id)
-    account = %{account | starting_balance: Budgeteer.Money.to_decimal_string(account.starting_balance_cents)}
+
+    account = %{
+      account
+      | starting_balance: Budgeteer.Money.to_decimal_string(account.starting_balance_cents)
+    }
 
     socket
-    |> assign(:page_title, "Edit Account")
+    |> assign(:page_title, gettext("Edit Account"))
     |> assign(:account, account)
     |> assign(:form, to_form(Ledger.change_account(socket.assigns.current_scope, account)))
   end
@@ -56,14 +66,16 @@ defmodule BudgeteerWeb.AccountLive.Form do
     }
 
     socket
-    |> assign(:page_title, "New Account")
+    |> assign(:page_title, gettext("New Account"))
     |> assign(:account, account)
     |> assign(:form, to_form(Ledger.change_account(socket.assigns.current_scope, account)))
   end
 
   @impl true
   def handle_event("validate", %{"account" => account_params}, socket) do
-    changeset = Ledger.change_account(socket.assigns.current_scope, socket.assigns.account, account_params)
+    changeset =
+      Ledger.change_account(socket.assigns.current_scope, socket.assigns.account, account_params)
+
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
 
@@ -72,11 +84,15 @@ defmodule BudgeteerWeb.AccountLive.Form do
   end
 
   defp save_account(socket, :edit, account_params) do
-    case Ledger.update_account(socket.assigns.current_scope, socket.assigns.account, account_params) do
+    case Ledger.update_account(
+           socket.assigns.current_scope,
+           socket.assigns.account,
+           account_params
+         ) do
       {:ok, account} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Account updated successfully")
+         |> put_flash(:info, gettext("Account updated successfully"))
          |> push_navigate(
            to: return_path(socket.assigns.current_scope, socket.assigns.return_to, account)
          )}
@@ -91,7 +107,7 @@ defmodule BudgeteerWeb.AccountLive.Form do
       {:ok, account} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Account created successfully")
+         |> put_flash(:info, gettext("Account created successfully"))
          |> push_navigate(
            to: return_path(socket.assigns.current_scope, socket.assigns.return_to, account)
          )}

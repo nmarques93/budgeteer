@@ -59,7 +59,9 @@ defmodule Budgeteer.MealsTest do
       scope = household_scope_fixture()
       recipe = recipe_fixture(scope)
 
-      assert {:ok, %Recipe{} = recipe} = Meals.update_recipe(scope, recipe, %{name: "Updated name"})
+      assert {:ok, %Recipe{} = recipe} =
+               Meals.update_recipe(scope, recipe, %{name: "Updated name"})
+
       assert recipe.name == "Updated name"
     end
 
@@ -129,7 +131,9 @@ defmodule Budgeteer.MealsTest do
 
     test "create_planned_meal/2 with invalid data returns error changeset" do
       scope = household_scope_fixture()
-      assert {:error, %Ecto.Changeset{}} = Meals.create_planned_meal(scope, %{recipe_id: nil, date: nil})
+
+      assert {:error, %Ecto.Changeset{}} =
+               Meals.create_planned_meal(scope, %{recipe_id: nil, date: nil})
     end
 
     test "delete_planned_meal/2 removes the meal from the plan" do
@@ -169,9 +173,12 @@ defmodule Budgeteer.MealsTest do
           ]
         })
 
-      assert {:ok, 3} = Meals.add_ingredients_to_grocery_list(scope, [recipe1, recipe2], grocery_list)
+      assert {:ok, 3} =
+               Meals.add_ingredients_to_grocery_list(scope, [recipe1, recipe2], grocery_list)
 
-      names = Budgeteer.Groceries.list_items(scope, grocery_list) |> Enum.map(& &1.name) |> Enum.sort()
+      names =
+        Budgeteer.Groceries.list_items(scope, grocery_list) |> Enum.map(& &1.name) |> Enum.sort()
+
       assert names == ["Carrot", "Garlic", "Onion"]
     end
 

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang={if @locale == "pt_PT", do: "pt-PT", else: "en"}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -90,26 +90,26 @@
       </li>
       <%= if @current_scope do %>
         <li>
-          <.link href={~p"/dashboard"}>Dashboard</.link>
+          <.link href={~p"/dashboard"}>{gettext("Dashboard")}</.link>
         </li>
         <li>
-          <.link href={~p"/accounts"}>Accounts</.link>
+          <.link href={~p"/accounts"}>{gettext("Accounts")}</.link>
         </li>
         <li>
-          <.link href={~p"/categories"}>Categories</.link>
+          <.link href={~p"/categories"}>{gettext("Categories")}</.link>
         </li>
         <li>
-          <.link href={~p"/groceries"}>Groceries</.link>
+          <.link href={~p"/groceries"}>{gettext("Groceries")}</.link>
         </li>
         <li>
           <details>
-            <summary>More</summary>
+            <summary>{gettext("More")}</summary>
             <ul class="bg-base-100 rounded-box z-20">
-              <li><.link href={~p"/transactions"}>Search Transactions</.link></li>
-              <li><.link href={~p"/subscriptions"}>Recurring Charges</.link></li>
-              <li><.link href={~p"/recipes"}>Recipes</.link></li>
-              <li><.link href={~p"/meal-plan"}>Meal Plan</.link></li>
-              <li><.link href={~p"/calendar"}>Calendar</.link></li>
+              <li><.link href={~p"/transactions"}>{gettext("Search Transactions")}</.link></li>
+              <li><.link href={~p"/subscriptions"}>{gettext("Recurring Charges")}</.link></li>
+              <li><.link href={~p"/recipes"}>{gettext("Recipes")}</.link></li>
+              <li><.link href={~p"/meal-plan"}>{gettext("Meal Plan")}</.link></li>
+              <li><.link href={~p"/calendar"}>{gettext("Calendar")}</.link></li>
             </ul>
           </details>
         </li>
@@ -118,15 +118,15 @@
         <div
           class="flex items-center gap-0.5 rounded-full border border-base-300 p-0.5"
           role="group"
-          aria-label="Theme"
+          aria-label={gettext("Theme")}
         >
           <button
             type="button"
             phx-click={JS.dispatch("phx:set-theme")}
             data-phx-theme="system"
             class="rounded-full p-1.5 text-base-content/60 hover:text-base-content"
-            aria-label="Use system theme"
-            title="System"
+            aria-label={gettext("Use system theme")}
+            title={gettext("System")}
           >
             <.icon name="hero-computer-desktop-micro" />
           </button>
@@ -135,8 +135,8 @@
             phx-click={JS.dispatch("phx:set-theme")}
             data-phx-theme="light"
             class="rounded-full p-1.5 text-base-content/60 hover:text-base-content"
-            aria-label="Use light theme"
-            title="Light"
+            aria-label={gettext("Use light theme")}
+            title={gettext("Light")}
           >
             <.icon name="hero-sun-micro" />
           </button>
@@ -145,11 +145,39 @@
             phx-click={JS.dispatch("phx:set-theme")}
             data-phx-theme="dark"
             class="rounded-full p-1.5 text-base-content/60 hover:text-base-content"
-            aria-label="Use dark theme"
-            title="Dark"
+            aria-label={gettext("Use dark theme")}
+            title={gettext("Dark")}
           >
             <.icon name="hero-moon-micro" />
           </button>
+        </div>
+      </li>
+      <li>
+        <div
+          class="flex items-center gap-0.5 rounded-full border border-base-300 p-0.5"
+          role="group"
+          aria-label={gettext("Language")}
+        >
+          <.link
+            href={~p"/locale/en?#{[return_to: @current_path]}"}
+            class={[
+              "rounded-full px-2 py-1 text-xs font-semibold text-base-content/60 hover:text-base-content",
+              @locale == "en" && "bg-base-300 text-base-content"
+            ]}
+            aria-label={gettext("Switch to English")}
+          >
+            EN
+          </.link>
+          <.link
+            href={~p"/locale/pt_PT?#{[return_to: @current_path]}"}
+            class={[
+              "rounded-full px-2 py-1 text-xs font-semibold text-base-content/60 hover:text-base-content",
+              @locale == "pt_PT" && "bg-base-300 text-base-content"
+            ]}
+            aria-label={gettext("Switch to European Portuguese")}
+          >
+            PT
+          </.link>
         </div>
       </li>
       <%= if @current_scope do %>
@@ -157,17 +185,19 @@
           <details>
             <summary>{@current_scope.user.email}</summary>
             <ul class="bg-base-100 rounded-box z-20 right-0">
-              <li><.link href={~p"/users/settings"}>Settings</.link></li>
-              <li><.link href={~p"/users/log-out"} method="delete">Log out</.link></li>
+              <li><.link href={~p"/users/settings"}>{gettext("Settings")}</.link></li>
+              <li>
+                <.link href={~p"/users/log-out"} method="delete">{gettext("Log out")}</.link>
+              </li>
             </ul>
           </details>
         </li>
       <% else %>
         <li>
-          <.link href={~p"/users/register"}>Register</.link>
+          <.link href={~p"/users/register"}>{gettext("Register")}</.link>
         </li>
         <li>
-          <.link href={~p"/users/log-in"}>Log in</.link>
+          <.link href={~p"/users/log-in"}>{gettext("Log in")}</.link>
         </li>
       <% end %>
     </ul>
@@ -180,13 +210,15 @@
       <div class="alert alert-info shadow-lg max-w-md mx-auto flex items-center gap-3">
         <.icon name="hero-arrow-up-on-square" class="size-5 shrink-0" />
         <span class="text-sm">
-          Install Budgeteer: tap <strong>Share</strong>, then <strong>Add to Home Screen</strong>.
+          {gettext("Install Budgeteer: tap")} <strong>{gettext("Share")}</strong>, {gettext(
+            "then"
+          )} <strong>{gettext("Add to Home Screen")}</strong>.
         </span>
         <button
           type="button"
           id="ios-install-banner-dismiss"
           class="btn btn-ghost btn-xs btn-circle ml-auto shrink-0"
-          aria-label="Dismiss"
+          aria-label={gettext("Dismiss")}
         >
           <.icon name="hero-x-mark" class="size-4" />
         </button>

@@ -4,8 +4,18 @@ defmodule BudgeteerWeb.AccountLiveTest do
   import Phoenix.LiveViewTest
   import Budgeteer.LedgerFixtures
 
-  @create_attrs %{name: "some name", currency: "some currency", bank_name: "some bank_name", starting_balance: "0.42"}
-  @update_attrs %{name: "some updated name", currency: "some updated currency", bank_name: "some updated bank_name", starting_balance: "0.43"}
+  @create_attrs %{
+    name: "some name",
+    currency: "some currency",
+    bank_name: "some bank_name",
+    starting_balance: "0.42"
+  }
+  @update_attrs %{
+    name: "some updated name",
+    currency: "some updated currency",
+    bank_name: "some updated bank_name",
+    starting_balance: "0.43"
+  }
   @invalid_attrs %{name: nil, currency: nil, bank_name: nil, starting_balance: nil}
 
   setup :register_and_log_in_user

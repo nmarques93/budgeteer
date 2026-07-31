@@ -8,25 +8,31 @@ defmodule BudgeteerWeb.CategoryLive.Form do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} online_members={@online_members}>
-      <.header>
-        {@page_title}
-        <:subtitle>Use this form to manage category records in your database.</:subtitle>
-      </.header>
+      <.header>{@page_title}</.header>
 
       <.form for={@form} id="category-form" phx-change="validate" phx-submit="save">
-        <.input field={@form[:name]} type="text" label="Name" />
-        <.input field={@form[:color]} type="text" label="Color" />
-        <.input field={@form[:budget]} type="text" label="Budget" placeholder="e.g. 150.00" />
+        <.input field={@form[:name]} type="text" label={gettext("Name")} />
+        <.input field={@form[:color]} type="text" label={gettext("Color")} />
+        <.input
+          field={@form[:budget]}
+          type="text"
+          label={gettext("Budget")}
+          placeholder={gettext("e.g. 150.00")}
+        />
         <.input
           field={@form[:type]}
           type="select"
-          label="Type"
-          prompt="Choose a value"
+          label={gettext("Type")}
+          prompt={gettext("Choose a value")}
           options={Ecto.Enum.values(Budgeteer.Ledger.Category, :type)}
         />
         <footer>
-          <.button phx-disable-with="Saving..." variant="primary">Save Category</.button>
-          <.button navigate={return_path(@current_scope, @return_to, @category)}>Cancel</.button>
+          <.button phx-disable-with={gettext("Saving...")} variant="primary">
+            {gettext("Save Category")}
+          </.button>
+          <.button navigate={return_path(@current_scope, @return_to, @category)}>
+            {gettext("Cancel")}
+          </.button>
         </footer>
       </.form>
     </Layouts.app>
@@ -49,7 +55,7 @@ defmodule BudgeteerWeb.CategoryLive.Form do
     category = %{category | budget: Budgeteer.Money.to_decimal_string(category.budget_cents)}
 
     socket
-    |> assign(:page_title, "Edit Category")
+    |> assign(:page_title, gettext("Edit Category"))
     |> assign(:category, category)
     |> assign(:form, to_form(Ledger.change_category(socket.assigns.current_scope, category)))
   end
@@ -58,14 +64,20 @@ defmodule BudgeteerWeb.CategoryLive.Form do
     category = %Category{household_id: socket.assigns.current_scope.user.household_id}
 
     socket
-    |> assign(:page_title, "New Category")
+    |> assign(:page_title, gettext("New Category"))
     |> assign(:category, category)
     |> assign(:form, to_form(Ledger.change_category(socket.assigns.current_scope, category)))
   end
 
   @impl true
   def handle_event("validate", %{"category" => category_params}, socket) do
-    changeset = Ledger.change_category(socket.assigns.current_scope, socket.assigns.category, category_params)
+    changeset =
+      Ledger.change_category(
+        socket.assigns.current_scope,
+        socket.assigns.category,
+        category_params
+      )
+
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
 
@@ -74,11 +86,15 @@ defmodule BudgeteerWeb.CategoryLive.Form do
   end
 
   defp save_category(socket, :edit, category_params) do
-    case Ledger.update_category(socket.assigns.current_scope, socket.assigns.category, category_params) do
+    case Ledger.update_category(
+           socket.assigns.current_scope,
+           socket.assigns.category,
+           category_params
+         ) do
       {:ok, category} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Category updated successfully")
+         |> put_flash(:info, gettext("Category updated successfully"))
          |> push_navigate(
            to: return_path(socket.assigns.current_scope, socket.assigns.return_to, category)
          )}
@@ -93,7 +109,7 @@ defmodule BudgeteerWeb.CategoryLive.Form do
       {:ok, category} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Category created successfully")
+         |> put_flash(:info, gettext("Category created successfully"))
          |> push_navigate(
            to: return_path(socket.assigns.current_scope, socket.assigns.return_to, category)
          )}

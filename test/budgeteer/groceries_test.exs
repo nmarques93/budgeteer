@@ -37,14 +37,19 @@ defmodule Budgeteer.GroceriesTest do
       other_scope = household_scope_fixture()
 
       assert Groceries.get_grocery_list!(scope, grocery_list.id) == grocery_list
-      assert_raise Ecto.NoResultsError, fn -> Groceries.get_grocery_list!(other_scope, grocery_list.id) end
+
+      assert_raise Ecto.NoResultsError, fn ->
+        Groceries.get_grocery_list!(other_scope, grocery_list.id)
+      end
     end
 
     test "create_grocery_list/2 with valid data creates a grocery list" do
       scope = household_scope_fixture()
       valid_attrs = %{name: "Weekly shop"}
 
-      assert {:ok, %GroceryList{} = grocery_list} = Groceries.create_grocery_list(scope, valid_attrs)
+      assert {:ok, %GroceryList{} = grocery_list} =
+               Groceries.create_grocery_list(scope, valid_attrs)
+
       assert grocery_list.name == "Weekly shop"
       assert grocery_list.household_id == scope.user.household_id
       assert is_nil(grocery_list.archived_at)
@@ -70,7 +75,9 @@ defmodule Budgeteer.GroceriesTest do
       other_scope = household_scope_fixture()
       grocery_list = grocery_list_fixture(scope)
 
-      assert_raise MatchError, fn -> Groceries.update_grocery_list(other_scope, grocery_list, %{}) end
+      assert_raise MatchError, fn ->
+        Groceries.update_grocery_list(other_scope, grocery_list, %{})
+      end
     end
 
     test "archive_grocery_list/2 sets archived_at and unarchive_grocery_list/2 clears it" do
@@ -121,7 +128,9 @@ defmodule Budgeteer.GroceriesTest do
       grocery_list = grocery_list_fixture(scope)
       valid_attrs = %{name: "Milk", quantity: "2", unit: "l"}
 
-      assert {:ok, %GroceryItem{} = item} = Groceries.create_item(scope, grocery_list, valid_attrs)
+      assert {:ok, %GroceryItem{} = item} =
+               Groceries.create_item(scope, grocery_list, valid_attrs)
+
       assert item.name == "Milk"
       assert Decimal.equal?(item.quantity, Decimal.new("2"))
       assert item.unit == "l"
@@ -134,7 +143,9 @@ defmodule Budgeteer.GroceriesTest do
     test "create_item/3 with invalid data returns error changeset" do
       scope = household_scope_fixture()
       grocery_list = grocery_list_fixture(scope)
-      assert {:error, %Ecto.Changeset{}} = Groceries.create_item(scope, grocery_list, @invalid_attrs)
+
+      assert {:error, %Ecto.Changeset{}} =
+               Groceries.create_item(scope, grocery_list, @invalid_attrs)
     end
 
     test "delete_item/2 deletes the item" do

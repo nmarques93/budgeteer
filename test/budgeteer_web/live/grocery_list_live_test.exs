@@ -52,7 +52,10 @@ defmodule BudgeteerWeb.GroceryListLiveTest do
     test "archives a grocery list from the index", %{conn: conn, grocery_list: grocery_list} do
       {:ok, index_live, _html} = live(conn, ~p"/groceries")
 
-      assert index_live |> element("#grocery_lists-#{grocery_list.id} a", "Archive") |> render_click()
+      assert index_live
+             |> element("#grocery_lists-#{grocery_list.id} a", "Archive")
+             |> render_click()
+
       refute has_element?(index_live, "#grocery_lists-#{grocery_list.id}")
     end
 
@@ -67,7 +70,10 @@ defmodule BudgeteerWeb.GroceryListLiveTest do
       assert html =~ "Archived grocery lists"
       assert has_element?(index_live, "#grocery_lists-#{archived.id}")
 
-      assert index_live |> element("#grocery_lists-#{archived.id} a", "Unarchive") |> render_click()
+      assert index_live
+             |> element("#grocery_lists-#{archived.id} a", "Unarchive")
+             |> render_click()
+
       refute has_element?(index_live, "#grocery_lists-#{archived.id}")
     end
   end

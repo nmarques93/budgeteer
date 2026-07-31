@@ -24,7 +24,10 @@ defmodule Budgeteer.Groceries do
 
   """
   def subscribe_grocery_lists(%Scope{} = scope) do
-    Phoenix.PubSub.subscribe(Budgeteer.PubSub, "household:#{scope.user.household_id}:grocery_lists")
+    Phoenix.PubSub.subscribe(
+      Budgeteer.PubSub,
+      "household:#{scope.user.household_id}:grocery_lists"
+    )
   end
 
   defp broadcast_grocery_list(household_id, message) do
@@ -156,7 +159,10 @@ defmodule Budgeteer.Groceries do
   def list_items(%Scope{} = scope, %GroceryList{} = grocery_list) do
     true = grocery_list.household_id == scope.user.household_id
 
-    Repo.all_by(GroceryItem, grocery_list_id: grocery_list.id, household_id: scope.user.household_id)
+    Repo.all_by(GroceryItem,
+      grocery_list_id: grocery_list.id,
+      household_id: scope.user.household_id
+    )
   end
 
   @doc """

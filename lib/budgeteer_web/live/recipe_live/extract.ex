@@ -26,9 +26,11 @@ defmodule BudgeteerWeb.RecipeLive.Extract do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} online_members={@online_members}>
       <.header>
-        Extract Recipe
+        {gettext("Extract Recipe")}
         <:subtitle>
-          Paste a recipe's text and Budgeteer will pull out the ingredients — review and edit before saving.
+          {gettext(
+            "Paste a recipe's text and Budgeteer will pull out the ingredients — review and edit before saving."
+          )}
         </:subtitle>
       </.header>
 
@@ -36,46 +38,48 @@ defmodule BudgeteerWeb.RecipeLive.Extract do
         <.input
           field={@text_form[:text]}
           type="textarea"
-          label="Recipe text"
+          label={gettext("Recipe text")}
           rows="12"
-          placeholder="Paste a recipe here, ingredients and all..."
+          placeholder={gettext("Paste a recipe here, ingredients and all...")}
         />
         <footer class="mt-4">
-          <.button phx-disable-with="Extracting..." variant="primary">Extract Recipe</.button>
-          <.button navigate={~p"/recipes"}>Cancel</.button>
+          <.button phx-disable-with={gettext("Extracting...")} variant="primary">
+            {gettext("Extract Recipe")}
+          </.button>
+          <.button navigate={~p"/recipes"}>{gettext("Cancel")}</.button>
         </footer>
       </.form>
 
       <div :if={@phase == :extracting} class="mt-4 flex items-center gap-2 text-base-content/60">
-        <span class="loading loading-spinner loading-sm"></span> Extracting the recipe...
+        <span class="loading loading-spinner loading-sm"></span> {gettext("Extracting the recipe...")}
       </div>
 
       <div :if={@phase == :reviewing}>
         <p class="text-sm text-base-content/60 mb-4">
-          Review the extracted recipe below — nothing is saved until you confirm.
+          {gettext("Review the extracted recipe below — nothing is saved until you confirm.")}
         </p>
 
         <.form for={@form} id="recipe-review-form" phx-change="validate" phx-submit="save">
-          <.input field={@form[:name]} type="text" label="Name" />
-          <.input field={@form[:notes]} type="textarea" label="Notes" />
+          <.input field={@form[:name]} type="text" label={gettext("Name")} />
+          <.input field={@form[:notes]} type="textarea" label={gettext("Notes")} />
 
           <fieldset class="fieldset mt-4">
-            <legend class="fieldset-legend">Ingredients</legend>
+            <legend class="fieldset-legend">{gettext("Ingredients")}</legend>
 
             <.inputs_for :let={ingredient_form} field={@form[:ingredients]}>
               <div class="flex gap-2 items-end mb-2">
                 <.input
                   field={ingredient_form[:name]}
                   type="text"
-                  label="Name"
-                  placeholder="e.g. Onion"
+                  label={gettext("Name")}
+                  placeholder={gettext("e.g. Onion")}
                 />
-                <.input field={ingredient_form[:quantity]} type="text" label="Qty" />
+                <.input field={ingredient_form[:quantity]} type="text" label={gettext("Qty")} />
                 <.input
                   field={ingredient_form[:unit]}
                   type="text"
-                  label="Unit"
-                  placeholder="kg, l, units"
+                  label={gettext("Unit")}
+                  placeholder={gettext("kg, l, units")}
                 />
                 <.button
                   type="button"
@@ -83,19 +87,21 @@ defmodule BudgeteerWeb.RecipeLive.Extract do
                   phx-value-index={ingredient_form.index}
                   class="mb-2"
                 >
-                  Remove
+                  {gettext("Remove")}
                 </.button>
               </div>
             </.inputs_for>
 
             <.button type="button" phx-click="add_ingredient">
-              <.icon name="hero-plus" /> Add ingredient
+              <.icon name="hero-plus" /> {gettext("Add ingredient")}
             </.button>
           </fieldset>
 
           <footer class="mt-4">
-            <.button phx-disable-with="Saving..." variant="primary">Save Recipe</.button>
-            <.button navigate={~p"/recipes"}>Cancel</.button>
+            <.button phx-disable-with={gettext("Saving...")} variant="primary">
+              {gettext("Save Recipe")}
+            </.button>
+            <.button navigate={~p"/recipes"}>{gettext("Cancel")}</.button>
           </footer>
         </.form>
       </div>
@@ -107,7 +113,7 @@ defmodule BudgeteerWeb.RecipeLive.Extract do
   def mount(_params, _session, socket) do
     {:ok,
      socket
-     |> assign(:page_title, "Extract Recipe")
+     |> assign(:page_title, gettext("Extract Recipe"))
      |> assign(:phase, :input)
      |> assign(:text_form, to_form(%{"text" => ""}, as: "recipe_text"))}
   end
@@ -115,7 +121,7 @@ defmodule BudgeteerWeb.RecipeLive.Extract do
   @impl true
   def handle_event("extract_text", %{"recipe_text" => %{"text" => text}}, socket) do
     if String.trim(text) == "" do
-      {:noreply, put_flash(socket, :error, "Paste some recipe text first")}
+      {:noreply, put_flash(socket, :error, gettext("Paste some recipe text first"))}
     else
       {:noreply,
        socket
@@ -150,7 +156,7 @@ defmodule BudgeteerWeb.RecipeLive.Extract do
       {:ok, recipe} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Recipe created successfully")
+         |> put_flash(:info, gettext("Recipe created successfully"))
          |> push_navigate(to: ~p"/recipes/#{recipe}")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -177,7 +183,7 @@ defmodule BudgeteerWeb.RecipeLive.Extract do
      |> assign(:phase, :input)
      |> put_flash(
        :error,
-       "Couldn't extract a recipe from that text — try rephrasing, or add it manually."
+       gettext("Couldn't extract a recipe from that text — try rephrasing, or add it manually.")
      )}
   end
 
@@ -185,7 +191,10 @@ defmodule BudgeteerWeb.RecipeLive.Extract do
     {:noreply,
      socket
      |> assign(:phase, :input)
-     |> put_flash(:error, "Something went wrong extracting the recipe — please try again.")}
+     |> put_flash(
+       :error,
+       gettext("Something went wrong extracting the recipe — please try again.")
+     )}
   end
 
   defp ai_client, do: Application.get_env(:budgeteer, :ai_client, Budgeteer.AI.Client)

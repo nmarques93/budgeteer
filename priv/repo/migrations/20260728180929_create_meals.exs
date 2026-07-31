@@ -4,7 +4,10 @@ defmodule Budgeteer.Repo.Migrations.CreateMeals do
   def change do
     create table(:recipes, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :household_id, references(:households, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :household_id, references(:households, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :name, :string, null: false
       add :notes, :text
       add :ingredients, :map, null: false, default: fragment("'[]'::jsonb")
@@ -16,7 +19,10 @@ defmodule Budgeteer.Repo.Migrations.CreateMeals do
 
     create table(:planned_meals, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :household_id, references(:households, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :household_id, references(:households, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :recipe_id, references(:recipes, type: :binary_id, on_delete: :delete_all), null: false
       add :date, :date, null: false
 

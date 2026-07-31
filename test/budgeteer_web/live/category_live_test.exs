@@ -5,7 +5,12 @@ defmodule BudgeteerWeb.CategoryLiveTest do
   import Budgeteer.LedgerFixtures
 
   @create_attrs %{name: "some name", type: :income, color: "some color", budget: "0.42"}
-  @update_attrs %{name: "some updated name", type: :expense, color: "some updated color", budget: "0.43"}
+  @update_attrs %{
+    name: "some updated name",
+    type: :expense,
+    color: "some updated color",
+    budget: "0.43"
+  }
   @invalid_attrs %{name: nil, type: nil, color: nil, budget: nil}
 
   setup :register_and_log_in_user

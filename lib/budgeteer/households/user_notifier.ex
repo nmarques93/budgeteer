@@ -1,4 +1,6 @@
 defmodule Budgeteer.Households.UserNotifier do
+  use Gettext, backend: BudgeteerWeb.Gettext
+
   import Swoosh.Email
 
   alias Budgeteer.Mailer
@@ -18,30 +20,38 @@ defmodule Budgeteer.Households.UserNotifier do
     end
   end
 
+  # These functions can run from any process (a request, an Oban job) with
+  # whatever locale that process currently has set — which reflects the
+  # *sender's* locale, not necessarily the recipient's. `Gettext.with_locale/3`
+  # temporarily switches the process locale just for building this email body,
+  # so the recipient reads it in their own saved preference, not the sender's.
+
   @doc """
   Deliver instructions to update a user email.
   """
-  def deliver_update_email_instructions(user, url) do
-    deliver(user.email, "Update email instructions", """
+  def deliver_update_email_instructions(%User{} = user, url) do
+    with_recipient_locale(user, fn ->
+      deliver(user.email, gettext("Update email instructions"), """
 
-    ==============================
+      ==============================
 
-    Hi #{user.email},
+      #{gettext("Hi %{email},", email: user.email)}
 
-    You can change your email by visiting the URL below:
+      #{gettext("You can change your email by visiting the URL below:")}
 
-    #{url}
+      #{url}
 
-    If you didn't request this change, please ignore this.
+      #{gettext("If you didn't request this change, please ignore this.")}
 
-    ==============================
-    """)
+      ==============================
+      """)
+    end)
   end
 
   @doc """
   Deliver instructions to log in with a magic link.
   """
-  def deliver_login_instructions(user, url) do
+  def deliver_login_instructions(%User{} = user, url) do
     case user do
       %User{confirmed_at: nil} -> deliver_confirmation_instructions(user, url)
       _ -> deliver_magic_link_instructions(user, url)
@@ -49,58 +59,76 @@ defmodule Budgeteer.Households.UserNotifier do
   end
 
   defp deliver_magic_link_instructions(user, url) do
-    deliver(user.email, "Log in instructions", """
+    with_recipient_locale(user, fn ->
+      deliver(user.email, gettext("Log in instructions"), """
 
-    ==============================
+      ==============================
 
-    Hi #{user.email},
+      #{gettext("Hi %{email},", email: user.email)}
 
-    You can log into your account by visiting the URL below:
+      #{gettext("You can log into your account by visiting the URL below:")}
 
-    #{url}
+      #{url}
 
-    If you didn't request this email, please ignore this.
+      #{gettext("If you didn't request this email, please ignore this.")}
 
-    ==============================
-    """)
+      ==============================
+      """)
+    end)
   end
 
   @doc """
   Deliver instructions to join a household via an invite.
   """
-  def deliver_household_invite_instructions(inviter, invitee_email, url) do
-    deliver(invitee_email, "You've been invited to a household on Budgeteer", """
+  def deliver_household_invite_instructions(%User{} = inviter, invitee_email, url) do
+    # No User record exists yet for the invitee, so there's no saved locale
+    # to read — fall back to the inviter's, since an invite is overwhelmingly
+    # likely to go to someone in the same household/country.
+    Gettext.with_locale(BudgeteerWeb.Gettext, inviter.locale || "en", fn ->
+      deliver(
+        invitee_email,
+        gettext("You've been invited to a household on Budgeteer"),
+        """
 
-    ==============================
+        ==============================
 
-    Hi,
+        #{gettext("Hi,")}
 
-    #{inviter.name || inviter.email} invited you to join their household on Budgeteer.
+        #{gettext("%{name} invited you to join their household on Budgeteer.",
+        name: inviter.name || inviter.email)}
 
-    You can accept the invite by visiting the URL below:
+        #{gettext("You can accept the invite by visiting the URL below:")}
 
-    #{url}
+        #{url}
 
-    If you weren't expecting this, please ignore this email.
+        #{gettext("If you weren't expecting this, please ignore this email.")}
 
-    ==============================
-    """)
+        ==============================
+        """
+      )
+    end)
   end
 
   defp deliver_confirmation_instructions(user, url) do
-    deliver(user.email, "Confirmation instructions", """
+    with_recipient_locale(user, fn ->
+      deliver(user.email, gettext("Confirmation instructions"), """
 
-    ==============================
+      ==============================
 
-    Hi #{user.email},
+      #{gettext("Hi %{email},", email: user.email)}
 
-    You can confirm your account by visiting the URL below:
+      #{gettext("You can confirm your account by visiting the URL below:")}
 
-    #{url}
+      #{url}
 
-    If you didn't create an account with us, please ignore this.
+      #{gettext("If you didn't create an account with us, please ignore this.")}
 
-    ==============================
-    """)
+      ==============================
+      """)
+    end)
+  end
+
+  defp with_recipient_locale(%User{} = user, fun) do
+    Gettext.with_locale(BudgeteerWeb.Gettext, user.locale || "en", fun)
   end
 end

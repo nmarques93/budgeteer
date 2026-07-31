@@ -27,7 +27,11 @@ defmodule BudgeteerWeb.PresenceHooks do
       socket =
         socket
         |> assign(:online_members, list_online_members(topic, user.id))
-        |> attach_hook(:presence_updates, :handle_info, &handle_presence_diff(&1, &2, topic, user.id))
+        |> attach_hook(
+          :presence_updates,
+          :handle_info,
+          &handle_presence_diff(&1, &2, topic, user.id)
+        )
 
       {:cont, socket}
     else

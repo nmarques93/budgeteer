@@ -39,7 +39,10 @@ defmodule BudgeteerWeb.MealPlanLiveTest do
       planned_meal = planned_meal_fixture(scope, recipe)
       {:ok, index_live, _html} = live(conn, ~p"/meal-plan")
 
-      assert index_live |> element("#planned_meals-#{planned_meal.id} a[data-confirm]") |> render_click()
+      assert index_live
+             |> element("#planned_meals-#{planned_meal.id} a[data-confirm]")
+             |> render_click()
+
       refute has_element?(index_live, "#planned_meals-#{planned_meal.id}")
     end
 
@@ -60,13 +63,16 @@ defmodule BudgeteerWeb.MealPlanLiveTest do
         |> form("#add-to-list-form", add_to_list: %{grocery_list_id: grocery_list.id})
         |> render_submit()
 
-      assert html =~ "Added 2 ingredient(s)"
+      assert html =~ "Added 2 ingredients"
 
       names = Groceries.list_items(scope, grocery_list) |> Enum.map(& &1.name) |> Enum.sort()
       assert names == ["Carrot", "Onion"]
     end
 
-    test "reflects another household member planning a meal in real time", %{conn: conn, scope: scope} do
+    test "reflects another household member planning a meal in real time", %{
+      conn: conn,
+      scope: scope
+    } do
       recipe = recipe_fixture(scope)
       member = second_household_member_fixture(scope.user)
 

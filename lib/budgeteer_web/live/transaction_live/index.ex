@@ -9,18 +9,18 @@ defmodule BudgeteerWeb.TransactionLive.Index do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} online_members={@online_members}>
       <.header>
-        Transactions for {@account.name}
+        {gettext("Transactions for %{account}", account: @account.name)}
         <:subtitle>
-          <.link navigate={~p"/accounts/#{@account}"}>Back to account</.link>
+          <.link navigate={~p"/accounts/#{@account}"}>{gettext("Back to account")}</.link>
         </:subtitle>
         <:actions>
           <.button href={
             ~p"/transactions/export?#{FilterForm.export_query(@filter_params, %{"account_id" => @account.id})}"
           }>
-            <.icon name="hero-arrow-down-tray" /> Export CSV
+            <.icon name="hero-arrow-down-tray" /> {gettext("Export CSV")}
           </.button>
           <.button variant="primary" navigate={~p"/accounts/#{@account}/transactions/new"}>
-            <.icon name="hero-plus" /> New Transaction
+            <.icon name="hero-plus" /> {gettext("New Transaction")}
           </.button>
         </:actions>
       </.header>
@@ -28,7 +28,7 @@ defmodule BudgeteerWeb.TransactionLive.Index do
       <FilterForm.filter_form filters={@filter_params} categories={@categories} />
 
       <p :if={@result_count == 0} class="text-base-content/60">
-        No transactions match these filters.
+        {gettext("No transactions match these filters.")}
       </p>
 
       <.table
@@ -41,28 +41,34 @@ defmodule BudgeteerWeb.TransactionLive.Index do
           end
         }
       >
-        <:col :let={{_id, transaction}} label="Date">{transaction.date}</:col>
-        <:col :let={{_id, transaction}} label="Amount">
+        <:col :let={{_id, transaction}} label={gettext("Date")}>{transaction.date}</:col>
+        <:col :let={{_id, transaction}} label={gettext("Amount")}>
           <.money cents={transaction.amount_cents} />
         </:col>
-        <:col :let={{_id, transaction}} label="Merchant">{transaction.merchant}</:col>
-        <:col :let={{_id, transaction}} label="Description">{transaction.description}</:col>
-        <:col :let={{_id, transaction}} label="Notes">{transaction.notes}</:col>
-        <:col :let={{_id, transaction}} label="Category">
+        <:col :let={{_id, transaction}} label={gettext("Merchant")}>{transaction.merchant}</:col>
+        <:col :let={{_id, transaction}} label={gettext("Description")}>
+          {transaction.description}
+        </:col>
+        <:col :let={{_id, transaction}} label={gettext("Notes")}>{transaction.notes}</:col>
+        <:col :let={{_id, transaction}} label={gettext("Category")}>
           {category_name(@categories_by_id, transaction.category_id)}
         </:col>
         <:action :let={{_id, transaction}}>
           <div class="sr-only">
-            <.link navigate={~p"/accounts/#{@account}/transactions/#{transaction}"}>Show</.link>
+            <.link navigate={~p"/accounts/#{@account}/transactions/#{transaction}"}>
+              {gettext("Show")}
+            </.link>
           </div>
-          <.link navigate={~p"/accounts/#{@account}/transactions/#{transaction}/edit"}>Edit</.link>
+          <.link navigate={~p"/accounts/#{@account}/transactions/#{transaction}/edit"}>
+            {gettext("Edit")}
+          </.link>
         </:action>
         <:action :let={{id, transaction}}>
           <.link
             phx-click={JS.push("delete", value: %{id: transaction.id}) |> hide("##{id}")}
-            data-confirm="Are you sure?"
+            data-confirm={gettext("Are you sure?")}
           >
-            Delete
+            {gettext("Delete")}
           </.link>
         </:action>
       </.table>
@@ -85,7 +91,7 @@ defmodule BudgeteerWeb.TransactionLive.Index do
 
     {:ok,
      socket
-     |> assign(:page_title, "Transactions for #{account.name}")
+     |> assign(:page_title, gettext("Transactions for %{account}", account: account.name))
      |> assign(:account, account)
      |> assign(:categories, categories)
      |> assign(:categories_by_id, categories_by_id)
@@ -131,8 +137,8 @@ defmodule BudgeteerWeb.TransactionLive.Index do
     Ledger.search_transactions(scope, filters)
   end
 
-  defp category_name(_categories_by_id, nil), do: "Uncategorized"
+  defp category_name(_categories_by_id, nil), do: gettext("Uncategorized")
 
   defp category_name(categories_by_id, category_id),
-    do: Map.get(categories_by_id, category_id, "Uncategorized")
+    do: Map.get(categories_by_id, category_id, gettext("Uncategorized"))
 end

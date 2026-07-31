@@ -10,25 +10,34 @@ defmodule BudgeteerWeb.TransactionLive.Form do
     <Layouts.app flash={@flash} current_scope={@current_scope} online_members={@online_members}>
       <.header>
         {@page_title}
-        <:subtitle>For {@account.name}</:subtitle>
+        <:subtitle>{gettext("For %{account}", account: @account.name)}</:subtitle>
       </.header>
 
       <.form for={@form} id="transaction-form" phx-change="validate" phx-submit="save">
-        <.input field={@form[:date]} type="date" label="Date" />
-        <.input field={@form[:amount]} type="text" label="Amount" placeholder="e.g. -42.50 for a debit" />
-        <.input field={@form[:merchant]} type="text" label="Merchant" />
-        <.input field={@form[:description]} type="text" label="Description" />
-        <.input field={@form[:notes]} type="textarea" label="Notes" />
+        <.input field={@form[:date]} type="date" label={gettext("Date")} />
+        <.input
+          field={@form[:amount]}
+          type="text"
+          label={gettext("Amount")}
+          placeholder={gettext("e.g. -42.50 for a debit")}
+        />
+        <.input field={@form[:merchant]} type="text" label={gettext("Merchant")} />
+        <.input field={@form[:description]} type="text" label={gettext("Description")} />
+        <.input field={@form[:notes]} type="textarea" label={gettext("Notes")} />
         <.input
           field={@form[:category_id]}
           type="select"
-          label="Category"
-          prompt="Uncategorized"
+          label={gettext("Category")}
+          prompt={gettext("Uncategorized")}
           options={Enum.map(@categories, &{&1.name, &1.id})}
         />
         <footer>
-          <.button phx-disable-with="Saving..." variant="primary">Save Transaction</.button>
-          <.button navigate={return_path(@account, @return_to, @transaction)}>Cancel</.button>
+          <.button phx-disable-with={gettext("Saving...")} variant="primary">
+            {gettext("Save Transaction")}
+          </.button>
+          <.button navigate={return_path(@account, @return_to, @transaction)}>
+            {gettext("Cancel")}
+          </.button>
         </footer>
       </.form>
     </Layouts.app>
@@ -52,12 +61,19 @@ defmodule BudgeteerWeb.TransactionLive.Form do
 
   defp apply_action(socket, :edit, %{"id" => id}) do
     transaction = Ledger.get_transaction!(socket.assigns.current_scope, id)
-    transaction = %{transaction | amount: Budgeteer.Money.to_decimal_string(transaction.amount_cents)}
+
+    transaction = %{
+      transaction
+      | amount: Budgeteer.Money.to_decimal_string(transaction.amount_cents)
+    }
 
     socket
-    |> assign(:page_title, "Edit Transaction")
+    |> assign(:page_title, gettext("Edit Transaction"))
     |> assign(:transaction, transaction)
-    |> assign(:form, to_form(Ledger.change_transaction(socket.assigns.current_scope, transaction)))
+    |> assign(
+      :form,
+      to_form(Ledger.change_transaction(socket.assigns.current_scope, transaction))
+    )
   end
 
   defp apply_action(socket, :new, _params) do
@@ -68,14 +84,23 @@ defmodule BudgeteerWeb.TransactionLive.Form do
     }
 
     socket
-    |> assign(:page_title, "New Transaction")
+    |> assign(:page_title, gettext("New Transaction"))
     |> assign(:transaction, transaction)
-    |> assign(:form, to_form(Ledger.change_transaction(socket.assigns.current_scope, transaction)))
+    |> assign(
+      :form,
+      to_form(Ledger.change_transaction(socket.assigns.current_scope, transaction))
+    )
   end
 
   @impl true
   def handle_event("validate", %{"transaction" => transaction_params}, socket) do
-    changeset = Ledger.change_transaction(socket.assigns.current_scope, socket.assigns.transaction, transaction_params)
+    changeset =
+      Ledger.change_transaction(
+        socket.assigns.current_scope,
+        socket.assigns.transaction,
+        transaction_params
+      )
+
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
 
@@ -84,12 +109,18 @@ defmodule BudgeteerWeb.TransactionLive.Form do
   end
 
   defp save_transaction(socket, :edit, transaction_params) do
-    case Ledger.update_transaction(socket.assigns.current_scope, socket.assigns.transaction, transaction_params) do
+    case Ledger.update_transaction(
+           socket.assigns.current_scope,
+           socket.assigns.transaction,
+           transaction_params
+         ) do
       {:ok, transaction} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Transaction updated successfully")
-         |> push_navigate(to: return_path(socket.assigns.account, socket.assigns.return_to, transaction))}
+         |> put_flash(:info, gettext("Transaction updated successfully"))
+         |> push_navigate(
+           to: return_path(socket.assigns.account, socket.assigns.return_to, transaction)
+         )}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -103,8 +134,10 @@ defmodule BudgeteerWeb.TransactionLive.Form do
       {:ok, transaction} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Transaction created successfully")
-         |> push_navigate(to: return_path(socket.assigns.account, socket.assigns.return_to, transaction))}
+         |> put_flash(:info, gettext("Transaction created successfully"))
+         |> push_navigate(
+           to: return_path(socket.assigns.account, socket.assigns.return_to, transaction)
+         )}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -112,5 +145,7 @@ defmodule BudgeteerWeb.TransactionLive.Form do
   end
 
   defp return_path(account, "index", _transaction), do: ~p"/accounts/#{account}/transactions"
-  defp return_path(account, "show", transaction), do: ~p"/accounts/#{account}/transactions/#{transaction}"
+
+  defp return_path(account, "show", transaction),
+    do: ~p"/accounts/#{account}/transactions/#{transaction}"
 end

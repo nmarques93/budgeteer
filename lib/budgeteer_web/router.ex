@@ -11,6 +11,7 @@ defmodule BudgeteerWeb.Router do
     plug :protect_from_forgery
     plug BudgeteerWeb.Plugs.ContentSecurityPolicy
     plug :fetch_current_scope_for_user
+    plug BudgeteerWeb.Plugs.SetLocale
   end
 
   pipeline :api do
@@ -32,6 +33,7 @@ defmodule BudgeteerWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+    get "/locale/:locale", LocaleController, :set
   end
 
   # Other scopes may use custom stacks.
@@ -63,6 +65,7 @@ defmodule BudgeteerWeb.Router do
 
     live_session :require_authenticated_user,
       on_mount: [
+        {BudgeteerWeb.LocaleHook, :default},
         {BudgeteerWeb.UserAuth, :require_authenticated},
         {BudgeteerWeb.PresenceHooks, :track}
       ] do
@@ -121,7 +124,10 @@ defmodule BudgeteerWeb.Router do
     pipe_through [:browser]
 
     live_session :current_user,
-      on_mount: [{BudgeteerWeb.UserAuth, :mount_current_scope}] do
+      on_mount: [
+        {BudgeteerWeb.LocaleHook, :default},
+        {BudgeteerWeb.UserAuth, :mount_current_scope}
+      ] do
       live "/users/register", UserLive.Registration, :new
       live "/users/log-in", UserLive.Login, :new
       live "/users/log-in/:token", UserLive.Confirmation, :new

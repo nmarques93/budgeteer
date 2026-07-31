@@ -7,6 +7,7 @@ defmodule BudgeteerWeb.TransactionLive.FilterForm do
   validate or persist anything.
   """
   use Phoenix.Component
+  use Gettext, backend: BudgeteerWeb.Gettext
   import BudgeteerWeb.CoreComponents
 
   @default_params %{
@@ -100,39 +101,41 @@ defmodule BudgeteerWeb.TransactionLive.FilterForm do
         :if={@accounts}
         type="select"
         name="account_id"
-        label="Account"
-        prompt="All accounts"
+        label={gettext("Account")}
+        prompt={gettext("All accounts")}
         value={@filters["account_id"]}
         options={Enum.map(@accounts, &{&1.name, &1.id})}
       />
       <.input
         type="select"
         name="category_id"
-        label="Category"
-        prompt="All categories"
+        label={gettext("Category")}
+        prompt={gettext("All categories")}
         value={@filters["category_id"]}
-        options={[{"Uncategorized", "uncategorized"} | Enum.map(@categories, &{&1.name, &1.id})]}
+        options={[
+          {gettext("Uncategorized"), "uncategorized"} | Enum.map(@categories, &{&1.name, &1.id})
+        ]}
       />
-      <.input type="date" name="date_from" label="From" value={@filters["date_from"]} />
-      <.input type="date" name="date_to" label="To" value={@filters["date_to"]} />
+      <.input type="date" name="date_from" label={gettext("From")} value={@filters["date_from"]} />
+      <.input type="date" name="date_to" label={gettext("To")} value={@filters["date_to"]} />
       <.input
         type="text"
         name="query"
-        label="Merchant / description"
+        label={gettext("Merchant / description")}
         value={@filters["query"]}
-        placeholder="e.g. Amazon"
+        placeholder={gettext("e.g. Amazon")}
       />
       <.input
         type="text"
         name="amount_min"
-        label="Min amount"
+        label={gettext("Min amount")}
         value={@filters["amount_min"]}
         placeholder="0.00"
       />
       <.input
         type="text"
         name="amount_max"
-        label="Max amount"
+        label={gettext("Max amount")}
         value={@filters["amount_max"]}
         placeholder="0.00"
       />

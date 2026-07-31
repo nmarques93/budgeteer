@@ -16,7 +16,11 @@ defmodule BudgeteerWeb.GroceryListLive.ShowTest do
   describe "Show" do
     setup [:create_grocery_list]
 
-    test "displays the list and its items", %{conn: conn, scope: scope, grocery_list: grocery_list} do
+    test "displays the list and its items", %{
+      conn: conn,
+      scope: scope,
+      grocery_list: grocery_list
+    } do
       item = grocery_item_fixture(scope, grocery_list, %{name: "Milk", quantity: "2", unit: "l"})
 
       {:ok, _show_live, html} = live(conn, ~p"/groceries/#{grocery_list}")
@@ -38,7 +42,11 @@ defmodule BudgeteerWeb.GroceryListLive.ShowTest do
       assert html =~ "Bread"
     end
 
-    test "toggles an item checked and unchecked", %{conn: conn, scope: scope, grocery_list: grocery_list} do
+    test "toggles an item checked and unchecked", %{
+      conn: conn,
+      scope: scope,
+      grocery_list: grocery_list
+    } do
       item = grocery_item_fixture(scope, grocery_list)
       {:ok, show_live, _html} = live(conn, ~p"/groceries/#{grocery_list}")
 
@@ -67,7 +75,10 @@ defmodule BudgeteerWeb.GroceryListLive.ShowTest do
       refute has_element?(show_live, "#items-#{item.id}")
     end
 
-    test "renames the list via the edit form, returns to show", %{conn: conn, grocery_list: grocery_list} do
+    test "renames the list via the edit form, returns to show", %{
+      conn: conn,
+      grocery_list: grocery_list
+    } do
       {:ok, show_live, _html} = live(conn, ~p"/groceries/#{grocery_list}")
 
       assert {:ok, form_live, _} =

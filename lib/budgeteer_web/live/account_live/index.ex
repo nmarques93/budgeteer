@@ -8,10 +8,10 @@ defmodule BudgeteerWeb.AccountLive.Index do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} online_members={@online_members}>
       <.header>
-        Listing Accounts
+        {gettext("Listing Accounts")}
         <:actions>
           <.button variant="primary" navigate={~p"/accounts/new"}>
-            <.icon name="hero-plus" /> New Account
+            <.icon name="hero-plus" /> {gettext("New Account")}
           </.button>
         </:actions>
       </.header>
@@ -21,25 +21,27 @@ defmodule BudgeteerWeb.AccountLive.Index do
         rows={@streams.accounts}
         row_click={fn {_id, account} -> JS.navigate(~p"/accounts/#{account}") end}
       >
-        <:col :let={{_id, account}} label="Name">{account.name}</:col>
-        <:col :let={{_id, account}} label="Bank name">{account.bank_name}</:col>
-        <:col :let={{_id, account}} label="Currency">{account.currency}</:col>
-        <:col :let={{_id, account}} label="Balance"><.money cents={Ledger.current_balance_cents(account)} /></:col>
+        <:col :let={{_id, account}} label={gettext("Name")}>{account.name}</:col>
+        <:col :let={{_id, account}} label={gettext("Bank name")}>{account.bank_name}</:col>
+        <:col :let={{_id, account}} label={gettext("Currency")}>{account.currency}</:col>
+        <:col :let={{_id, account}} label={gettext("Balance")}>
+          <.money cents={Ledger.current_balance_cents(account)} />
+        </:col>
         <:action :let={{_id, account}}>
           <div class="sr-only">
-            <.link navigate={~p"/accounts/#{account}"}>Show</.link>
+            <.link navigate={~p"/accounts/#{account}"}>{gettext("Show")}</.link>
           </div>
-          <.link navigate={~p"/accounts/#{account}/statements"}>Statements</.link>
+          <.link navigate={~p"/accounts/#{account}/statements"}>{gettext("Statements")}</.link>
         </:action>
         <:action :let={{_id, account}}>
-          <.link navigate={~p"/accounts/#{account}/edit"}>Edit</.link>
+          <.link navigate={~p"/accounts/#{account}/edit"}>{gettext("Edit")}</.link>
         </:action>
         <:action :let={{id, account}}>
           <.link
             phx-click={JS.push("delete", value: %{id: account.id}) |> hide("##{id}")}
-            data-confirm="Are you sure?"
+            data-confirm={gettext("Are you sure?")}
           >
-            Delete
+            {gettext("Delete")}
           </.link>
         </:action>
       </.table>
@@ -55,7 +57,7 @@ defmodule BudgeteerWeb.AccountLive.Index do
 
     {:ok,
      socket
-     |> assign(:page_title, "Listing Accounts")
+     |> assign(:page_title, gettext("Listing Accounts"))
      |> stream(:accounts, list_accounts(socket.assigns.current_scope))}
   end
 
@@ -70,7 +72,8 @@ defmodule BudgeteerWeb.AccountLive.Index do
   @impl true
   def handle_info({type, %Budgeteer.Ledger.Account{}}, socket)
       when type in [:created, :updated, :deleted] do
-    {:noreply, stream(socket, :accounts, list_accounts(socket.assigns.current_scope), reset: true)}
+    {:noreply,
+     stream(socket, :accounts, list_accounts(socket.assigns.current_scope), reset: true)}
   end
 
   defp list_accounts(current_scope) do

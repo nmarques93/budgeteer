@@ -4,7 +4,10 @@ defmodule Budgeteer.Repo.Migrations.CreateGroceries do
   def change do
     create table(:grocery_lists, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :household_id, references(:households, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :household_id, references(:households, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :name, :string, null: false
       add :archived_at, :utc_datetime
 
@@ -15,7 +18,10 @@ defmodule Budgeteer.Repo.Migrations.CreateGroceries do
 
     create table(:grocery_items, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :grocery_list_id, references(:grocery_lists, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :grocery_list_id, references(:grocery_lists, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :name, :string, null: false
       add :quantity, :decimal
       add :unit, :string

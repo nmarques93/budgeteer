@@ -9,11 +9,11 @@ defmodule BudgeteerWeb.TransactionLive.Search do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} online_members={@online_members}>
       <.header>
-        Search Transactions
-        <:subtitle>Search across every account in the household.</:subtitle>
+        {gettext("Search Transactions")}
+        <:subtitle>{gettext("Search across every account in the household.")}</:subtitle>
         <:actions>
           <.button href={~p"/transactions/export?#{FilterForm.export_query(@filter_params)}"}>
-            <.icon name="hero-arrow-down-tray" /> Export CSV
+            <.icon name="hero-arrow-down-tray" /> {gettext("Export CSV")}
           </.button>
         </:actions>
       </.header>
@@ -21,7 +21,7 @@ defmodule BudgeteerWeb.TransactionLive.Search do
       <FilterForm.filter_form filters={@filter_params} categories={@categories} accounts={@accounts} />
 
       <p :if={@result_count == 0} class="text-base-content/60">
-        No transactions match these filters.
+        {gettext("No transactions match these filters.")}
       </p>
 
       <.table
@@ -34,16 +34,18 @@ defmodule BudgeteerWeb.TransactionLive.Search do
           end
         }
       >
-        <:col :let={{_id, transaction}} label="Date">{transaction.date}</:col>
-        <:col :let={{_id, transaction}} label="Account">
+        <:col :let={{_id, transaction}} label={gettext("Date")}>{transaction.date}</:col>
+        <:col :let={{_id, transaction}} label={gettext("Account")}>
           {account_name(@accounts_by_id, transaction.account_id)}
         </:col>
-        <:col :let={{_id, transaction}} label="Amount">
+        <:col :let={{_id, transaction}} label={gettext("Amount")}>
           <.money cents={transaction.amount_cents} />
         </:col>
-        <:col :let={{_id, transaction}} label="Merchant">{transaction.merchant}</:col>
-        <:col :let={{_id, transaction}} label="Description">{transaction.description}</:col>
-        <:col :let={{_id, transaction}} label="Category">
+        <:col :let={{_id, transaction}} label={gettext("Merchant")}>{transaction.merchant}</:col>
+        <:col :let={{_id, transaction}} label={gettext("Description")}>
+          {transaction.description}
+        </:col>
+        <:col :let={{_id, transaction}} label={gettext("Category")}>
           {category_name(@categories_by_id, transaction.category_id)}
         </:col>
       </.table>
@@ -66,7 +68,7 @@ defmodule BudgeteerWeb.TransactionLive.Search do
 
     {:ok,
      socket
-     |> assign(:page_title, "Search Transactions")
+     |> assign(:page_title, gettext("Search Transactions"))
      |> assign(:accounts, accounts)
      |> assign(:accounts_by_id, Map.new(accounts, &{&1.id, &1.name}))
      |> assign(:categories, categories)
@@ -108,10 +110,10 @@ defmodule BudgeteerWeb.TransactionLive.Search do
      |> stream(:transactions, results, reset: true)}
   end
 
-  defp category_name(_categories_by_id, nil), do: "Uncategorized"
+  defp category_name(_categories_by_id, nil), do: gettext("Uncategorized")
 
   defp category_name(categories_by_id, category_id),
-    do: Map.get(categories_by_id, category_id, "Uncategorized")
+    do: Map.get(categories_by_id, category_id, gettext("Uncategorized"))
 
   defp account_name(accounts_by_id, account_id), do: Map.get(accounts_by_id, account_id, "—")
 end
