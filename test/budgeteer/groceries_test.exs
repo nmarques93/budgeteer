@@ -113,6 +113,30 @@ defmodule Budgeteer.GroceriesTest do
       assert Groceries.list_items(scope, grocery_list) == [item]
     end
 
+    test "list_items/2 orders items by category's fixed store-aisle order, then name, with uncategorized items last" do
+      scope = household_scope_fixture()
+      grocery_list = grocery_list_fixture(scope)
+
+      bread = grocery_item_fixture(scope, grocery_list, %{name: "Bread", category: "Bakery"})
+      milk = grocery_item_fixture(scope, grocery_list, %{name: "Milk", category: "Dairy & Eggs"})
+      eggs = grocery_item_fixture(scope, grocery_list, %{name: "Eggs", category: "Dairy & Eggs"})
+      soap = grocery_item_fixture(scope, grocery_list, %{name: "Soap"})
+
+      # Dairy & Eggs sorts before Bakery per GroceryItem.categories/0's own
+      # order; within a category, alphabetical by name (Eggs before Milk).
+      assert Groceries.list_items(scope, grocery_list) == [eggs, milk, bread, soap]
+    end
+
+    test "create_item/3 rejects a category outside the fixed list" do
+      scope = household_scope_fixture()
+      grocery_list = grocery_list_fixture(scope)
+
+      assert {:error, changeset} =
+               Groceries.create_item(scope, grocery_list, %{name: "Milk", category: "Snacks"})
+
+      assert "is invalid" in errors_on(changeset).category
+    end
+
     test "get_item!/2 returns the item with given id, scoped" do
       scope = household_scope_fixture()
       grocery_list = grocery_list_fixture(scope)

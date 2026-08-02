@@ -42,6 +42,40 @@ defmodule BudgeteerWeb.GroceryListLive.ShowTest do
       assert html =~ "Bread"
     end
 
+    test "adds an item with a category, grouped under that category's heading", %{
+      conn: conn,
+      grocery_list: grocery_list
+    } do
+      {:ok, show_live, _html} = live(conn, ~p"/groceries/#{grocery_list}")
+
+      html =
+        show_live
+        |> form("#add-item-form", grocery_item: %{name: "Bread", category: "Bakery"})
+        |> render_submit()
+
+      assert html =~ "Bakery"
+      assert html =~ "Bread"
+    end
+
+    test "groups items under category headings, in store-aisle order, uncategorized last", %{
+      conn: conn,
+      scope: scope,
+      grocery_list: grocery_list
+    } do
+      grocery_item_fixture(scope, grocery_list, %{name: "Soap"})
+      grocery_item_fixture(scope, grocery_list, %{name: "Bread", category: "Bakery"})
+      grocery_item_fixture(scope, grocery_list, %{name: "Milk", category: "Dairy & Eggs"})
+
+      {:ok, _show_live, html} = live(conn, ~p"/groceries/#{grocery_list}")
+
+      dairy_index = :binary.match(html, "Dairy &amp; Eggs") |> elem(0)
+      bakery_index = :binary.match(html, "Bakery") |> elem(0)
+      uncategorized_index = :binary.match(html, "Uncategorized") |> elem(0)
+
+      assert dairy_index < bakery_index
+      assert bakery_index < uncategorized_index
+    end
+
     test "toggles an item checked and unchecked", %{
       conn: conn,
       scope: scope,

@@ -154,15 +154,20 @@ defmodule Budgeteer.Groceries do
   end
 
   @doc """
-  Returns the items on a grocery list.
+  Returns the items on a grocery list, ordered by category (following
+  `GroceryItem.categories/0`'s fixed store-aisle order, uncategorized
+  items last) then by name — the order a shopper actually wants while
+  walking the aisles, not insertion order.
   """
   def list_items(%Scope{} = scope, %GroceryList{} = grocery_list) do
     true = grocery_list.household_id == scope.user.household_id
 
-    Repo.all_by(GroceryItem,
-      grocery_list_id: grocery_list.id,
-      household_id: scope.user.household_id
-    )
+    category_rank = Map.new(Enum.with_index(GroceryItem.categories()))
+    uncategorized_rank = map_size(category_rank)
+
+    GroceryItem
+    |> Repo.all_by(grocery_list_id: grocery_list.id, household_id: scope.user.household_id)
+    |> Enum.sort_by(&{Map.get(category_rank, &1.category, uncategorized_rank), &1.name})
   end
 
   @doc """

@@ -80,7 +80,7 @@ msgstr "Contas"
 msgid "Actions"
 msgstr "Ações"
 
-#: lib/budgeteer_web/live/grocery_list_live/show.ex:49
+#: lib/budgeteer_web/live/grocery_list_live/show.ex:56
 #, elixir-autogen, elixir-format
 msgid "Add"
 msgstr "Adicionar"
@@ -120,7 +120,7 @@ msgid_plural "Added %{count} ingredients to \"%{list}\""
 msgstr[0] "Adicionado 1 ingrediente a \"%{list}\""
 msgstr[1] "Adicionados %{count} ingredientes a \"%{list}\""
 
-#: lib/budgeteer_web/live/grocery_list_live/show.ex:49
+#: lib/budgeteer_web/live/grocery_list_live/show.ex:56
 #: lib/budgeteer_web/live/meal_plan_live/index.ex:31
 #: lib/budgeteer_web/live/meal_plan_live/index.ex:74
 #: lib/budgeteer_web/live/recipe_live/show.ex:92
@@ -196,7 +196,7 @@ msgstr "Tem a certeza de que quer eliminar este evento?"
 
 #: lib/budgeteer_web/live/account_live/index.ex:42
 #: lib/budgeteer_web/live/category_live/index.ex:39
-#: lib/budgeteer_web/live/grocery_list_live/show.ex:67
+#: lib/budgeteer_web/live/grocery_list_live/show.ex:81
 #: lib/budgeteer_web/live/meal_plan_live/index.ex:53
 #: lib/budgeteer_web/live/recipe_live/index.ex:32
 #: lib/budgeteer_web/live/statement_live/index.ex:65
@@ -300,6 +300,7 @@ msgstr "Categorias"
 
 #: lib/budgeteer_web/live/dashboard_live.ex:40
 #: lib/budgeteer_web/live/dashboard_live.ex:57
+#: lib/budgeteer_web/live/grocery_list_live/show.ex:52
 #: lib/budgeteer_web/live/statement_live/review.ex:36
 #: lib/budgeteer_web/live/subscription_live/index.ex:35
 #: lib/budgeteer_web/live/transaction_live/filter_form.ex:112
@@ -1168,6 +1169,7 @@ msgid "One ledger, whole household"
 msgstr "Um livro-razão, todo o agregado familiar"
 
 #: lib/budgeteer_web/live/dashboard_live.ex:163
+#: lib/budgeteer_web/live/grocery_list_live/show.ex:176
 #, elixir-autogen, elixir-format
 msgid "Other"
 msgstr "Outras"
@@ -1760,6 +1762,7 @@ msgstr "Desarquivar"
 
 #: lib/budgeteer_web/live/dashboard_live.ex:210
 #: lib/budgeteer_web/live/dashboard_live.ex:213
+#: lib/budgeteer_web/live/grocery_list_live/show.ex:167
 #: lib/budgeteer_web/live/statement_live/review.ex:85
 #: lib/budgeteer_web/live/subscription_live/index.ex:143
 #: lib/budgeteer_web/live/subscription_live/index.ex:146
@@ -2268,3 +2271,48 @@ msgstr "Hiperligação da receita"
 #, elixir-autogen, elixir-format
 msgid "https://example.com/a-recipe"
 msgstr "https://exemplo.com/uma-receita"
+
+#: lib/budgeteer_web/live/grocery_list_live/show.ex:54
+#, elixir-autogen, elixir-format
+msgid "No category"
+msgstr "Escolher categoria"
+
+#: lib/budgeteer_web/live/grocery_list_live/show.ex:171
+#, elixir-autogen, elixir-format
+msgid "Bakery"
+msgstr "Padaria"
+
+#: lib/budgeteer_web/live/grocery_list_live/show.ex:174
+#, elixir-autogen, elixir-format
+msgid "Beverages"
+msgstr "Bebidas"
+
+#: lib/budgeteer_web/live/grocery_list_live/show.ex:169
+#, elixir-autogen, elixir-format
+msgid "Dairy & Eggs"
+msgstr "Lacticínios e Ovos"
+
+#: lib/budgeteer_web/live/grocery_list_live/show.ex:172
+#, elixir-autogen, elixir-format
+msgid "Frozen"
+msgstr "Congelados"
+
+#: lib/budgeteer_web/live/grocery_list_live/show.ex:175
+#, elixir-autogen, elixir-format
+msgid "Household"
+msgstr "Higiene e Limpeza"
+
+#: lib/budgeteer_web/live/grocery_list_live/show.ex:170
+#, elixir-autogen, elixir-format
+msgid "Meat & Seafood"
+msgstr "Carne e Peixe"
+
+#: lib/budgeteer_web/live/grocery_list_live/show.ex:173
+#, elixir-autogen, elixir-format
+msgid "Pantry"
+msgstr "Mercearia"
+
+#: lib/budgeteer_web/live/grocery_list_live/show.ex:168
+#, elixir-autogen, elixir-format
+msgid "Produce"
+msgstr "Frutas e Legumes"
