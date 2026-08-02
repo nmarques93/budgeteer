@@ -41,6 +41,20 @@ config :ueberauth, Ueberauth.Strategy.Google.OAuth,
 # unset means Sentry's client just no-ops rather than crashing boot.
 config :sentry, dsn: System.get_env("SENTRY_DSN")
 
+# Push notifications (native iOS app, see mobile/) via APNs. Same
+# unconditional-read tolerance as the credentials above — Budgeteer.Push
+# no-ops when any of these are unset, so the app works fully without them
+# (push is additive to the existing email notification path, never a
+# dependency of it). APNS_KEY is the raw contents of the .p8 Auth Key file
+# downloaded once from the Apple Developer portal (Certificates, IDs &
+# Profiles > Keys); APNS_KEY_ID and APNS_TEAM_ID come from that same
+# portal. APNS_TOPIC is the app's bundle id (see mobile/capacitor.config.json).
+config :budgeteer, Budgeteer.Push,
+  apns_key: System.get_env("APNS_KEY"),
+  apns_key_id: System.get_env("APNS_KEY_ID"),
+  apns_team_id: System.get_env("APNS_TEAM_ID"),
+  apns_topic: System.get_env("APNS_TOPIC", "com.budgeteer.app")
+
 if config_env() == :dev do
   # Reload browser tabs when matching files change.
   config :budgeteer, BudgeteerWeb.Endpoint,

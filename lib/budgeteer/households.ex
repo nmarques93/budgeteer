@@ -6,7 +6,15 @@ defmodule Budgeteer.Households do
   import Ecto.Query, warn: false
   alias Budgeteer.Repo
 
-  alias Budgeteer.Households.{Household, User, UserToken, UserNotifier, AccessToken, Scope}
+  alias Budgeteer.Households.{
+    Household,
+    User,
+    UserToken,
+    UserNotifier,
+    AccessToken,
+    DeviceToken,
+    Scope
+  }
 
   ## Database getters
 
@@ -567,6 +575,42 @@ defmodule Budgeteer.Households do
     else
       _ -> nil
     end
+  end
+
+  ## Device tokens (push notifications for the native iOS app — see mobile/)
+
+  @doc """
+  Registers (or re-registers) a push-notification device token for the
+  scoped user. Upserts by the token itself, not by user — the same
+  physical device might re-register under a different household member
+  (a shared device, or a reinstall), in which case ownership should simply
+  move to whoever's currently signed in, not error out on the existing row.
+  """
+  def register_device_token(%Scope{} = scope, token, platform \\ "ios") when is_binary(token) do
+    attrs = %{token: token, platform: platform, user_id: scope.user.id}
+
+    case Repo.get_by(DeviceToken, token: token) do
+      nil -> DeviceToken.changeset(%DeviceToken{}, attrs)
+      existing -> DeviceToken.changeset(existing, attrs)
+    end
+    |> Repo.insert_or_update()
+  end
+
+  @doc """
+  Returns every push token registered to a household, by id (no scope),
+  paired with that token owner's own locale — same "background job, no
+  user context" precedent as `list_household_emails/1`, and the same
+  reason it carries locale too: `Ledger.BudgetAlertWorker` fans a push out
+  to every member, and each one should read it in their own saved
+  language, not whatever locale happens to be active in the job process.
+  """
+  def list_household_device_tokens(household_id) do
+    Repo.all(
+      from d in DeviceToken,
+        join: u in assoc(d, :user),
+        where: u.household_id == ^household_id,
+        select: %{token: d.token, locale: u.locale}
+    )
   end
 
   ## Token helper

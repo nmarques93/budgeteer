@@ -621,6 +621,66 @@ defmodule Budgeteer.HouseholdsTest do
     end
   end
 
+  describe "device tokens (push notifications)" do
+    test "register_device_token/3 persists a token against the scoped user" do
+      user = user_fixture()
+      scope = Households.Scope.for_user(user)
+
+      assert {:ok, device_token} = Households.register_device_token(scope, "apns-token-123")
+      assert device_token.token == "apns-token-123"
+      assert device_token.platform == "ios"
+      assert device_token.user_id == user.id
+    end
+
+    test "register_device_token/3 re-registering the same token moves it to the new user" do
+      owner = user_fixture()
+      owner_scope = Households.Scope.for_user(owner)
+      member = second_household_member_fixture(owner)
+      member_scope = Households.Scope.for_user(member)
+
+      assert {:ok, _} = Households.register_device_token(owner_scope, "shared-device-token")
+      assert {:ok, device_token} = Households.register_device_token(member_scope, "shared-device-token")
+
+      assert device_token.user_id == member.id
+      assert [%{user_id: user_id}] = Budgeteer.Repo.all(Budgeteer.Households.DeviceToken)
+      assert user_id == member.id
+    end
+
+    test "list_household_device_tokens/1 returns every member's tokens with their locale" do
+      owner = user_fixture()
+      {:ok, owner} = Households.update_user_locale(owner, "pt_PT")
+      owner_scope = Households.Scope.for_user(owner)
+
+      member = second_household_member_fixture(owner)
+      member_scope = Households.Scope.for_user(member)
+
+      {:ok, _} = Households.register_device_token(owner_scope, "owner-token")
+      {:ok, _} = Households.register_device_token(member_scope, "member-token")
+
+      results = Households.list_household_device_tokens(owner.household_id)
+
+      assert Enum.sort(results) ==
+               Enum.sort([
+                 %{token: "owner-token", locale: "pt_PT"},
+                 %{token: "member-token", locale: nil}
+               ])
+    end
+
+    test "list_household_device_tokens/1 does not include another household's tokens" do
+      user = user_fixture()
+      scope = Households.Scope.for_user(user)
+      {:ok, _} = Households.register_device_token(scope, "this-households-token")
+
+      other_user = user_fixture()
+      other_scope = Households.Scope.for_user(other_user)
+      {:ok, _} = Households.register_device_token(other_scope, "other-households-token")
+
+      assert Households.list_household_device_tokens(user.household_id) == [
+               %{token: "this-households-token", locale: nil}
+             ]
+    end
+  end
+
   describe "inspect/2 for the User module" do
     test "does not include password" do
       refute inspect(%User{password: "123456"}) =~ "password: \"123456\""

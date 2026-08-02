@@ -1,0 +1,17 @@
+{
+  "appId": "com.budgeteer.app",
+  "appName": "Budgeteer",
+  "webDir": "www",
+  "server": {
+    "url": "https://budgeteer-marbled-snowfall-2406.fly.dev",
+    "cleartext": false
+  },
+  "ios": {
+    "contentInset": "always"
+  },
+  "plugins": {
+    "PushNotifications": {
+      "presentationOptions": ["badge", "sound", "alert"]
+    }
+  }
+}

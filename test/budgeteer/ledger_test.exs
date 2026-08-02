@@ -589,5 +589,26 @@ defmodule Budgeteer.LedgerTest do
 
       refute_email_sent()
     end
+
+    test "still emails correctly when a household member has a registered device token" do
+      # Push.send/2 itself no-ops (unconfigured APNs in test — see
+      # push_test.exs) — this proves BudgetAlertWorker's push branch
+      # doesn't interfere with the proven email path when it actually runs.
+      scope = household_scope_fixture()
+      drain_mailbox()
+      {:ok, _device_token} = Budgeteer.Households.register_device_token(scope, "test-device-token")
+
+      account = account_fixture(scope)
+      category = category_fixture(scope, %{type: :expense, budget: "50.00"})
+
+      Ledger.create_transaction(scope, %{
+        account_id: account.id,
+        category_id: category.id,
+        amount: "-50.00",
+        date: Date.utc_today()
+      })
+
+      assert_email_sent(subject: "Budget alert: #{category.name}")
+    end
   end
 end

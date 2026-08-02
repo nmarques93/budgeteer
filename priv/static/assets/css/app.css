@@ -1651,6 +1651,17 @@
     width: 1.5rem;
     height: 1.5rem;
   }
+  .hero-camera {
+    --hero-camera: url('data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke-width%3D%221.5%22%20stroke%3D%22currentColor%22%20aria-hidden%3D%22true%22%20data-slot%3D%22icon%22%3E%20%20%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M6.827%206.175A2.31%202.31%200%200%201%205.186%207.23c-.38.054-.757.112-1.134.175C2.999%207.58%202.25%208.507%202.25%209.574V18a2.25%202.25%200%200%200%202.25%202.25h15A2.25%202.25%200%200%200%2021.75%2018V9.574c0-1.067-.75-1.994-1.802-2.169a47.865%2047.865%200%200%200-1.134-.175%202.31%202.31%200%200%201-1.64-1.055l-.822-1.316a2.192%202.192%200%200%200-1.736-1.039%2048.774%2048.774%200%200%200-5.232%200%202.192%202.192%200%200%200-1.736%201.039l-.821%201.316Z%22%2F%3E%20%20%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M16.5%2012.75a4.5%204.5%200%201%201-9%200%204.5%204.5%200%200%201%209%200ZM18.75%2010.5h.008v.008h-.008V10.5Z%22%2F%3E%3C%2Fsvg%3E');
+    -webkit-mask: var(--hero-camera);
+    mask: var(--hero-camera);
+    mask-repeat: no-repeat;
+    background-color: currentColor;
+    vertical-align: middle;
+    display: inline-block;
+    width: 1.5rem;
+    height: 1.5rem;
+  }
   .hero-chevron-left {
     --hero-chevron-left: url('data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke-width%3D%221.5%22%20stroke%3D%22currentColor%22%20aria-hidden%3D%22true%22%20data-slot%3D%22icon%22%3E%20%20%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M15.75%2019.5%208.25%2012l7.5-7.5%22%2F%3E%3C%2Fsvg%3E');
     -webkit-mask: var(--hero-chevron-left);
@@ -1743,6 +1754,17 @@
     --hero-pencil-square: url('data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke-width%3D%221.5%22%20stroke%3D%22currentColor%22%20aria-hidden%3D%22true%22%20data-slot%3D%22icon%22%3E%20%20%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22m16.862%204.487%201.687-1.688a1.875%201.875%200%201%201%202.652%202.652L10.582%2016.07a4.5%204.5%200%200%201-1.897%201.13L6%2018l.8-2.685a4.5%204.5%200%200%201%201.13-1.897l8.932-8.931Zm0%200L19.5%207.125M18%2014v4.75A2.25%202.25%200%200%201%2015.75%2021H5.25A2.25%202.25%200%200%201%203%2018.75V8.25A2.25%202.25%200%200%201%205.25%206H10%22%2F%3E%3C%2Fsvg%3E');
     -webkit-mask: var(--hero-pencil-square);
     mask: var(--hero-pencil-square);
+    mask-repeat: no-repeat;
+    background-color: currentColor;
+    vertical-align: middle;
+    display: inline-block;
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+  .hero-photo {
+    --hero-photo: url('data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke-width%3D%221.5%22%20stroke%3D%22currentColor%22%20aria-hidden%3D%22true%22%20data-slot%3D%22icon%22%3E%20%20%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22m2.25%2015.75%205.159-5.159a2.25%202.25%200%200%201%203.182%200l5.159%205.159m-1.5-1.5%201.409-1.409a2.25%202.25%200%200%201%203.182%200l2.909%202.909m-18%203.75h16.5a1.5%201.5%200%200%200%201.5-1.5V6a1.5%201.5%200%200%200-1.5-1.5H3.75A1.5%201.5%200%200%200%202.25%206v12a1.5%201.5%200%200%200%201.5%201.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375%200a.375.375%200%201%201-.75%200%20.375.375%200%200%201%20.75%200Z%22%2F%3E%3C%2Fsvg%3E');
+    -webkit-mask: var(--hero-photo);
+    mask: var(--hero-photo);
     mask-repeat: no-repeat;
     background-color: currentColor;
     vertical-align: middle;
@@ -2233,6 +2255,9 @@
     @supports (color: color-mix(in lab, red, red)) {
       stroke: color-mix(in oklab, var(--color-base-content) 40%, transparent);
     }
+  }
+  .object-cover {
+    object-fit: cover;
   }
   .checkbox-sm {
     @layer daisyui.l1.l2 {

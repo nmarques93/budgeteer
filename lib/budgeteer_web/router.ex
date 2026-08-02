@@ -118,6 +118,7 @@ defmodule BudgeteerWeb.Router do
     post "/users/update-password", UserSessionController, :update_password
     post "/accounts/:account_id/statements", StatementController, :create
     get "/transactions/export", TransactionExportController, :download
+    post "/push-tokens", PushTokenController, :create
   end
 
   scope "/", BudgeteerWeb do

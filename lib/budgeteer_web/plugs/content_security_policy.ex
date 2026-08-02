@@ -13,7 +13,15 @@ defmodule BudgeteerWeb.Plugs.ContentSecurityPolicy do
   than allowing inline `<script>`. `connect-src` includes `ws:`/`wss:`
   explicitly (rather than relying on `'self'`'s same-origin scheme-upgrade
   matching) so the LiveView socket isn't at the mercy of a browser that
-  doesn't implement that CSP3 behavior.
+  doesn't implement that CSP3 behavior. It also includes `capacitor:` —
+  when this page is loaded inside the native iOS app shell (see `mobile/`),
+  a captured camera photo is handed back as a `capacitor://localhost/...`
+  URL (Capacitor's own scheme for bridging a native file into the WebView);
+  `StatementLive.Upload`'s camera-capture hook `fetch()`s that URL to get
+  the image bytes before uploading, which CSP would otherwise block before
+  the request even reaches Capacitor's own (already-CORS-permissive)
+  scheme handler. Harmless to include when not running inside the native
+  shell — the scheme simply never appears in that context.
   """
 
   import Plug.Conn
@@ -41,7 +49,7 @@ defmodule BudgeteerWeb.Plugs.ContentSecurityPolicy do
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data:",
       "font-src 'self'",
-      "connect-src 'self' ws: wss:",
+      "connect-src 'self' ws: wss: capacitor:",
       "base-uri 'self'",
       "form-action 'self'",
       "frame-ancestors 'self'",

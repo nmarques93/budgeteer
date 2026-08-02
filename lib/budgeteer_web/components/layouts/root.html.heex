@@ -59,6 +59,10 @@
       // trigger "Add to Home Screen" itself, so this nudges iOS visitors who
       // aren't already running standalone toward the Share-sheet action
       // manually. Dismissal is remembered so it doesn't nag every visit.
+      // Also never shows inside the native iOS app shell (window.Capacitor,
+      // injected by the native runtime on every page it loads, including
+      // this remote site) — nudging someone to "install" a page they're
+      // already viewing inside the installed app itself makes no sense.
       document.addEventListener("DOMContentLoaded", () => {
         const banner = document.getElementById("ios-install-banner");
         if (!banner) return;
@@ -67,15 +71,56 @@
         const isStandalone =
           window.navigator.standalone === true ||
           window.matchMedia("(display-mode: standalone)").matches;
+        const isNativeApp = window.Capacitor?.isNativePlatform?.() === true;
         const dismissed = localStorage.getItem("budgeteer:ios-install-dismissed") === "1";
 
-        if (isIOS && !isStandalone && !dismissed) {
+        if (isIOS && !isStandalone && !isNativeApp && !dismissed) {
           banner.classList.remove("hidden");
         }
 
         document.getElementById("ios-install-banner-dismiss").addEventListener("click", () => {
           localStorage.setItem("budgeteer:ios-install-dismissed", "1");
           banner.classList.add("hidden");
+        });
+      });
+    </script>
+    <script :if={@current_scope} nonce={@csp_nonce}>
+      // Enrolls this device for push notifications when running inside
+      // the native iOS app shell — a no-op everywhere else, since
+      // window.Capacitor only exists there. Gated to a signed-in visitor
+      // (@current_scope) since there's no point enrolling a token with
+      // nobody to notify. Fires on every authenticated page load rather
+      // than once at "install" time — the underlying call is cheap and
+      // idempotent (see Households.register_device_token/3's
+      // upsert-by-token), and this is simpler than tracking "have we
+      // already enrolled" across app restarts/reinstalls ourselves.
+      document.addEventListener("DOMContentLoaded", () => {
+        const PushNotifications = window.Capacitor?.isNativePlatform?.() &&
+          window.Capacitor.Plugins.PushNotifications;
+        if (!PushNotifications) return;
+
+        PushNotifications.addListener("registration", (token) => {
+          fetch("/push-tokens", {
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+              "x-csrf-token": document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ token: token.value })
+          });
+        });
+
+        PushNotifications.addListener("registrationError", (error) => {
+          console.error("Push notification registration failed", error);
+        });
+
+        PushNotifications.checkPermissions().then((status) => {
+          const needsPrompt = status.receive === "prompt" || status.receive === "prompt-with-rationale";
+          const granted = needsPrompt ? PushNotifications.requestPermissions() : Promise.resolve(status);
+
+          granted.then((result) => {
+            if (result.receive === "granted") PushNotifications.register();
+          });
         });
       });
     </script>

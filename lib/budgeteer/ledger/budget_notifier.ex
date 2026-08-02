@@ -52,4 +52,21 @@ defmodule Budgeteer.Ledger.BudgetNotifier do
       )
     end)
   end
+
+  @doc """
+  Builds the `%{title:, body:}` payload for the same alert, via
+  `Budgeteer.Push` — same per-recipient locale reasoning as
+  `deliver_budget_alert/4` above.
+  """
+  def push_payload(recipient_locale, category, spent_cents) do
+    Gettext.with_locale(BudgeteerWeb.Gettext, recipient_locale || "en", fn ->
+      %{
+        title: gettext("Budget alert: %{name}", name: category.name),
+        body:
+          gettext("You've spent %{amount} so far this month.",
+            amount: Budgeteer.Money.format(spent_cents)
+          )
+      }
+    end)
+  end
 end
