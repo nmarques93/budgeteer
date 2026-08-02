@@ -13,7 +13,7 @@ defmodule BudgeteerWeb.RecipeLive.ExtractTest do
     conn: conn,
     scope: scope
   } do
-    expect(Budgeteer.AI.ClientMock, :parse_recipe, fn {:text, text} ->
+    expect(Budgeteer.AI.DeepSeekClientMock, :parse_recipe, fn text ->
       assert text =~ "Tomato Soup"
 
       {:ok,
@@ -57,7 +57,7 @@ defmodule BudgeteerWeb.RecipeLive.ExtractTest do
   end
 
   test "can add and remove ingredient rows while reviewing", %{conn: conn} do
-    expect(Budgeteer.AI.ClientMock, :parse_recipe, fn {:text, _text} ->
+    expect(Budgeteer.AI.DeepSeekClientMock, :parse_recipe, fn _text ->
       {:ok,
        %{
          "name" => "Toast",
@@ -82,7 +82,7 @@ defmodule BudgeteerWeb.RecipeLive.ExtractTest do
     conn: conn,
     scope: scope
   } do
-    expect(Budgeteer.AI.ClientMock, :parse_recipe, fn {:text, _text} -> {:error, :timeout} end)
+    expect(Budgeteer.AI.DeepSeekClientMock, :parse_recipe, fn _text -> {:error, :timeout} end)
 
     {:ok, view, _html} = live(conn, ~p"/recipes/extract")
     view |> form("#extract-text-form", recipe_text: %{text: "some recipe"}) |> render_submit()
@@ -108,7 +108,7 @@ defmodule BudgeteerWeb.RecipeLive.ExtractTest do
       {:ok, "Tomato Soup. Ingredients: 6 tomatoes."}
     end)
 
-    expect(Budgeteer.AI.ClientMock, :parse_recipe, fn {:text, text} ->
+    expect(Budgeteer.AI.DeepSeekClientMock, :parse_recipe, fn text ->
       assert text == "Tomato Soup. Ingredients: 6 tomatoes."
 
       {:ok,

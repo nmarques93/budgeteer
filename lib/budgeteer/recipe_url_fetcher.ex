@@ -1,10 +1,9 @@
 defmodule Budgeteer.RecipeUrlFetcher do
   @moduledoc """
   Fetches a web page believed to contain a recipe and reduces it to plain
-  text suitable for `Budgeteer.AI.Client.parse_recipe/1`'s `{:text, ...}`
-  path — this reuses the exact same extraction/review flow as pasting
-  text, rather than teaching the AI client (or its schema) anything about
-  HTML.
+  text suitable for `Budgeteer.AI.DeepSeekClient.parse_recipe/1` — this
+  reuses the exact same extraction/review flow as pasting text, rather
+  than teaching the AI client (or its schema) anything about HTML.
 
   Prefers a page's own schema.org `Recipe` JSON-LD block if present — most
   recipe sites embed one for SEO, and it's already clean, structured data

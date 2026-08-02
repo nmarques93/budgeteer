@@ -59,7 +59,7 @@ defmodule Budgeteer.Insights do
   def generate_insights(%Scope{} = scope) do
     data = build_insight_data(scope)
 
-    with {:ok, insights} <- insights_client().generate_insights(data) do
+    with {:ok, insights} <- deepseek_client().generate_insights(data) do
       upsert_insights(scope, insights)
     end
   end
@@ -91,8 +91,9 @@ defmodule Budgeteer.Insights do
 
   # All the pacing/comparison arithmetic happens here, not in the prompt —
   # LLMs are unreliable at precise math, and every other AI feature in
-  # this app (parse_statement/parse_recipe) follows the same rule: the
-  # model extracts/summarizes stated facts, it never computes them.
+  # this app (AI.Client's parse_statement/parse_recipe_from_file,
+  # DeepSeekClient's parse_recipe) follows the same rule: the model
+  # extracts/summarizes stated facts, it never computes them.
   defp build_insight_data(%Scope{} = scope) do
     today = Date.utc_today()
     day_of_month = today.day
@@ -162,6 +163,6 @@ defmodule Budgeteer.Insights do
   defp format_or_nil(nil), do: nil
   defp format_or_nil(cents), do: Money.format(cents)
 
-  defp insights_client,
-    do: Application.get_env(:budgeteer, :insights_client, Budgeteer.AI.DeepSeekClient)
+  defp deepseek_client,
+    do: Application.get_env(:budgeteer, :deepseek_client, Budgeteer.AI.DeepSeekClient)
 end

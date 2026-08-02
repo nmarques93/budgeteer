@@ -1,10 +1,19 @@
 defmodule Budgeteer.AI.Client do
   @moduledoc """
-  Calls the Claude Messages API to extract transactions from a bank
-  statement (PDF or image). Elixir has no official Anthropic SDK, so this
-  is raw HTTP via `Req`. Uses structured outputs (`output_config.format`)
-  so a successful response is guaranteed-valid JSON rather than relying on
-  a "return only JSON" prompt convention.
+  Calls the Claude Messages API for the two tasks in this app that
+  genuinely need document/vision understanding: extracting transactions
+  from a bank statement (PDF or photo) and — once photo/PDF recipe input
+  is built — reading a recipe from an image/PDF. Elixir has no official
+  Anthropic SDK, so this is raw HTTP via `Req`. Uses structured outputs
+  (`output_config.format`) so a successful response is guaranteed-valid
+  JSON rather than relying on a "return only JSON" prompt convention.
+
+  Text-only tasks (recipe parsing from pasted text or a fetched URL) use
+  `Budgeteer.AI.DeepSeekClient` instead — confirmed directly against
+  DeepSeek's real API that its chat endpoint rejects image/document input
+  outright (`400: "unknown variant image_url, expected text"`), so this
+  client stays Anthropic-only for anything that needs to *see* a document,
+  while everything text-in/text-out moved to the cheaper model.
   """
 
   @behaviour Budgeteer.AI.ClientBehaviour
@@ -151,13 +160,7 @@ defmodule Budgeteer.AI.Client do
   }
 
   @impl true
-  def parse_recipe({:text, text}) when is_binary(text) do
-    request_recipe([
-      %{type: "text", text: "Extract the recipe from the following text:\n\n" <> text}
-    ])
-  end
-
-  def parse_recipe({:file, file_bytes, media_type})
+  def parse_recipe_from_file(file_bytes, media_type)
       when is_binary(file_bytes) and is_binary(media_type) do
     request_recipe([
       document_block(file_bytes, media_type),

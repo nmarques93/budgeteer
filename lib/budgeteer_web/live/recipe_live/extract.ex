@@ -18,8 +18,12 @@ defmodule BudgeteerWeb.RecipeLive.Extract do
 
   A recipe URL is handled by fetching the page and reducing it to plain
   text server-side (`Budgeteer.RecipeUrlFetcher`), then feeding that text
-  through the exact same `parse_recipe({:text, ...})` path as pasted
-  text — no separate schema, no separate review UI.
+  through the exact same `parse_recipe/1` path as pasted text — no
+  separate schema, no separate review UI. Both paths are text-only, so
+  both go to `Budgeteer.AI.DeepSeekClient`, not the Anthropic client —
+  see that module's moduledoc for why (DeepSeek's API can't accept
+  image/document input, so it's confined to text-only tasks; Anthropic
+  stays reserved for tasks that need to see a file).
   """
   use BudgeteerWeb, :live_view
 
@@ -153,7 +157,7 @@ defmodule BudgeteerWeb.RecipeLive.Extract do
       {:noreply,
        socket
        |> assign(:phase, :extracting)
-       |> start_async(:extract, fn -> ai_client().parse_recipe({:text, text}) end)}
+       |> start_async(:extract, fn -> deepseek_client().parse_recipe(text) end)}
     end
   end
 
@@ -247,12 +251,13 @@ defmodule BudgeteerWeb.RecipeLive.Extract do
 
   defp fetch_and_parse_url(url) do
     case recipe_url_fetcher().fetch(url) do
-      {:ok, text} -> ai_client().parse_recipe({:text, text})
+      {:ok, text} -> deepseek_client().parse_recipe(text)
       {:error, reason} -> {:error, {:fetch_failed, reason}}
     end
   end
 
-  defp ai_client, do: Application.get_env(:budgeteer, :ai_client, Budgeteer.AI.Client)
+  defp deepseek_client,
+    do: Application.get_env(:budgeteer, :deepseek_client, Budgeteer.AI.DeepSeekClient)
 
   defp recipe_url_fetcher,
     do: Application.get_env(:budgeteer, :recipe_url_fetcher, Budgeteer.RecipeUrlFetcher)
