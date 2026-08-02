@@ -64,6 +64,16 @@ defmodule Budgeteer.Ledger do
   end
 
   @doc """
+  Finds the account an inbound-email token belongs to, or `nil`. Unscoped
+  — for the inbound-statement-email webhook, which runs outside a
+  request/user context (there's no Scope to check against; the token
+  itself is what identifies the account).
+  """
+  def get_account_by_inbound_token(token) when is_binary(token) do
+    Repo.get_by(Account, inbound_email_token: token)
+  end
+
+  @doc """
   Creates a account.
 
   ## Examples

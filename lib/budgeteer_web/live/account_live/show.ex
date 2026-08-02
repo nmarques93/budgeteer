@@ -2,6 +2,7 @@ defmodule BudgeteerWeb.AccountLive.Show do
   use BudgeteerWeb, :live_view
 
   alias Budgeteer.Ledger
+  alias Budgeteer.Statements
 
   @impl true
   def render(assigns) do
@@ -41,7 +42,21 @@ defmodule BudgeteerWeb.AccountLive.Show do
         <:item title={gettext("Current balance")}>
           <.money cents={Ledger.current_balance_cents(@account)} />
         </:item>
+        <:item title={gettext("Inbound statement email")}>
+          <span :if={@inbound_email_address} class="font-mono text-sm">
+            {@inbound_email_address}
+          </span>
+          <span :if={!@inbound_email_address} class="text-sm opacity-60">
+            {gettext("Not set up yet")}
+          </span>
+        </:item>
       </.list>
+
+      <p :if={@inbound_email_address} class="text-sm opacity-70 mt-2">
+        {gettext(
+          "Forward a statement email here, or ask your bank to send monthly e-statements to this address — Budgeteer will pick it up automatically."
+        )}
+      </p>
     </Layouts.app>
     """
   end
@@ -52,10 +67,13 @@ defmodule BudgeteerWeb.AccountLive.Show do
       Ledger.subscribe_accounts(socket.assigns.current_scope)
     end
 
+    account = Ledger.get_account!(socket.assigns.current_scope, id)
+
     {:ok,
      socket
      |> assign(:page_title, gettext("Show Account"))
-     |> assign(:account, Ledger.get_account!(socket.assigns.current_scope, id))}
+     |> assign(:account, account)
+     |> assign(:inbound_email_address, Statements.inbound_email_address(account))}
   end
 
   @impl true
@@ -63,7 +81,10 @@ defmodule BudgeteerWeb.AccountLive.Show do
         {:updated, %Budgeteer.Ledger.Account{id: id} = account},
         %{assigns: %{account: %{id: id}}} = socket
       ) do
-    {:noreply, assign(socket, :account, account)}
+    {:noreply,
+     socket
+     |> assign(:account, account)
+     |> assign(:inbound_email_address, Statements.inbound_email_address(account))}
   end
 
   def handle_info(

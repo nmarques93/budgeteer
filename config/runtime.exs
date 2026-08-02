@@ -33,6 +33,37 @@ config :budgeteer, :anthropic_api_key, System.get_env("ANTHROPIC_API_KEY")
 # unconditional-read tolerance as ANTHROPIC_API_KEY above.
 config :budgeteer, :deepseek_api_key, System.get_env("DEEPSEEK_API_KEY")
 
+# Same RESEND_API_KEY the outbound Mailer uses (see the :prod block
+# below) — exposed at this top-level key too, unconditionally, so
+# Budgeteer.Statements.ResendInboundClient can call Resend's Receiving
+# API directly (fetching an inbound email's attachment content) without
+# reaching into the Mailer's own nested config, and so it's testable in
+# dev even though outbound mail stays on Swoosh's Local adapter there.
+config :budgeteer, :resend_api_key, System.get_env("RESEND_API_KEY")
+
+# Inbound statement-email parsing (Budgeteer.Statements, InboundEmailController)
+# — both optional, same graceful-no-op intent as the keys above, but
+# guarded (only set when the env var is actually present) rather than
+# the unconditional pattern those use. Unlike an API key, config/test.exs
+# sets both of these to fixed values the webhook tests rely on (a real
+# secret to sign against, a real domain to build addresses against) —
+# runtime.exs still runs after config/test.exs in every environment, so
+# the unconditional form would silently overwrite them back to nil in
+# test (confirmed directly: it did, and broke a test, before this guard
+# was added). RESEND_WEBHOOK_SECRET is the signing secret Resend's
+# dashboard shows once "Inbound" is enabled for a domain/endpoint.
+# INBOUND_EMAIL_DOMAIN is that domain (a Resend-managed "<id>.resend.app"
+# address works with no DNS setup, or a real subdomain with MX records)
+# — each account's inbound address is "stmt-<token>@<this domain>",
+# shown on its own page.
+if webhook_secret = System.get_env("RESEND_WEBHOOK_SECRET") do
+  config :budgeteer, :resend_webhook_secret, webhook_secret
+end
+
+if inbound_email_domain = System.get_env("INBOUND_EMAIL_DOMAIN") do
+  config :budgeteer, :inbound_email_domain, inbound_email_domain
+end
+
 # Google OAuth. Same tolerance as ANTHROPIC_API_KEY above — unconditional,
 # no raise if unset — rather than the RESEND_API_KEY raise-in-prod-only
 # pattern, since this needs to be testable via a real browser flow in dev

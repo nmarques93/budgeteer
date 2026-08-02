@@ -10,6 +10,7 @@ defmodule Budgeteer.Ledger.Account do
     field :currency, :string
     field :starting_balance_cents, :integer
     field :starting_balance, :string, virtual: true
+    field :inbound_email_token, :string
     field :household_id, :binary_id
 
     timestamps(type: :utc_datetime)
@@ -22,6 +23,23 @@ defmodule Budgeteer.Ledger.Account do
     |> validate_required([:name, :bank_name, :currency, :starting_balance])
     |> put_starting_balance_cents()
     |> put_change(:household_id, household_scope.user.household_id)
+    |> put_inbound_email_token()
+  end
+
+  # Generated once, on creation, and left alone on every later edit —
+  # `get_field/2` reads the struct's existing value when there's no
+  # pending change, so this only fires for a genuinely new account
+  # (nil so far). Regenerating on every save would silently break any
+  # forwarding rule the household already set up with their bank.
+  defp put_inbound_email_token(changeset) do
+    case get_field(changeset, :inbound_email_token) do
+      nil -> put_change(changeset, :inbound_email_token, generate_inbound_email_token())
+      _existing -> changeset
+    end
+  end
+
+  defp generate_inbound_email_token do
+    :crypto.strong_rand_bytes(16) |> Base.encode32(case: :lower, padding: false)
   end
 
   defp put_starting_balance_cents(changeset) do

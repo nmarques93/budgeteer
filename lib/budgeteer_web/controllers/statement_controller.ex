@@ -3,25 +3,13 @@ defmodule BudgeteerWeb.StatementController do
 
   alias Budgeteer.Ledger
   alias Budgeteer.Statements
+  alias Budgeteer.Statements.FileValidation
 
   # A plain multipart form POST, not a LiveView upload — see CLAUDE.md for
   # why: LiveView's channel-based upload (allow_upload/consume_uploaded_entries)
   # was silently never completing (entries stuck at 0%, Upload button stuck
   # disabled) with no clear root cause. This uses Plug's ordinary multipart
   # parsing instead, which has none of that machinery to fail.
-  @max_file_size 15_000_000
-  @allowed_extensions ~w(.pdf .jpg .jpeg .png)
-
-  # Extension alone is trivially spoofable (rename anything to .png) — this
-  # confirms the file's actual bytes match one of the formats we claim to
-  # accept, via the same magic-number signatures browsers/OSes use, before
-  # anything gets written to disk or handed to the AI client.
-  @magic_bytes %{
-    ".pdf" => "%PDF-",
-    ".jpg" => <<0xFF, 0xD8, 0xFF>>,
-    ".jpeg" => <<0xFF, 0xD8, 0xFF>>,
-    ".png" => <<0x89, "PNG", 0x0D, 0x0A, 0x1A, 0x0A>>
-  }
 
   def create(conn, %{"account_id" => account_id} = params) do
     scope = conn.assigns.current_scope
@@ -42,12 +30,12 @@ defmodule BudgeteerWeb.StatementController do
     ext = upload.filename |> Path.extname() |> String.downcase()
 
     cond do
-      ext not in @allowed_extensions ->
+      not FileValidation.allowed_extension?(ext) ->
         conn
         |> put_flash(:error, gettext("Unsupported file type — use PDF, JPG, or PNG"))
         |> redirect(to: ~p"/accounts/#{account}/statements/new")
 
-      File.stat!(upload.path).size > @max_file_size ->
+      File.stat!(upload.path).size > FileValidation.max_file_size() ->
         conn
         |> put_flash(:error, gettext("File is too large (max 15 MB)"))
         |> redirect(to: ~p"/accounts/#{account}/statements/new")
@@ -66,9 +54,8 @@ defmodule BudgeteerWeb.StatementController do
   end
 
   defp matches_magic_bytes?(ext, path) do
-    signature = Map.fetch!(@magic_bytes, ext)
-    header = File.open!(path, [:read, :binary], &IO.binread(&1, byte_size(signature)))
-    header == signature
+    header = File.open!(path, [:read, :binary], &IO.binread(&1, 16))
+    FileValidation.matches_magic_bytes?(ext, header)
   end
 
   defp save_statement(conn, scope, account, upload) do

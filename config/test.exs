@@ -38,6 +38,13 @@ config :budgeteer, :recipe_url_fetcher, Budgeteer.RecipeUrlFetcherMock
 # Mock the DeepSeek client in tests — never hit the real API
 config :budgeteer, :deepseek_client, Budgeteer.AI.DeepSeekClientMock
 
+# Mock the Resend inbound-attachment client in tests — never hit the real
+# API. The webhook secret is fixed here (not random per test run) so
+# tests can compute a matching signature for a genuinely valid request.
+config :budgeteer, :resend_inbound_client, Budgeteer.Statements.ResendInboundClientMock
+config :budgeteer, :resend_webhook_secret, "whsec_dGVzdC1zZWNyZXQta2V5LWZvci1zaWduaW5n"
+config :budgeteer, :inbound_email_domain, "inbound.test"
+
 # Fixed test-only Cloak key, same pattern as config/dev.exs.
 config :budgeteer, :cloak_key, "V4ih+ZUr81t+msj/Q2yJiI6hWEQfDtXBNLVtqttUZ8Q="
 

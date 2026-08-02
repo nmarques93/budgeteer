@@ -53,6 +53,34 @@ defmodule Budgeteer.LedgerTest do
       assert {:error, %Ecto.Changeset{}} = Ledger.create_account(scope, @invalid_attrs)
     end
 
+    test "create_account/2 generates a unique inbound_email_token" do
+      scope = household_scope_fixture()
+
+      account = account_fixture(scope)
+      other_account = account_fixture(scope)
+
+      assert is_binary(account.inbound_email_token)
+      assert account.inbound_email_token != other_account.inbound_email_token
+    end
+
+    test "update_account/3 does not regenerate an existing inbound_email_token" do
+      scope = household_scope_fixture()
+      account = account_fixture(scope)
+      original_token = account.inbound_email_token
+
+      {:ok, updated} = Ledger.update_account(scope, account, %{name: "Renamed"})
+
+      assert updated.inbound_email_token == original_token
+    end
+
+    test "get_account_by_inbound_token/1 finds the account, unscoped" do
+      scope = household_scope_fixture()
+      account = account_fixture(scope)
+
+      assert Ledger.get_account_by_inbound_token(account.inbound_email_token).id == account.id
+      assert Ledger.get_account_by_inbound_token("no-such-token") == nil
+    end
+
     test "update_account/3 with valid data updates the account" do
       scope = household_scope_fixture()
       account = account_fixture(scope)

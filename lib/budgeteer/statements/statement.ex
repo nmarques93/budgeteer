@@ -38,6 +38,25 @@ defmodule Budgeteer.Statements.Statement do
   end
 
   @doc """
+  Changeset for creating a statement from an inbound email attachment —
+  same required fields as `changeset/3`, but takes `household_id`
+  directly rather than a `Scope`, since there's no authenticated user to
+  scope from (the webhook that calls this runs outside a request/user
+  context; `uploaded_by_id` is left nil, same as any other
+  non-human-triggered write in this app).
+  """
+  def email_changeset(statement, attrs, household_id) do
+    statement
+    |> cast(attrs, [:filename, :storage_path, :file_hash, :account_id])
+    |> validate_required([:filename, :storage_path, :file_hash, :account_id])
+    |> put_change(:household_id, household_id)
+    |> unique_constraint(:file_hash,
+      name: :statements_account_id_file_hash_index,
+      message: "has already been uploaded for this account"
+    )
+  end
+
+  @doc """
   Changeset for the status-transition writes made by the Oban worker
   (processing/processed/failed) — not user input, no form ceremony needed.
   """

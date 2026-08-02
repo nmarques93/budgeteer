@@ -30,6 +30,12 @@ defmodule BudgeteerWeb.Router do
   end
 
   scope "/", BudgeteerWeb do
+    pipe_through :api
+
+    post "/webhooks/resend-inbound", InboundEmailController, :create
+  end
+
+  scope "/", BudgeteerWeb do
     pipe_through :browser
 
     get "/", PageController, :home

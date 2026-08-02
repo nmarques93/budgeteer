@@ -60,7 +60,14 @@ defmodule BudgeteerWeb.Endpoint do
     # (e.g. reading a file from a cloud-synced folder) — see StatementController.
     length: 20_000_000,
     read_timeout: 120_000,
-    json_decoder: Phoenix.json_library()
+    json_decoder: Phoenix.json_library(),
+    # Caches the exact raw bytes into conn.assigns.raw_body before JSON
+    # parsing consumes them — the inbound-statement-email webhook's
+    # signature is computed over those exact bytes, and re-serializing
+    # the parsed JSON wouldn't reproduce it. Negligible cost for every
+    # other request (bodies stay small outside file uploads, which use
+    # :multipart, not :json, so they're unaffected).
+    body_reader: {BudgeteerWeb.Plugs.CacheBodyReader, :read_body, []}
 
   plug Plug.MethodOverride
   plug Plug.Head

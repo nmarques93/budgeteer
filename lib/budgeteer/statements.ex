@@ -76,6 +76,40 @@ defmodule Budgeteer.Statements do
   end
 
   @doc """
+  Builds the full inbound-statement-email address for an account, or
+  `nil` if `INBOUND_EMAIL_DOMAIN` isn't configured yet (a manual,
+  one-time Resend Inbound domain setup step — see CLAUDE.md). Every
+  account gets its own address so an incoming email can be routed back
+  to the right one; `InboundEmailController` parses this same shape back
+  apart on the way in.
+  """
+  def inbound_email_address(%Account{inbound_email_token: token}) do
+    case Application.get_env(:budgeteer, :inbound_email_domain) do
+      domain when is_binary(domain) and domain != "" -> "stmt-#{token}@#{domain}"
+      _ -> nil
+    end
+  end
+
+  @doc """
+  Creates a statement from an inbound email's attachment and enqueues
+  parsing — unscoped, for the inbound-statement-email webhook, which runs
+  outside a request/user context.
+  """
+  def create_statement_from_email(%Account{} = account, attrs) do
+    with {:ok, statement = %Statement{}} <-
+           %Statement{}
+           |> Statement.email_changeset(attrs, account.household_id)
+           |> Repo.insert(),
+         {:ok, _job} <-
+           %{"statement_id" => statement.id}
+           |> ParseWorker.new()
+           |> Oban.insert() do
+      broadcast_statement(statement.household_id, {:created, statement})
+      {:ok, statement}
+    end
+  end
+
+  @doc """
   Deletes a statement.
   """
   def delete_statement(%Scope{} = scope, %Statement{} = statement) do

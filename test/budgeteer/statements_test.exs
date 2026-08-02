@@ -53,6 +53,69 @@ defmodule Budgeteer.StatementsTest do
     end
   end
 
+  describe "inbound_email_address/1" do
+    test "builds \"stmt-<token>@<configured domain>\" when INBOUND_EMAIL_DOMAIN is set" do
+      scope = household_scope_fixture()
+      account = account_fixture(scope)
+
+      assert Statements.inbound_email_address(account) ==
+               "stmt-#{account.inbound_email_token}@inbound.test"
+    end
+
+    # The "no domain configured" branch (returns nil) isn't covered by a
+    # test here — it reads a global Application env value, and mutating
+    # that from within a test is unsafe under this suite's async
+    # execution (confirmed directly: doing so raced with a concurrently
+    # running test and made it fail nondeterministically). The branch
+    # itself is a one-line case clause, low-risk enough not to be worth
+    # chasing safe test isolation for.
+  end
+
+  describe "create_statement_from_email/2" do
+    test "creates the statement unscoped, with no uploaded_by_id, and enqueues parsing" do
+      scope = household_scope_fixture()
+      account = account_fixture(scope)
+      path = write_temp_statement_file!()
+
+      expect(Budgeteer.AI.ClientMock, :parse_statement, fn _bytes,
+                                                           "application/pdf",
+                                                           _category_names ->
+        {:ok, %{"currency" => "EUR", "transactions" => []}}
+      end)
+
+      attrs = %{
+        "filename" => "statement.pdf",
+        "storage_path" => path,
+        "file_hash" => "hash-#{System.unique_integer([:positive])}",
+        "account_id" => account.id
+      }
+
+      assert {:ok, statement} = Statements.create_statement_from_email(account, attrs)
+      assert statement.household_id == account.household_id
+      assert is_nil(statement.uploaded_by_id)
+
+      assert Statements.get_statement!(statement.id).status == :processed
+    end
+
+    test "duplicate file_hash for the same account returns an error changeset" do
+      scope = household_scope_fixture()
+      account = account_fixture(scope)
+      _existing = statement_fixture(scope, %{account: account, file_hash: "dupe-hash"})
+
+      attrs = %{
+        "filename" => "statement.pdf",
+        "storage_path" => write_temp_statement_file!(),
+        "file_hash" => "dupe-hash",
+        "account_id" => account.id
+      }
+
+      assert {:error, %Ecto.Changeset{} = changeset} =
+               Statements.create_statement_from_email(account, attrs)
+
+      assert "has already been uploaded for this account" in errors_on(changeset).file_hash
+    end
+  end
+
   describe "create_statement/2" do
     test "enqueues parsing, which — on success — leaves the statement processed with the AI output stored" do
       scope = household_scope_fixture()
