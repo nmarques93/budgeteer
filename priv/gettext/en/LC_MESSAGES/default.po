@@ -90,7 +90,7 @@ msgstr ""
 msgid "Add every listed ingredient to"
 msgstr ""
 
-#: lib/budgeteer_web/live/recipe_live/extract.ex:96
+#: lib/budgeteer_web/live/recipe_live/extract.ex:122
 #: lib/budgeteer_web/live/recipe_live/form.ex:50
 #, elixir-autogen, elixir-format
 msgid "Add ingredient"
@@ -283,8 +283,8 @@ msgstr ""
 #: lib/budgeteer_web/live/calendar_live/form.ex:31
 #: lib/budgeteer_web/live/category_live/form.ex:34
 #: lib/budgeteer_web/live/grocery_list_live/form.ex:22
-#: lib/budgeteer_web/live/recipe_live/extract.ex:49
-#: lib/budgeteer_web/live/recipe_live/extract.ex:104
+#: lib/budgeteer_web/live/recipe_live/extract.ex:54
+#: lib/budgeteer_web/live/recipe_live/extract.ex:130
 #: lib/budgeteer_web/live/recipe_live/form.ex:58
 #: lib/budgeteer_web/live/statement_live/review.ex:121
 #: lib/budgeteer_web/live/statement_live/upload.ex:100
@@ -411,7 +411,7 @@ msgstr ""
 msgid "Couldn't create the token — please try again."
 msgstr ""
 
-#: lib/budgeteer_web/live/recipe_live/extract.ex:186
+#: lib/budgeteer_web/live/recipe_live/extract.ex:234
 #, elixir-autogen, elixir-format
 msgid "Couldn't extract a recipe from that text — try rephrasing, or add it manually."
 msgstr ""
@@ -651,9 +651,9 @@ msgstr ""
 msgid "Export CSV"
 msgstr ""
 
-#: lib/budgeteer_web/live/recipe_live/extract.ex:29
-#: lib/budgeteer_web/live/recipe_live/extract.ex:47
-#: lib/budgeteer_web/live/recipe_live/extract.ex:116
+#: lib/budgeteer_web/live/recipe_live/extract.ex:34
+#: lib/budgeteer_web/live/recipe_live/extract.ex:52
+#: lib/budgeteer_web/live/recipe_live/extract.ex:142
 #, elixir-autogen, elixir-format
 msgid "Extract Recipe"
 msgstr ""
@@ -663,12 +663,12 @@ msgstr ""
 msgid "Extract from text"
 msgstr ""
 
-#: lib/budgeteer_web/live/recipe_live/extract.ex:54
+#: lib/budgeteer_web/live/recipe_live/extract.ex:80
 #, elixir-autogen, elixir-format
 msgid "Extracting the recipe..."
 msgstr ""
 
-#: lib/budgeteer_web/live/recipe_live/extract.ex:46
+#: lib/budgeteer_web/live/recipe_live/extract.ex:51
 #, elixir-autogen, elixir-format
 msgid "Extracting..."
 msgstr ""
@@ -807,7 +807,7 @@ msgstr ""
 msgid "Income"
 msgstr ""
 
-#: lib/budgeteer_web/live/recipe_live/extract.ex:67
+#: lib/budgeteer_web/live/recipe_live/extract.ex:93
 #: lib/budgeteer_web/live/recipe_live/form.ex:21
 #: lib/budgeteer_web/live/recipe_live/index.ex:28
 #, elixir-autogen, elixir-format
@@ -1042,8 +1042,8 @@ msgstr ""
 #: lib/budgeteer_web/live/category_live/show.ex:23
 #: lib/budgeteer_web/live/grocery_list_live/form.ex:17
 #: lib/budgeteer_web/live/grocery_list_live/index.ex:27
-#: lib/budgeteer_web/live/recipe_live/extract.ex:63
-#: lib/budgeteer_web/live/recipe_live/extract.ex:74
+#: lib/budgeteer_web/live/recipe_live/extract.ex:89
+#: lib/budgeteer_web/live/recipe_live/extract.ex:100
 #: lib/budgeteer_web/live/recipe_live/form.ex:17
 #: lib/budgeteer_web/live/recipe_live/form.ex:28
 #: lib/budgeteer_web/live/recipe_live/index.ex:27
@@ -1133,7 +1133,7 @@ msgstr ""
 msgid "Not actually a subscription? This will stop showing it."
 msgstr ""
 
-#: lib/budgeteer_web/live/recipe_live/extract.ex:64
+#: lib/budgeteer_web/live/recipe_live/extract.ex:90
 #: lib/budgeteer_web/live/recipe_live/form.ex:18
 #: lib/budgeteer_web/live/transaction_live/form.ex:26
 #: lib/budgeteer_web/live/transaction_live/index.ex:52
@@ -1182,17 +1182,17 @@ msgstr ""
 msgid "Password"
 msgstr ""
 
-#: lib/budgeteer_web/live/recipe_live/extract.ex:43
+#: lib/budgeteer_web/live/recipe_live/extract.ex:48
 #, elixir-autogen, elixir-format
 msgid "Paste a recipe here, ingredients and all..."
 msgstr ""
 
-#: lib/budgeteer_web/live/recipe_live/extract.ex:31
+#: lib/budgeteer_web/live/recipe_live/extract.ex:36
 #, elixir-autogen, elixir-format
 msgid "Paste a recipe's text and Budgeteer will pull out the ingredients — review and edit before saving."
 msgstr ""
 
-#: lib/budgeteer_web/live/recipe_live/extract.ex:124
+#: lib/budgeteer_web/live/recipe_live/extract.ex:151
 #, elixir-autogen, elixir-format
 msgid "Paste some recipe text first"
 msgstr ""
@@ -1245,7 +1245,7 @@ msgid "Progress"
 msgstr ""
 
 #: lib/budgeteer_web/live/grocery_list_live/show.ex:42
-#: lib/budgeteer_web/live/recipe_live/extract.ex:77
+#: lib/budgeteer_web/live/recipe_live/extract.ex:103
 #: lib/budgeteer_web/live/recipe_live/form.ex:31
 #, elixir-autogen, elixir-format
 msgid "Qty"
@@ -1271,13 +1271,13 @@ msgstr ""
 msgid "Recipe"
 msgstr ""
 
-#: lib/budgeteer_web/live/recipe_live/extract.ex:159
+#: lib/budgeteer_web/live/recipe_live/extract.ex:197
 #: lib/budgeteer_web/live/recipe_live/form.ex:147
 #, elixir-autogen, elixir-format
 msgid "Recipe created successfully"
 msgstr ""
 
-#: lib/budgeteer_web/live/recipe_live/extract.ex:41
+#: lib/budgeteer_web/live/recipe_live/extract.ex:46
 #, elixir-autogen, elixir-format
 msgid "Recipe text"
 msgstr ""
@@ -1316,7 +1316,7 @@ msgstr ""
 msgid "Register for an account"
 msgstr ""
 
-#: lib/budgeteer_web/live/recipe_live/extract.ex:90
+#: lib/budgeteer_web/live/recipe_live/extract.ex:116
 #: lib/budgeteer_web/live/recipe_live/form.ex:44
 #, elixir-autogen, elixir-format
 msgid "Remove"
@@ -1347,7 +1347,7 @@ msgstr ""
 msgid "Review Statement"
 msgstr ""
 
-#: lib/budgeteer_web/live/recipe_live/extract.ex:59
+#: lib/budgeteer_web/live/recipe_live/extract.ex:85
 #, elixir-autogen, elixir-format
 msgid "Review the extracted recipe below — nothing is saved until you confirm."
 msgstr ""
@@ -1393,7 +1393,7 @@ msgstr ""
 msgid "Save Password"
 msgstr ""
 
-#: lib/budgeteer_web/live/recipe_live/extract.ex:102
+#: lib/budgeteer_web/live/recipe_live/extract.ex:128
 #, elixir-autogen, elixir-format
 msgid "Save Recipe"
 msgstr ""
@@ -1432,7 +1432,7 @@ msgstr ""
 #: lib/budgeteer_web/live/calendar_live/form.ex:28
 #: lib/budgeteer_web/live/category_live/form.ex:30
 #: lib/budgeteer_web/live/grocery_list_live/form.ex:19
-#: lib/budgeteer_web/live/recipe_live/extract.ex:101
+#: lib/budgeteer_web/live/recipe_live/extract.ex:127
 #: lib/budgeteer_web/live/recipe_live/form.ex:55
 #: lib/budgeteer_web/live/statement_live/review.ex:118
 #: lib/budgeteer_web/live/transaction_live/form.ex:35
@@ -1530,7 +1530,7 @@ msgstr ""
 msgid "Sign up"
 msgstr ""
 
-#: lib/budgeteer_web/live/recipe_live/extract.ex:196
+#: lib/budgeteer_web/live/recipe_live/extract.ex:244
 #, elixir-autogen, elixir-format
 msgid "Something went wrong extracting the recipe — please try again."
 msgstr ""
@@ -1775,7 +1775,7 @@ msgid "Uncategorized"
 msgstr ""
 
 #: lib/budgeteer_web/live/grocery_list_live/show.ex:46
-#: lib/budgeteer_web/live/recipe_live/extract.ex:81
+#: lib/budgeteer_web/live/recipe_live/extract.ex:107
 #: lib/budgeteer_web/live/recipe_live/form.ex:35
 #, elixir-autogen, elixir-format
 msgid "Unit"
@@ -2010,7 +2010,7 @@ msgstr ""
 msgid "e.g. My budgeting app"
 msgstr ""
 
-#: lib/budgeteer_web/live/recipe_live/extract.ex:75
+#: lib/budgeteer_web/live/recipe_live/extract.ex:101
 #: lib/budgeteer_web/live/recipe_live/form.ex:29
 #, elixir-autogen, elixir-format
 msgid "e.g. Onion"
@@ -2034,12 +2034,13 @@ msgid "for an account now."
 msgstr ""
 
 #: lib/budgeteer_web/live/grocery_list_live/show.ex:47
-#: lib/budgeteer_web/live/recipe_live/extract.ex:82
+#: lib/budgeteer_web/live/recipe_live/extract.ex:108
 #: lib/budgeteer_web/live/recipe_live/form.ex:36
 #, elixir-autogen, elixir-format
 msgid "kg, l, units"
 msgstr ""
 
+#: lib/budgeteer_web/live/recipe_live/extract.ex:58
 #: lib/budgeteer_web/live/user_live/login.ex:69
 #: lib/budgeteer_web/live/user_live/login.ex:105
 #: lib/budgeteer_web/live/user_live/registration.ex:56
@@ -2236,4 +2237,34 @@ msgstr ""
 #: lib/budgeteer_web/controllers/recipe_image_controller.ex:52
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Unsupported file type — use JPG or PNG"
+msgstr ""
+
+#: lib/budgeteer_web/live/recipe_live/extract.ex:224
+#, elixir-autogen, elixir-format
+msgid "Couldn't fetch that page — check the link and try again."
+msgstr ""
+
+#: lib/budgeteer_web/live/recipe_live/extract.ex:162
+#, elixir-autogen, elixir-format
+msgid "Enter a recipe link first"
+msgstr ""
+
+#: lib/budgeteer_web/live/recipe_live/extract.ex:74
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Extract from link"
+msgstr ""
+
+#: lib/budgeteer_web/live/recipe_live/extract.ex:73
+#, elixir-autogen, elixir-format
+msgid "Fetching..."
+msgstr ""
+
+#: lib/budgeteer_web/live/recipe_live/extract.ex:69
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Recipe link"
+msgstr ""
+
+#: lib/budgeteer_web/live/recipe_live/extract.ex:70
+#, elixir-autogen, elixir-format
+msgid "https://example.com/a-recipe"
 msgstr ""

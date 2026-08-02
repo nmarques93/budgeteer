@@ -15,6 +15,11 @@ defmodule BudgeteerWeb.RecipeLive.Extract do
   CLAUDE.md), but handing the uploaded file's extraction result back into
   this LiveView's review phase would need a session-stash-and-redirect
   detour with no clean precedent here yet. Flagged, not silently dropped.
+
+  A recipe URL is handled by fetching the page and reducing it to plain
+  text server-side (`Budgeteer.RecipeUrlFetcher`), then feeding that text
+  through the exact same `parse_recipe({:text, ...})` path as pasted
+  text — no separate schema, no separate review UI.
   """
   use BudgeteerWeb, :live_view
 
@@ -47,6 +52,27 @@ defmodule BudgeteerWeb.RecipeLive.Extract do
             {gettext("Extract Recipe")}
           </.button>
           <.button navigate={~p"/recipes"}>{gettext("Cancel")}</.button>
+        </footer>
+      </.form>
+
+      <div :if={@phase == :input} class="divider">{gettext("or")}</div>
+
+      <.form
+        :if={@phase == :input}
+        for={@url_form}
+        id="extract-url-form"
+        phx-submit="extract_url"
+      >
+        <.input
+          field={@url_form[:url]}
+          type="url"
+          label={gettext("Recipe link")}
+          placeholder={gettext("https://example.com/a-recipe")}
+        />
+        <footer class="mt-4">
+          <.button phx-disable-with={gettext("Fetching...")} variant="primary">
+            <.icon name="hero-link" /> {gettext("Extract from link")}
+          </.button>
         </footer>
       </.form>
 
@@ -115,7 +141,8 @@ defmodule BudgeteerWeb.RecipeLive.Extract do
      socket
      |> assign(:page_title, gettext("Extract Recipe"))
      |> assign(:phase, :input)
-     |> assign(:text_form, to_form(%{"text" => ""}, as: "recipe_text"))}
+     |> assign(:text_form, to_form(%{"text" => ""}, as: "recipe_text"))
+     |> assign(:url_form, to_form(%{"url" => ""}, as: "recipe_url"))}
   end
 
   @impl true
@@ -127,6 +154,17 @@ defmodule BudgeteerWeb.RecipeLive.Extract do
        socket
        |> assign(:phase, :extracting)
        |> start_async(:extract, fn -> ai_client().parse_recipe({:text, text}) end)}
+    end
+  end
+
+  def handle_event("extract_url", %{"recipe_url" => %{"url" => url}}, socket) do
+    if String.trim(url) == "" do
+      {:noreply, put_flash(socket, :error, gettext("Enter a recipe link first"))}
+    else
+      {:noreply,
+       socket
+       |> assign(:phase, :extracting)
+       |> start_async(:extract, fn -> fetch_and_parse_url(url) end)}
     end
   end
 
@@ -177,6 +215,16 @@ defmodule BudgeteerWeb.RecipeLive.Extract do
      |> assign(:form, to_form(changeset))}
   end
 
+  def handle_async(:extract, {:ok, {:error, {:fetch_failed, _reason}}}, socket) do
+    {:noreply,
+     socket
+     |> assign(:phase, :input)
+     |> put_flash(
+       :error,
+       gettext("Couldn't fetch that page — check the link and try again.")
+     )}
+  end
+
   def handle_async(:extract, {:ok, {:error, _reason}}, socket) do
     {:noreply,
      socket
@@ -197,7 +245,17 @@ defmodule BudgeteerWeb.RecipeLive.Extract do
      )}
   end
 
+  defp fetch_and_parse_url(url) do
+    case recipe_url_fetcher().fetch(url) do
+      {:ok, text} -> ai_client().parse_recipe({:text, text})
+      {:error, reason} -> {:error, {:fetch_failed, reason}}
+    end
+  end
+
   defp ai_client, do: Application.get_env(:budgeteer, :ai_client, Budgeteer.AI.Client)
+
+  defp recipe_url_fetcher,
+    do: Application.get_env(:budgeteer, :recipe_url_fetcher, Budgeteer.RecipeUrlFetcher)
 
   defp extracted_attrs(parsed) do
     %{

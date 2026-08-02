@@ -64,12 +64,12 @@ defmodule Budgeteer.AI.Client do
     body = %{
       model: @model,
       max_tokens: 8000,
-      # Extraction should be as repeatable as possible run-to-run — this
-      # isn't a creative task. Claude's default temperature (1.0) left room
-      # for the model to occasionally return a degenerate result (a single
-      # blank-field placeholder transaction) for a real, cleanly formatted
-      # statement it should have parsed correctly.
-      temperature: 0,
+      # `temperature` used to be pinned to 0 here for determinism, but this
+      # model generation rejects the parameter outright (400: "temperature
+      # is deprecated for this model") — caught as a real production
+      # regression, not in dev, since dev has no API key to exercise this
+      # against. `validate_parsed/1` below is what actually guards against
+      # degenerate output now.
       system: @system_prompt <> "\n\n" <> categories_hint(category_names),
       output_config: %{format: %{type: "json_schema", schema: @output_schema}},
       messages: [
@@ -99,10 +99,19 @@ defmodule Budgeteer.AI.Client do
   end
 
   @recipe_system_prompt """
-  You are a recipe parser. Extract the recipe's name, any brief notes
-  (servings, prep/cook time, method), and its ingredients from the
-  provided recipe (plain text, or an image/PDF of one). Do not invent
-  ingredients — only extract what is explicitly present.
+  You are a recipe parser. Extract the recipe's name, its ingredients, and
+  a `notes` field from the provided recipe (plain text, or an image/PDF of
+  one, or text scraped from a recipe web page — which may include page
+  chrome/ads/comments alongside the actual recipe; ignore anything that
+  isn't part of the recipe itself). Do not invent ingredients — only
+  extract what is explicitly present.
+
+  `notes` should combine servings/prep/cook time (if stated) with a
+  concise summary of the cooking instructions — condense multi-step
+  instructions into a few sentences covering the key steps, not a
+  verbatim copy of every step. If there are no instructions at all, just
+  include whatever servings/timing info is present, or leave notes empty
+  if there's genuinely nothing beyond the ingredient list.
 
   For each ingredient's quantity, use a plain numeric string (e.g. "2",
   "0.5") only when the recipe states a numeric amount. For a non-numeric
@@ -118,7 +127,7 @@ defmodule Budgeteer.AI.Client do
       "notes" => %{
         "type" => "string",
         "description" =>
-          "Brief prep notes, servings, or timing if mentioned; empty string if none"
+          "Servings/timing if mentioned, plus a concise summary of the cooking instructions; empty string if none"
       },
       "ingredients" => %{
         "type" => "array",
@@ -160,7 +169,6 @@ defmodule Budgeteer.AI.Client do
     body = %{
       model: @model,
       max_tokens: 4000,
-      temperature: 0,
       system: @recipe_system_prompt,
       output_config: %{format: %{type: "json_schema", schema: @recipe_output_schema}},
       messages: [%{role: "user", content: content_blocks}]

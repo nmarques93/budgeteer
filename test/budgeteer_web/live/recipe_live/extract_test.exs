@@ -99,4 +99,64 @@ defmodule BudgeteerWeb.RecipeLive.ExtractTest do
     html = view |> form("#extract-text-form", recipe_text: %{text: "   "}) |> render_submit()
     assert html =~ "Paste some recipe text first"
   end
+
+  test "extracting from a link fetches the page, then extracts and reviews like pasted text", %{
+    conn: conn,
+    scope: scope
+  } do
+    expect(Budgeteer.RecipeUrlFetcherMock, :fetch, fn "https://example.com/tomato-soup" ->
+      {:ok, "Tomato Soup. Ingredients: 6 tomatoes."}
+    end)
+
+    expect(Budgeteer.AI.ClientMock, :parse_recipe, fn {:text, text} ->
+      assert text == "Tomato Soup. Ingredients: 6 tomatoes."
+
+      {:ok,
+       %{
+         "name" => "Tomato Soup",
+         "notes" => "",
+         "ingredients" => [%{"name" => "Tomatoes", "quantity" => "6", "unit" => "units"}]
+       }}
+    end)
+
+    {:ok, view, _html} = live(conn, ~p"/recipes/extract")
+
+    html =
+      view
+      |> form("#extract-url-form", recipe_url: %{url: "https://example.com/tomato-soup"})
+      |> render_submit()
+
+    assert html =~ "Extracting the recipe..."
+
+    html = render_async(view)
+    assert html =~ "Review the extracted recipe"
+    assert html =~ ~s(value="Tomato Soup")
+
+    view |> form("#recipe-review-form") |> render_submit()
+
+    assert_redirect(view)
+    assert [recipe] = Meals.list_recipes(scope)
+    assert recipe.name == "Tomato Soup"
+  end
+
+  test "a fetch failure returns to the input phase with a link-specific flash", %{conn: conn} do
+    expect(Budgeteer.RecipeUrlFetcherMock, :fetch, fn _url -> {:error, :unsafe_host} end)
+
+    {:ok, view, _html} = live(conn, ~p"/recipes/extract")
+
+    view
+    |> form("#extract-url-form", recipe_url: %{url: "http://localhost/recipe"})
+    |> render_submit()
+
+    html = render_async(view)
+    assert html =~ "Couldn&#39;t fetch that page"
+    assert html =~ "extract-url-form"
+  end
+
+  test "submitting a blank link shows an error and never calls the fetcher", %{conn: conn} do
+    {:ok, view, _html} = live(conn, ~p"/recipes/extract")
+
+    html = view |> form("#extract-url-form", recipe_url: %{url: "   "}) |> render_submit()
+    assert html =~ "Enter a recipe link first"
+  end
 end
