@@ -14,6 +14,13 @@ defmodule BudgeteerWeb.GroceryListLive.Show do
           <.link navigate={~p"/groceries"}>{gettext("Back to lists")}</.link>
         </:subtitle>
         <:actions>
+          <.button
+            :if={@has_checked_items}
+            phx-click="clear_checked"
+            data-confirm={gettext("Remove every checked item?")}
+          >
+            <.icon name="hero-trash" /> {gettext("Clear checked")}
+          </.button>
           <.button navigate={~p"/groceries/#{@grocery_list}/edit?return_to=show"}>
             <.icon name="hero-pencil-square" /> {gettext("Rename")}
           </.button>
@@ -75,12 +82,15 @@ defmodule BudgeteerWeb.GroceryListLive.Show do
       Groceries.subscribe_items(socket.assigns.current_scope, grocery_list)
     end
 
+    items = Groceries.list_items(socket.assigns.current_scope, grocery_list)
+
     {:ok,
      socket
      |> assign(:page_title, grocery_list.name)
      |> assign(:grocery_list, grocery_list)
      |> assign(:item_form, item_form(socket.assigns.current_scope))
-     |> stream(:items, Groceries.list_items(socket.assigns.current_scope, grocery_list))}
+     |> assign(:has_checked_items, Enum.any?(items, & &1.checked))
+     |> stream(:items, items)}
   end
 
   @impl true
@@ -108,8 +118,11 @@ defmodule BudgeteerWeb.GroceryListLive.Show do
       end
 
     case result do
-      {:ok, item} -> {:noreply, stream_insert(socket, :items, item)}
-      {:error, _changeset} -> {:noreply, socket}
+      {:ok, item} ->
+        {:noreply, socket |> stream_insert(:items, item) |> assign_has_checked_items()}
+
+      {:error, _changeset} ->
+        {:noreply, socket}
     end
   end
 
@@ -117,19 +130,45 @@ defmodule BudgeteerWeb.GroceryListLive.Show do
     item = Groceries.get_item!(socket.assigns.current_scope, id)
     {:ok, _} = Groceries.delete_item(socket.assigns.current_scope, item)
 
-    {:noreply, stream_delete(socket, :items, item)}
+    {:noreply, socket |> stream_delete(:items, item) |> assign_has_checked_items()}
+  end
+
+  def handle_event("clear_checked", _params, socket) do
+    {:ok, items} =
+      Groceries.delete_checked_items(socket.assigns.current_scope, socket.assigns.grocery_list)
+
+    socket =
+      items
+      |> Enum.reduce(socket, &stream_delete(&2, :items, &1))
+      |> assign(:has_checked_items, false)
+
+    {:noreply, socket}
   end
 
   @impl true
   def handle_info({type, %GroceryItem{} = item}, socket) when type in [:created, :updated] do
-    {:noreply, stream_insert(socket, :items, item)}
+    {:noreply, socket |> stream_insert(:items, item) |> assign_has_checked_items()}
   end
 
   def handle_info({:deleted, %GroceryItem{} = item}, socket) do
-    {:noreply, stream_delete(socket, :items, item)}
+    {:noreply, socket |> stream_delete(:items, item) |> assign_has_checked_items()}
   end
 
   defp item_form(scope) do
     to_form(Groceries.change_item(scope, %GroceryItem{}), as: "grocery_item")
+  end
+
+  # Streams can't be queried ("has any item checked?") outside of a `for`
+  # comprehension — see Phoenix.LiveView.LiveStream — so this stays a
+  # plain assign, recomputed from the database on every change rather than
+  # tracked as an incremental delta (simpler, and cheap for a household
+  # grocery list's size).
+  defp assign_has_checked_items(socket) do
+    has_checked =
+      socket.assigns.current_scope
+      |> Groceries.list_items(socket.assigns.grocery_list)
+      |> Enum.any?(& &1.checked)
+
+    assign(socket, :has_checked_items, has_checked)
   end
 end

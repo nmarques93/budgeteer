@@ -75,6 +75,57 @@ defmodule BudgeteerWeb.GroceryListLive.ShowTest do
       refute has_element?(show_live, "#items-#{item.id}")
     end
 
+    test "does not show a Clear checked button when nothing is checked", %{
+      conn: conn,
+      scope: scope,
+      grocery_list: grocery_list
+    } do
+      grocery_item_fixture(scope, grocery_list)
+      {:ok, show_live, _html} = live(conn, ~p"/groceries/#{grocery_list}")
+
+      refute has_element?(show_live, "button", "Clear checked")
+    end
+
+    test "clears every checked item, leaving unchecked items alone", %{
+      conn: conn,
+      scope: scope,
+      grocery_list: grocery_list
+    } do
+      checked = grocery_item_fixture(scope, grocery_list, %{name: "Milk"})
+      unchecked = grocery_item_fixture(scope, grocery_list, %{name: "Eggs"})
+      {:ok, _} = Groceries.check_item(scope, checked)
+
+      {:ok, show_live, html} = live(conn, ~p"/groceries/#{grocery_list}")
+      assert html =~ "Clear checked"
+
+      html = show_live |> element("button", "Clear checked") |> render_click()
+
+      refute has_element?(show_live, "#items-#{checked.id}")
+      assert has_element?(show_live, "#items-#{unchecked.id}")
+      refute html =~ "Clear checked"
+
+      assert_raise Ecto.NoResultsError, fn -> Groceries.get_item!(scope, checked.id) end
+    end
+
+    test "reflects another household member clearing checked items in real time", %{
+      conn: conn,
+      scope: scope,
+      grocery_list: grocery_list
+    } do
+      checked = grocery_item_fixture(scope, grocery_list, %{name: "Milk"})
+      {:ok, _} = Groceries.check_item(scope, checked)
+      member = second_household_member_fixture(scope.user)
+
+      {:ok, viewer_live, _html} = live(conn, ~p"/groceries/#{grocery_list}")
+
+      member_conn = log_in_user(build_conn(), member)
+      {:ok, actor_live, _html} = live(member_conn, ~p"/groceries/#{grocery_list}")
+
+      actor_live |> element("button", "Clear checked") |> render_click()
+
+      refute has_element?(viewer_live, "#items-#{checked.id}")
+    end
+
     test "renames the list via the edit form, returns to show", %{
       conn: conn,
       grocery_list: grocery_list

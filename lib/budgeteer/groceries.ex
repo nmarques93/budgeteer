@@ -206,6 +206,31 @@ defmodule Budgeteer.Groceries do
   end
 
   @doc """
+  Deletes every checked item on a grocery list at once — the common
+  post-shopping-trip "clear what I bought" action, instead of deleting
+  each item one at a time. Returns the deleted items (not just a count),
+  same as `delete_item/2` returning its item, so the caller can remove
+  them from its own view immediately rather than waiting on its own
+  broadcast to arrive back around.
+  """
+  def delete_checked_items(%Scope{} = scope, %GroceryList{} = grocery_list) do
+    true = grocery_list.household_id == scope.user.household_id
+
+    {_count, items} =
+      Repo.delete_all(
+        from i in GroceryItem,
+          where: i.grocery_list_id == ^grocery_list.id,
+          where: i.household_id == ^scope.user.household_id,
+          where: i.checked == true,
+          select: i
+      )
+
+    Enum.each(items, &broadcast_item(&1, {:deleted, &1}))
+
+    {:ok, items}
+  end
+
+  @doc """
   Checks off a grocery item, recording who checked it.
   """
   def check_item(%Scope{} = scope, %GroceryItem{} = item) do

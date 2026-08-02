@@ -70,7 +70,7 @@ msgstr "Conta criada com sucesso"
 msgid "Account updated successfully"
 msgstr "Conta atualizada com sucesso"
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:96
+#: lib/budgeteer_web/components/layouts/root.html.heex:141
 #, elixir-autogen, elixir-format
 msgid "Accounts"
 msgstr "Contas"
@@ -80,7 +80,7 @@ msgstr "Contas"
 msgid "Actions"
 msgstr "Ações"
 
-#: lib/budgeteer_web/live/grocery_list_live/show.ex:42
+#: lib/budgeteer_web/live/grocery_list_live/show.ex:49
 #, elixir-autogen, elixir-format
 msgid "Add"
 msgstr "Adicionar"
@@ -107,7 +107,7 @@ msgstr "Adicionar ingredientes"
 msgid "Add ingredients to"
 msgstr "Adicionar ingredientes a"
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:215
+#: lib/budgeteer_web/components/layouts/root.html.heex:260
 #, elixir-autogen, elixir-format
 msgid "Add to Home Screen"
 msgstr "Adicionar ao ecrã principal"
@@ -120,7 +120,7 @@ msgid_plural "Added %{count} ingredients to \"%{list}\""
 msgstr[0] "Adicionado 1 ingrediente a \"%{list}\""
 msgstr[1] "Adicionados %{count} ingredientes a \"%{list}\""
 
-#: lib/budgeteer_web/live/grocery_list_live/show.ex:42
+#: lib/budgeteer_web/live/grocery_list_live/show.ex:49
 #: lib/budgeteer_web/live/meal_plan_live/index.ex:31
 #: lib/budgeteer_web/live/meal_plan_live/index.ex:74
 #: lib/budgeteer_web/live/recipe_live/show.ex:48
@@ -196,7 +196,7 @@ msgstr "Tem a certeza de que quer eliminar este evento?"
 
 #: lib/budgeteer_web/live/account_live/index.ex:42
 #: lib/budgeteer_web/live/category_live/index.ex:39
-#: lib/budgeteer_web/live/grocery_list_live/show.ex:60
+#: lib/budgeteer_web/live/grocery_list_live/show.ex:67
 #: lib/budgeteer_web/live/meal_plan_live/index.ex:53
 #: lib/budgeteer_web/live/recipe_live/index.ex:32
 #: lib/budgeteer_web/live/statement_live/index.ex:65
@@ -262,6 +262,7 @@ msgid "Budget"
 msgstr "Orçamento"
 
 #: lib/budgeteer/ledger/budget_notifier.ex:38
+#: lib/budgeteer/ledger/budget_notifier.ex:64
 #, elixir-autogen, elixir-format
 msgid "Budget alert: %{name}"
 msgstr "Alerta de orçamento: %{name}"
@@ -276,7 +277,7 @@ msgstr "Feito para famílias portuguesas"
 msgid "Cadence"
 msgstr "Periodicidade"
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:112
+#: lib/budgeteer_web/components/layouts/root.html.heex:157
 #: lib/budgeteer_web/live/calendar_live/index.ex:17
 #: lib/budgeteer_web/live/calendar_live/index.ex:116
 #, elixir-autogen, elixir-format
@@ -291,13 +292,13 @@ msgstr "Calendário"
 #: lib/budgeteer_web/live/recipe_live/extract.ex:104
 #: lib/budgeteer_web/live/recipe_live/form.ex:58
 #: lib/budgeteer_web/live/statement_live/review.ex:121
-#: lib/budgeteer_web/live/statement_live/upload.ex:31
+#: lib/budgeteer_web/live/statement_live/upload.ex:100
 #: lib/budgeteer_web/live/transaction_live/form.ex:39
 #, elixir-autogen, elixir-format
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:99
+#: lib/budgeteer_web/components/layouts/root.html.heex:144
 #, elixir-autogen, elixir-format
 msgid "Categories"
 msgstr "Categorias"
@@ -463,12 +464,12 @@ msgstr "Moeda"
 msgid "Current balance"
 msgstr "Saldo atual"
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:149
+#: lib/budgeteer_web/components/layouts/root.html.heex:194
 #, elixir-autogen, elixir-format
 msgid "Dark"
 msgstr "Escuro"
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:93
+#: lib/budgeteer_web/components/layouts/root.html.heex:138
 #: lib/budgeteer_web/live/dashboard_live.ex:12
 #: lib/budgeteer_web/live/dashboard_live.ex:80
 #, elixir-autogen, elixir-format
@@ -517,7 +518,7 @@ msgstr "Eliminar"
 msgid "Description"
 msgstr "Descrição"
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:221
+#: lib/budgeteer_web/components/layouts/root.html.heex:266
 #: lib/budgeteer_web/live/subscription_live/index.ex:47
 #, elixir-autogen, elixir-format
 msgid "Dismiss"
@@ -729,7 +730,7 @@ msgstr "Gerar token"
 msgid "Generating..."
 msgstr "A gerar..."
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:102
+#: lib/budgeteer_web/components/layouts/root.html.heex:147
 #: lib/budgeteer_web/controllers/page_html/home.html.heex:45
 #: lib/budgeteer_web/controllers/page_html/home.html.heex:49
 #: lib/budgeteer_web/controllers/page_html/home.html.heex:127
@@ -818,7 +819,7 @@ msgstr "Rendimento"
 msgid "Ingredients"
 msgstr "Ingredientes"
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:213
+#: lib/budgeteer_web/components/layouts/root.html.heex:258
 #, elixir-autogen, elixir-format
 msgid "Install Budgeteer: tap"
 msgstr "Instale o Budgeteer: toque em"
@@ -833,7 +834,7 @@ msgstr "Convidar um membro do agregado familiar"
 msgid "Invite your partner. Every account, category, and transaction is shared and updates for both of you in real time — no spreadsheet to pass back and forth."
 msgstr "Convide o seu parceiro. Cada conta, categoria e transação é partilhada e atualiza-se para ambos em tempo real — sem folhas de cálculo para trocar."
 
-#: lib/budgeteer_web/live/grocery_list_live/show.ex:32
+#: lib/budgeteer_web/live/grocery_list_live/show.ex:39
 #, elixir-autogen, elixir-format
 msgid "Item"
 msgstr "Item"
@@ -873,7 +874,7 @@ msgstr "junho"
 msgid "Keep me logged in on this device"
 msgstr "Manter sessão iniciada neste dispositivo"
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:159
+#: lib/budgeteer_web/components/layouts/root.html.heex:204
 #, elixir-autogen, elixir-format
 msgid "Language"
 msgstr "Idioma"
@@ -893,7 +894,7 @@ msgstr "Última cobrança"
 msgid "Last used"
 msgstr "Última utilização"
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:139
+#: lib/budgeteer_web/components/layouts/root.html.heex:184
 #, elixir-autogen, elixir-format
 msgid "Light"
 msgstr "Claro"
@@ -910,7 +911,7 @@ msgstr "Lista de Contas"
 msgid "Listing Categories"
 msgstr "Lista de Categorias"
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:200
+#: lib/budgeteer_web/components/layouts/root.html.heex:245
 #: lib/budgeteer_web/live/user_live/confirmation.ex:55
 #: lib/budgeteer_web/live/user_live/login.ex:22
 #: lib/budgeteer_web/live/user_live/registration.ex:18
@@ -943,7 +944,7 @@ msgstr "Iniciar sessão com email"
 msgid "Log me in only this time"
 msgstr "Iniciar sessão apenas desta vez"
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:190
+#: lib/budgeteer_web/components/layouts/root.html.heex:235
 #, elixir-autogen, elixir-format
 msgid "Log out"
 msgstr "Terminar sessão"
@@ -991,7 +992,7 @@ msgstr "Valor máximo"
 msgid "May"
 msgstr "maio"
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:111
+#: lib/budgeteer_web/components/layouts/root.html.heex:156
 #, elixir-autogen, elixir-format
 msgid "Meal Plan"
 msgstr "Plano de Refeições"
@@ -1033,7 +1034,7 @@ msgstr "seg"
 msgid "Monthly"
 msgstr "Mensal"
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:106
+#: lib/budgeteer_web/components/layouts/root.html.heex:151
 #, elixir-autogen, elixir-format
 msgid "More"
 msgstr "Mais"
@@ -1176,7 +1177,7 @@ msgstr "Um livro-razão, todo o agregado familiar"
 msgid "Other"
 msgstr "Outras"
 
-#: lib/budgeteer_web/live/statement_live/upload.ex:24
+#: lib/budgeteer_web/live/statement_live/upload.ex:93
 #, elixir-autogen, elixir-format
 msgid "PDF, JPG, or PNG — up to 15 MB."
 msgstr "PDF, JPG ou PNG — até 15 MB."
@@ -1248,7 +1249,7 @@ msgstr[1] "A processar %{count} extratos…"
 msgid "Progress"
 msgstr "Progresso"
 
-#: lib/budgeteer_web/live/grocery_list_live/show.ex:35
+#: lib/budgeteer_web/live/grocery_list_live/show.ex:42
 #: lib/budgeteer_web/live/recipe_live/extract.ex:77
 #: lib/budgeteer_web/live/recipe_live/form.ex:31
 #, elixir-autogen, elixir-format
@@ -1291,14 +1292,14 @@ msgstr "Texto da receita"
 msgid "Recipe updated successfully"
 msgstr "Receita atualizada com sucesso"
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:110
+#: lib/budgeteer_web/components/layouts/root.html.heex:155
 #: lib/budgeteer_web/live/recipe_live/index.ex:11
 #: lib/budgeteer_web/live/recipe_live/index.ex:50
 #, elixir-autogen, elixir-format
 msgid "Recipes"
 msgstr "Receitas"
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:109
+#: lib/budgeteer_web/components/layouts/root.html.heex:154
 #: lib/budgeteer_web/live/subscription_live/index.ex:12
 #: lib/budgeteer_web/live/subscription_live/index.ex:86
 #, elixir-autogen, elixir-format
@@ -1310,7 +1311,7 @@ msgstr "Cobranças Recorrentes"
 msgid "Recurring charges detected"
 msgstr "Cobranças recorrentes detetadas"
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:197
+#: lib/budgeteer_web/components/layouts/root.html.heex:242
 #, elixir-autogen, elixir-format
 msgid "Register"
 msgstr "Registar"
@@ -1326,7 +1327,7 @@ msgstr "Registar uma conta"
 msgid "Remove"
 msgstr "Remover"
 
-#: lib/budgeteer_web/live/grocery_list_live/show.ex:18
+#: lib/budgeteer_web/live/grocery_list_live/show.ex:25
 #, elixir-autogen, elixir-format
 msgid "Rename"
 msgstr "Renomear"
@@ -1445,7 +1446,7 @@ msgstr "Guardadas %{ok_count}, %{error_count} linha(s) falharam — verifique os
 msgid "Saving..."
 msgstr "A guardar..."
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:108
+#: lib/budgeteer_web/components/layouts/root.html.heex:153
 #: lib/budgeteer_web/live/transaction_live/search.ex:12
 #: lib/budgeteer_web/live/transaction_live/search.ex:71
 #, elixir-autogen, elixir-format
@@ -1487,12 +1488,12 @@ msgstr "set"
 msgid "September"
 msgstr "setembro"
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:188
+#: lib/budgeteer_web/components/layouts/root.html.heex:233
 #, elixir-autogen, elixir-format
 msgid "Settings"
 msgstr "Definições"
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:213
+#: lib/budgeteer_web/components/layouts/root.html.heex:258
 #, elixir-autogen, elixir-format
 msgid "Share"
 msgstr "Partilhar"
@@ -1592,17 +1593,17 @@ msgstr "Sugestão: \"%{name}\" — ainda não é uma categoria."
 msgid "Sun"
 msgstr "dom"
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:167
+#: lib/budgeteer_web/components/layouts/root.html.heex:212
 #, elixir-autogen, elixir-format
 msgid "Switch to English"
 msgstr "Mudar para inglês"
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:177
+#: lib/budgeteer_web/components/layouts/root.html.heex:222
 #, elixir-autogen, elixir-format
 msgid "Switch to European Portuguese"
 msgstr "Mudar para português europeu"
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:129
+#: lib/budgeteer_web/components/layouts/root.html.heex:174
 #, elixir-autogen, elixir-format
 msgid "System"
 msgstr "Sistema"
@@ -1632,7 +1633,7 @@ msgstr "A transação atual foi eliminada."
 msgid "The grocery list, together"
 msgstr "A lista de compras, em conjunto"
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:121
+#: lib/budgeteer_web/components/layouts/root.html.heex:166
 #, elixir-autogen, elixir-format
 msgid "Theme"
 msgstr "Tema"
@@ -1778,7 +1779,7 @@ msgstr "Desarquivar"
 msgid "Uncategorized"
 msgstr "Sem categoria"
 
-#: lib/budgeteer_web/live/grocery_list_live/show.ex:39
+#: lib/budgeteer_web/live/grocery_list_live/show.ex:46
 #: lib/budgeteer_web/live/recipe_live/extract.ex:81
 #: lib/budgeteer_web/live/recipe_live/form.ex:35
 #, elixir-autogen, elixir-format
@@ -1800,12 +1801,12 @@ msgstr "Próximas refeições, as mais próximas primeiro"
 msgid "Update email instructions"
 msgstr "Instruções para atualizar o email"
 
-#: lib/budgeteer_web/live/statement_live/upload.ex:29
+#: lib/budgeteer_web/live/statement_live/upload.ex:98
 #, elixir-autogen, elixir-format
 msgid "Upload"
 msgstr "Carregar"
 
-#: lib/budgeteer_web/live/statement_live/upload.ex:44
+#: lib/budgeteer_web/live/statement_live/upload.ex:113
 #, elixir-autogen, elixir-format
 msgid "Upload Statement"
 msgstr "Carregar Extrato"
@@ -1827,22 +1828,22 @@ msgstr "Carregue os seus extratos bancários e o Budgeteer lê todas as transaç
 msgid "Uploaded"
 msgstr "Carregado"
 
-#: lib/budgeteer_web/live/statement_live/upload.ex:28
+#: lib/budgeteer_web/live/statement_live/upload.ex:97
 #, elixir-autogen, elixir-format
 msgid "Uploading..."
 msgstr "A carregar..."
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:148
+#: lib/budgeteer_web/components/layouts/root.html.heex:193
 #, elixir-autogen, elixir-format
 msgid "Use dark theme"
 msgstr "Usar tema escuro"
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:138
+#: lib/budgeteer_web/components/layouts/root.html.heex:183
 #, elixir-autogen, elixir-format
 msgid "Use light theme"
 msgstr "Usar tema claro"
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:128
+#: lib/budgeteer_web/components/layouts/root.html.heex:173
 #, elixir-autogen, elixir-format
 msgid "Use system theme"
 msgstr "Usar tema do sistema"
@@ -1945,6 +1946,7 @@ msgid "You've been invited to a household on Budgeteer"
 msgstr "Foi convidado(a) para um agregado familiar no Budgeteer"
 
 #: lib/budgeteer/ledger/budget_notifier.ex:48
+#: lib/budgeteer/ledger/budget_notifier.ex:66
 #, elixir-autogen, elixir-format
 msgid "You've spent %{amount} so far this month."
 msgstr "Já gastou %{amount} este mês."
@@ -2001,7 +2003,7 @@ msgstr "ex.: 1500.00"
 msgid "e.g. Amazon"
 msgstr "ex.: Amazon"
 
-#: lib/budgeteer_web/live/grocery_list_live/show.ex:33
+#: lib/budgeteer_web/live/grocery_list_live/show.ex:40
 #, elixir-autogen, elixir-format
 msgid "e.g. Milk"
 msgstr "ex.: Leite"
@@ -2034,7 +2036,7 @@ msgstr "primeiro."
 msgid "for an account now."
 msgstr "para criar uma conta agora."
 
-#: lib/budgeteer_web/live/grocery_list_live/show.ex:40
+#: lib/budgeteer_web/live/grocery_list_live/show.ex:47
 #: lib/budgeteer_web/live/recipe_live/extract.ex:82
 #: lib/budgeteer_web/live/recipe_live/form.ex:36
 #, elixir-autogen, elixir-format
@@ -2053,7 +2055,7 @@ msgstr "ou"
 msgid "the mailbox page"
 msgstr "a página da caixa de correio"
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:213
+#: lib/budgeteer_web/components/layouts/root.html.heex:258
 #, elixir-autogen, elixir-format
 msgid "then"
 msgstr "depois"
@@ -2163,3 +2165,28 @@ msgstr "Precisa de iniciar sessão para aceder a esta página."
 #, elixir-autogen, elixir-format
 msgid "You must re-authenticate to access this page."
 msgstr "Precisa de voltar a autenticar-se para aceder a esta página."
+
+#: lib/budgeteer_web/live/grocery_list_live/show.ex:22
+#, elixir-autogen, elixir-format
+msgid "Clear checked"
+msgstr "Limpar marcados"
+
+#: lib/budgeteer_web/live/statement_live/upload.ex:19
+#, elixir-autogen, elixir-format
+msgid "Could not take a photo — please try again."
+msgstr "Não foi possível tirar uma fotografia — tente novamente."
+
+#: lib/budgeteer_web/live/grocery_list_live/show.ex:20
+#, elixir-autogen, elixir-format
+msgid "Remove every checked item?"
+msgstr "Remover todos os itens marcados?"
+
+#: lib/budgeteer_web/live/statement_live/upload.ex:24
+#, elixir-autogen, elixir-format
+msgid "Take a photo"
+msgstr "Tirar fotografia"
+
+#: lib/budgeteer_web/live/statement_live/upload.ex:20
+#, elixir-autogen, elixir-format
+msgid "Upload failed — please try again."
+msgstr "Falha ao carregar — tente novamente."

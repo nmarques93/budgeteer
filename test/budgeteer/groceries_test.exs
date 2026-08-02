@@ -193,5 +193,42 @@ defmodule Budgeteer.GroceriesTest do
       item = grocery_item_fixture(scope, grocery_list)
       assert %Ecto.Changeset{} = Groceries.change_item(scope, item)
     end
+
+    test "delete_checked_items/2 deletes only the checked items on the list" do
+      scope = household_scope_fixture()
+      grocery_list = grocery_list_fixture(scope)
+
+      checked1 = grocery_item_fixture(scope, grocery_list, %{name: "Milk"})
+      checked2 = grocery_item_fixture(scope, grocery_list, %{name: "Bread"})
+      unchecked = grocery_item_fixture(scope, grocery_list, %{name: "Eggs"})
+
+      {:ok, _} = Groceries.check_item(scope, checked1)
+      {:ok, _} = Groceries.check_item(scope, checked2)
+
+      assert {:ok, deleted} = Groceries.delete_checked_items(scope, grocery_list)
+      assert Enum.map(deleted, & &1.id) |> Enum.sort() == Enum.sort([checked1.id, checked2.id])
+
+      remaining_names =
+        Groceries.list_items(scope, grocery_list) |> Enum.map(& &1.name)
+
+      assert remaining_names == [unchecked.name]
+    end
+
+    test "delete_checked_items/2 does nothing when no items are checked" do
+      scope = household_scope_fixture()
+      grocery_list = grocery_list_fixture(scope)
+      grocery_item_fixture(scope, grocery_list)
+
+      assert {:ok, []} = Groceries.delete_checked_items(scope, grocery_list)
+      assert length(Groceries.list_items(scope, grocery_list)) == 1
+    end
+
+    test "delete_checked_items/2 with invalid scope raises" do
+      scope = household_scope_fixture()
+      other_scope = household_scope_fixture()
+      grocery_list = grocery_list_fixture(scope)
+
+      assert_raise MatchError, fn -> Groceries.delete_checked_items(other_scope, grocery_list) end
+    end
   end
 end
