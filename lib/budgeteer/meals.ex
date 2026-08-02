@@ -160,30 +160,56 @@ defmodule Budgeteer.Meals do
 
   @doc """
   Adds every ingredient from the given recipes to a grocery list, via
-  `Budgeteer.Groceries.create_item/3` — no duplicate item-creation
-  logic. `recipes` is a list, so this covers both "add this one
-  recipe's ingredients" (a single-element list) and "add everything
-  in the meal plan" (every planned meal's recipe) with the same code
-  path. Repeated ingredients across recipes are not de-duplicated.
+  `Budgeteer.Groceries.create_item/3`. `recipes` is a list, so this
+  covers both "add this one recipe's ingredients" (a single-element
+  list) and "add everything in the meal plan" (every planned meal's
+  recipe) with the same code path.
 
-  Returns `{:ok, count}` where `count` is how many items were added.
+  Ingredients sharing the same name (case-insensitive, trimmed) — within
+  one recipe or across several — are consolidated into a single item
+  rather than one row per recipe; two recipes both calling for "Onion"
+  should add one "Onion", not two. Quantities are summed when every
+  occurrence shares the same unit; otherwise (mixed or missing units —
+  e.g. one recipe's "a pinch" of salt next to another's "2 tsp") the
+  first occurrence's quantity/unit is kept rather than guessing at a
+  combined value.
+
+  Returns `{:ok, count}` where `count` is how many (consolidated) items
+  were added.
   """
   def add_ingredients_to_grocery_list(%Scope{} = scope, recipes, %GroceryList{} = grocery_list)
       when is_list(recipes) do
-    count =
-      for recipe <- recipes,
-          ingredient <- recipe.ingredients do
-        {:ok, _item} =
-          Groceries.create_item(scope, grocery_list, %{
-            "name" => ingredient.name,
-            "quantity" => ingredient.quantity,
-            "unit" => ingredient.unit
-          })
+    merged =
+      for recipe <- recipes, ingredient <- recipe.ingredients, do: ingredient
 
-        1
-      end
-      |> length()
+    items =
+      merged
+      |> Enum.group_by(&(&1.name |> String.trim() |> String.downcase()))
+      |> Enum.map(fn {_key, group} -> merge_ingredients(group) end)
 
-    {:ok, count}
+    for {name, quantity, unit} <- items do
+      {:ok, _item} =
+        Groceries.create_item(scope, grocery_list, %{
+          "name" => name,
+          "quantity" => quantity,
+          "unit" => unit
+        })
+    end
+
+    {:ok, length(items)}
   end
+
+  defp merge_ingredients([first | _] = group) do
+    units = group |> Enum.map(&normalize_unit/1) |> Enum.uniq()
+
+    if length(units) == 1 and Enum.all?(group, & &1.quantity) do
+      total = Enum.reduce(group, Decimal.new(0), &Decimal.add(&2, &1.quantity))
+      {String.trim(first.name), total, first.unit}
+    else
+      {String.trim(first.name), first.quantity, first.unit}
+    end
+  end
+
+  defp normalize_unit(%{unit: nil}), do: nil
+  defp normalize_unit(%{unit: unit}), do: unit |> String.trim() |> String.downcase()
 end

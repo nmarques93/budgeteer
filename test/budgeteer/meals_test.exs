@@ -182,6 +182,54 @@ defmodule Budgeteer.MealsTest do
       assert names == ["Carrot", "Garlic", "Onion"]
     end
 
+    test "consolidates the same ingredient across recipes into one item, summing matching units" do
+      scope = household_scope_fixture()
+      grocery_list = grocery_list_fixture(scope)
+
+      recipe1 =
+        recipe_fixture(scope, %{
+          ingredients: [%{"name" => "Onion", "quantity" => "2", "unit" => "units"}]
+        })
+
+      recipe2 =
+        recipe_fixture(scope, %{
+          ingredients: [
+            %{"name" => "onion", "quantity" => "1", "unit" => "Units"},
+            %{"name" => "Carrot", "quantity" => "3", "unit" => "units"}
+          ]
+        })
+
+      assert {:ok, 2} =
+               Meals.add_ingredients_to_grocery_list(scope, [recipe1, recipe2], grocery_list)
+
+      items = Budgeteer.Groceries.list_items(scope, grocery_list) |> Enum.sort_by(& &1.name)
+      assert [%{name: "Carrot", quantity: carrot_qty}, %{name: "Onion", quantity: onion_qty}] = items
+
+      assert Decimal.equal?(onion_qty, Decimal.new(3))
+      assert Decimal.equal?(carrot_qty, Decimal.new(3))
+    end
+
+    test "consolidates a repeated ingredient with mismatched units without guessing a combined quantity" do
+      scope = household_scope_fixture()
+      grocery_list = grocery_list_fixture(scope)
+
+      recipe1 =
+        recipe_fixture(scope, %{
+          ingredients: [%{"name" => "Salt", "quantity" => "2", "unit" => "tsp"}]
+        })
+
+      recipe2 =
+        recipe_fixture(scope, %{ingredients: [%{"name" => "Salt", "unit" => "a pinch"}]})
+
+      assert {:ok, 1} =
+               Meals.add_ingredients_to_grocery_list(scope, [recipe1, recipe2], grocery_list)
+
+      assert [%{name: "Salt", quantity: quantity, unit: "tsp"}] =
+               Budgeteer.Groceries.list_items(scope, grocery_list)
+
+      assert Decimal.equal?(quantity, Decimal.new(2))
+    end
+
     test "is scoped to the household via the grocery list it inserts into" do
       scope = household_scope_fixture()
       other_scope = household_scope_fixture()
