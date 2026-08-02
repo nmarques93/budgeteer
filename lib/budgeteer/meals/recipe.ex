@@ -10,6 +10,7 @@ defmodule Budgeteer.Meals.Recipe do
     field :name, :string
     field :notes, :string
     field :household_id, :binary_id
+    field :image_path, :string
 
     embeds_many :ingredients, Ingredient, on_replace: :delete
 

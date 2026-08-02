@@ -77,12 +77,14 @@ defmodule Budgeteer.Meals do
   end
 
   @doc """
-  Deletes a recipe.
+  Deletes a recipe, along with its image file (if any) — otherwise it's
+  orphaned on disk forever, since nothing else ever references it.
   """
   def delete_recipe(%Scope{} = scope, %Recipe{} = recipe) do
     true = recipe.household_id == scope.user.household_id
 
     with {:ok, recipe = %Recipe{}} <- Repo.delete(recipe) do
+      if recipe.image_path, do: File.rm(recipe.image_path)
       broadcast_recipe(recipe.household_id, {:deleted, recipe})
       {:ok, recipe}
     end
@@ -93,6 +95,41 @@ defmodule Budgeteer.Meals do
   """
   def change_recipe(%Scope{} = scope, %Recipe{} = recipe, attrs \\ %{}) do
     Recipe.changeset(recipe, attrs, scope)
+  end
+
+  @doc """
+  Sets (or replaces) a recipe's image, given the path it was already
+  stored at on disk. Not part of the regular changeset — same
+  "server-controlled, not a raw form field" precedent as
+  `Statement.status` — since the path is decided by the upload
+  controller, never submitted by a form. Deletes the previous image
+  file, if any and if it changed, so replacing an image doesn't leave an
+  orphaned file behind.
+  """
+  def set_recipe_image(%Scope{} = scope, %Recipe{} = recipe, image_path) do
+    true = recipe.household_id == scope.user.household_id
+    old_path = recipe.image_path
+
+    with {:ok, recipe} <-
+           recipe |> Ecto.Changeset.change(image_path: image_path) |> Repo.update() do
+      if old_path && old_path != image_path, do: File.rm(old_path)
+      broadcast_recipe(recipe.household_id, {:updated, recipe})
+      {:ok, recipe}
+    end
+  end
+
+  @doc """
+  Removes a recipe's image, deleting the file from disk.
+  """
+  def remove_recipe_image(%Scope{} = scope, %Recipe{} = recipe) do
+    true = recipe.household_id == scope.user.household_id
+    old_path = recipe.image_path
+
+    with {:ok, recipe} <- recipe |> Ecto.Changeset.change(image_path: nil) |> Repo.update() do
+      if old_path, do: File.rm(old_path)
+      broadcast_recipe(recipe.household_id, {:updated, recipe})
+      {:ok, recipe}
+    end
   end
 
   ## Meal plan

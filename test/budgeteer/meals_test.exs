@@ -81,6 +81,18 @@ defmodule Budgeteer.MealsTest do
       assert_raise Ecto.NoResultsError, fn -> Meals.get_recipe!(scope, recipe.id) end
     end
 
+    test "delete_recipe/2 also deletes the recipe's image file, if any" do
+      scope = household_scope_fixture()
+      recipe = recipe_fixture(scope)
+
+      path = Path.join(System.tmp_dir!(), "delete-image-#{System.unique_integer()}.png")
+      File.write!(path, "image")
+      {:ok, recipe} = Meals.set_recipe_image(scope, recipe, path)
+
+      assert {:ok, %Recipe{}} = Meals.delete_recipe(scope, recipe)
+      refute File.exists?(path)
+    end
+
     test "delete_recipe/2 with invalid scope raises" do
       scope = household_scope_fixture()
       other_scope = household_scope_fixture()
@@ -93,6 +105,51 @@ defmodule Budgeteer.MealsTest do
       scope = household_scope_fixture()
       recipe = recipe_fixture(scope)
       assert %Ecto.Changeset{} = Meals.change_recipe(scope, recipe)
+    end
+
+    test "set_recipe_image/3 sets the image path and deletes the previous file" do
+      scope = household_scope_fixture()
+      recipe = recipe_fixture(scope)
+
+      old_path = Path.join(System.tmp_dir!(), "old-#{System.unique_integer()}.png")
+      File.write!(old_path, "old")
+      {:ok, recipe} = Meals.set_recipe_image(scope, recipe, old_path)
+
+      new_path = Path.join(System.tmp_dir!(), "new-#{System.unique_integer()}.png")
+      File.write!(new_path, "new")
+      assert {:ok, %Recipe{image_path: ^new_path}} = Meals.set_recipe_image(scope, recipe, new_path)
+
+      refute File.exists?(old_path)
+      assert File.exists?(new_path)
+      File.rm(new_path)
+    end
+
+    test "set_recipe_image/3 with invalid scope raises" do
+      scope = household_scope_fixture()
+      other_scope = household_scope_fixture()
+      recipe = recipe_fixture(scope)
+
+      assert_raise MatchError, fn -> Meals.set_recipe_image(other_scope, recipe, "/tmp/x.png") end
+    end
+
+    test "remove_recipe_image/2 clears the image path and deletes the file" do
+      scope = household_scope_fixture()
+      recipe = recipe_fixture(scope)
+
+      path = Path.join(System.tmp_dir!(), "image-#{System.unique_integer()}.png")
+      File.write!(path, "image")
+      {:ok, recipe} = Meals.set_recipe_image(scope, recipe, path)
+
+      assert {:ok, %Recipe{image_path: nil}} = Meals.remove_recipe_image(scope, recipe)
+      refute File.exists?(path)
+    end
+
+    test "remove_recipe_image/2 with invalid scope raises" do
+      scope = household_scope_fixture()
+      other_scope = household_scope_fixture()
+      recipe = recipe_fixture(scope)
+
+      assert_raise MatchError, fn -> Meals.remove_recipe_image(other_scope, recipe) end
     end
   end
 

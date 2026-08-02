@@ -15,6 +15,7 @@ kill_signal = 'SIGTERM'
   PHX_HOST = 'budgeteer-marbled-snowfall-2406.fly.dev'
   PORT = '8080'
   STATEMENT_STORAGE_PATH = '/data/statements'
+  RECIPE_IMAGE_STORAGE_PATH = '/data/recipe_images'
 
 [[mounts]]
   source = 'budgeteer_data'

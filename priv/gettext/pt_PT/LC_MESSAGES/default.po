@@ -97,12 +97,12 @@ msgid "Add ingredient"
 msgstr "Adicionar ingrediente"
 
 #: lib/budgeteer_web/live/meal_plan_live/index.ex:75
-#: lib/budgeteer_web/live/recipe_live/show.ex:49
+#: lib/budgeteer_web/live/recipe_live/show.ex:93
 #, elixir-autogen, elixir-format
 msgid "Add ingredients"
 msgstr "Adicionar ingredientes"
 
-#: lib/budgeteer_web/live/recipe_live/show.ex:44
+#: lib/budgeteer_web/live/recipe_live/show.ex:88
 #, elixir-autogen, elixir-format
 msgid "Add ingredients to"
 msgstr "Adicionar ingredientes a"
@@ -113,7 +113,7 @@ msgid "Add to Home Screen"
 msgstr "Adicionar ao ecrã principal"
 
 #: lib/budgeteer_web/live/meal_plan_live/index.ex:150
-#: lib/budgeteer_web/live/recipe_live/show.ex:91
+#: lib/budgeteer_web/live/recipe_live/show.ex:141
 #, elixir-autogen, elixir-format
 msgid "Added 1 ingredient to \"%{list}\""
 msgid_plural "Added %{count} ingredients to \"%{list}\""
@@ -123,7 +123,7 @@ msgstr[1] "Adicionados %{count} ingredientes a \"%{list}\""
 #: lib/budgeteer_web/live/grocery_list_live/show.ex:49
 #: lib/budgeteer_web/live/meal_plan_live/index.ex:31
 #: lib/budgeteer_web/live/meal_plan_live/index.ex:74
-#: lib/budgeteer_web/live/recipe_live/show.ex:48
+#: lib/budgeteer_web/live/recipe_live/show.ex:92
 #, elixir-autogen, elixir-format
 msgid "Adding..."
 msgstr "A adicionar..."
@@ -230,11 +230,6 @@ msgstr "Voltar à conta"
 #, elixir-autogen, elixir-format
 msgid "Back to lists"
 msgstr "Voltar às listas"
-
-#: lib/budgeteer_web/live/recipe_live/show.ex:14
-#, elixir-autogen, elixir-format
-msgid "Back to recipes"
-msgstr "Voltar às receitas"
 
 #: lib/budgeteer_web/live/statement_live/review.ex:14
 #, elixir-autogen, elixir-format
@@ -347,7 +342,7 @@ msgid "Check off milk while your partner adds bread from the other room. One sha
 msgstr "Risque o leite enquanto o seu parceiro adiciona pão a partir de outra divisão. Uma lista partilhada por compra, não três aplicações diferentes."
 
 #: lib/budgeteer_web/live/meal_plan_live/index.ex:72
-#: lib/budgeteer_web/live/recipe_live/show.ex:46
+#: lib/budgeteer_web/live/recipe_live/show.ex:90
 #, elixir-autogen, elixir-format
 msgid "Choose a list"
 msgstr "Escolha uma lista"
@@ -1801,6 +1796,7 @@ msgstr "Próximas refeições, as mais próximas primeiro"
 msgid "Update email instructions"
 msgstr "Instruções para atualizar o email"
 
+#: lib/budgeteer_web/live/recipe_live/show.ex:54
 #: lib/budgeteer_web/live/statement_live/upload.ex:98
 #, elixir-autogen, elixir-format
 msgid "Upload"
@@ -1828,6 +1824,7 @@ msgstr "Carregue os seus extratos bancários e o Budgeteer lê todas as transaç
 msgid "Uploaded"
 msgstr "Carregado"
 
+#: lib/budgeteer_web/live/recipe_live/show.ex:53
 #: lib/budgeteer_web/live/statement_live/upload.ex:97
 #, elixir-autogen, elixir-format
 msgid "Uploading..."
@@ -1920,7 +1917,7 @@ msgid "You can log into your account by visiting the URL below:"
 msgstr "Pode iniciar sessão na sua conta visitando o URL abaixo:"
 
 #: lib/budgeteer_web/live/meal_plan_live/index.ex:79
-#: lib/budgeteer_web/live/recipe_live/show.ex:53
+#: lib/budgeteer_web/live/recipe_live/show.ex:97
 #, elixir-autogen, elixir-format
 msgid "You don't have a grocery list yet —"
 msgstr "Ainda não tem nenhuma lista de compras —"
@@ -1978,7 +1975,7 @@ msgstr "fechar"
 
 #: lib/budgeteer_web/live/meal_plan_live/index.ex:37
 #: lib/budgeteer_web/live/meal_plan_live/index.ex:80
-#: lib/budgeteer_web/live/recipe_live/show.ex:54
+#: lib/budgeteer_web/live/recipe_live/show.ex:98
 #, elixir-autogen, elixir-format
 msgid "create one"
 msgstr "criar uma"
@@ -2026,7 +2023,7 @@ msgstr "ex.: A Família Marques"
 
 #: lib/budgeteer_web/live/meal_plan_live/index.ex:38
 #: lib/budgeteer_web/live/meal_plan_live/index.ex:81
-#: lib/budgeteer_web/live/recipe_live/show.ex:55
+#: lib/budgeteer_web/live/recipe_live/show.ex:99
 #, elixir-autogen, elixir-format
 msgid "first."
 msgstr "primeiro."
@@ -2190,3 +2187,53 @@ msgstr "Tirar fotografia"
 #, elixir-autogen, elixir-format
 msgid "Upload failed — please try again."
 msgstr "Falha ao carregar — tente novamente."
+
+#: lib/budgeteer_web/live/recipe_live/show.ex:42
+#, elixir-autogen, elixir-format
+msgid "Add an image"
+msgstr "Adicionar uma imagem"
+
+#: lib/budgeteer_web/controllers/recipe_image_controller.ex:95
+#, elixir-autogen, elixir-format
+msgid "Could not save image"
+msgstr "Não foi possível guardar a imagem"
+
+#: lib/budgeteer_web/controllers/recipe_image_controller.ex:64
+#, elixir-autogen, elixir-format
+msgid "File content doesn't match its extension — use a real JPG or PNG"
+msgstr "O conteúdo do ficheiro não corresponde à sua extensão — use um JPG ou PNG reais"
+
+#: lib/budgeteer_web/controllers/recipe_image_controller.ex:57
+#, elixir-autogen, elixir-format
+msgid "Image is too large (max 8 MB)"
+msgstr "A imagem é demasiado grande (máx. 8 MB)"
+
+#: lib/budgeteer_web/controllers/recipe_image_controller.ex:88
+#, elixir-autogen, elixir-format
+msgid "Image uploaded"
+msgstr "Imagem carregada"
+
+#: lib/budgeteer_web/controllers/recipe_image_controller.ex:28
+#, elixir-autogen, elixir-format
+msgid "Please select an image to upload"
+msgstr "Selecione uma imagem para carregar"
+
+#: lib/budgeteer_web/live/recipe_live/show.ex:63
+#, elixir-autogen, elixir-format
+msgid "Remove image"
+msgstr "Remover imagem"
+
+#: lib/budgeteer_web/live/recipe_live/show.ex:60
+#, elixir-autogen, elixir-format
+msgid "Remove this image?"
+msgstr "Remover esta imagem?"
+
+#: lib/budgeteer_web/live/recipe_live/show.ex:42
+#, elixir-autogen, elixir-format
+msgid "Replace image"
+msgstr "Substituir imagem"
+
+#: lib/budgeteer_web/controllers/recipe_image_controller.ex:52
+#, elixir-autogen, elixir-format
+msgid "Unsupported file type — use JPG or PNG"
+msgstr "Tipo de ficheiro não suportado — use JPG ou PNG"

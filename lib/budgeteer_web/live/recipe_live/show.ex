@@ -10,15 +10,59 @@ defmodule BudgeteerWeb.RecipeLive.Show do
     <Layouts.app flash={@flash} current_scope={@current_scope} online_members={@online_members}>
       <.header>
         {@recipe.name}
-        <:subtitle>
-          <.link navigate={~p"/recipes"}>{gettext("Back to recipes")}</.link>
-        </:subtitle>
         <:actions>
+          <.button navigate={~p"/recipes"}>
+            <.icon name="hero-arrow-left" />
+          </.button>
           <.button navigate={~p"/recipes/#{@recipe}/edit?return_to=show"}>
             <.icon name="hero-pencil-square" /> {gettext("Edit recipe")}
           </.button>
         </:actions>
       </.header>
+
+      <div :if={@recipe.image_path} class="mb-4">
+        <img
+          src={~p"/recipes/#{@recipe}/image"}
+          alt={@recipe.name}
+          class="rounded-box max-w-sm w-full object-cover"
+        />
+      </div>
+
+      <div class="mb-4">
+        <.form
+          for={%{}}
+          id="recipe-image-form"
+          action={~p"/recipes/#{@recipe}/image"}
+          method="post"
+          multipart
+          class="flex gap-2 items-end flex-wrap"
+        >
+          <div>
+            <label class="label" for="recipe-image-input">
+              {if @recipe.image_path, do: gettext("Replace image"), else: gettext("Add an image")}
+            </label>
+            <input
+              id="recipe-image-input"
+              type="file"
+              name="image"
+              accept=".jpg,.jpeg,.png"
+              required
+              class="w-full"
+            />
+          </div>
+          <.button phx-disable-with={gettext("Uploading...")}>
+            <.icon name="hero-photo" /> {gettext("Upload")}
+          </.button>
+        </.form>
+        <.link
+          :if={@recipe.image_path}
+          phx-click="remove_image"
+          data-confirm={gettext("Remove this image?")}
+          class="link text-sm mt-1 inline-block"
+        >
+          {gettext("Remove image")}
+        </.link>
+      </div>
 
       <p :if={@recipe.notes} class="opacity-70 mb-4">{@recipe.notes}</p>
 
@@ -73,6 +117,12 @@ defmodule BudgeteerWeb.RecipeLive.Show do
   end
 
   @impl true
+  def handle_event("remove_image", _params, socket) do
+    {:ok, recipe} = Meals.remove_recipe_image(socket.assigns.current_scope, socket.assigns.recipe)
+
+    {:noreply, assign(socket, :recipe, recipe)}
+  end
+
   def handle_event(
         "add_to_grocery_list",
         %{"add_to_list" => %{"grocery_list_id" => grocery_list_id}},

@@ -46,6 +46,10 @@ config :budgeteer, Oban,
 # when this app is actually deployed off a single host.
 config :budgeteer, :statement_storage_path, Path.expand("priv/statements")
 
+# Local-disk storage for recipe images — same reasoning as statements
+# above, not sensitive enough to need Vault encryption at rest.
+config :budgeteer, :recipe_image_storage_path, Path.expand("priv/recipe_images")
+
 # Error tracking. `dsn` itself is set in runtime.exs from SENTRY_DSN — left
 # unset here (and in dev/test), Sentry's client just no-ops instead of
 # erroring, which is what we want locally.

@@ -97,12 +97,12 @@ msgid "Add ingredient"
 msgstr ""
 
 #: lib/budgeteer_web/live/meal_plan_live/index.ex:75
-#: lib/budgeteer_web/live/recipe_live/show.ex:49
+#: lib/budgeteer_web/live/recipe_live/show.ex:93
 #, elixir-autogen, elixir-format
 msgid "Add ingredients"
 msgstr ""
 
-#: lib/budgeteer_web/live/recipe_live/show.ex:44
+#: lib/budgeteer_web/live/recipe_live/show.ex:88
 #, elixir-autogen, elixir-format
 msgid "Add ingredients to"
 msgstr ""
@@ -113,7 +113,7 @@ msgid "Add to Home Screen"
 msgstr ""
 
 #: lib/budgeteer_web/live/meal_plan_live/index.ex:150
-#: lib/budgeteer_web/live/recipe_live/show.ex:91
+#: lib/budgeteer_web/live/recipe_live/show.ex:141
 #, elixir-autogen, elixir-format
 msgid "Added 1 ingredient to \"%{list}\""
 msgid_plural "Added %{count} ingredients to \"%{list}\""
@@ -123,7 +123,7 @@ msgstr[1] ""
 #: lib/budgeteer_web/live/grocery_list_live/show.ex:49
 #: lib/budgeteer_web/live/meal_plan_live/index.ex:31
 #: lib/budgeteer_web/live/meal_plan_live/index.ex:74
-#: lib/budgeteer_web/live/recipe_live/show.ex:48
+#: lib/budgeteer_web/live/recipe_live/show.ex:92
 #, elixir-autogen, elixir-format
 msgid "Adding..."
 msgstr ""
@@ -229,11 +229,6 @@ msgstr ""
 #: lib/budgeteer_web/live/grocery_list_live/show.ex:14
 #, elixir-autogen, elixir-format
 msgid "Back to lists"
-msgstr ""
-
-#: lib/budgeteer_web/live/recipe_live/show.ex:14
-#, elixir-autogen, elixir-format
-msgid "Back to recipes"
 msgstr ""
 
 #: lib/budgeteer_web/live/statement_live/review.ex:14
@@ -347,7 +342,7 @@ msgid "Check off milk while your partner adds bread from the other room. One sha
 msgstr ""
 
 #: lib/budgeteer_web/live/meal_plan_live/index.ex:72
-#: lib/budgeteer_web/live/recipe_live/show.ex:46
+#: lib/budgeteer_web/live/recipe_live/show.ex:90
 #, elixir-autogen, elixir-format
 msgid "Choose a list"
 msgstr ""
@@ -1801,6 +1796,7 @@ msgstr ""
 msgid "Update email instructions"
 msgstr ""
 
+#: lib/budgeteer_web/live/recipe_live/show.ex:54
 #: lib/budgeteer_web/live/statement_live/upload.ex:98
 #, elixir-autogen, elixir-format
 msgid "Upload"
@@ -1828,6 +1824,7 @@ msgstr ""
 msgid "Uploaded"
 msgstr ""
 
+#: lib/budgeteer_web/live/recipe_live/show.ex:53
 #: lib/budgeteer_web/live/statement_live/upload.ex:97
 #, elixir-autogen, elixir-format
 msgid "Uploading..."
@@ -1920,7 +1917,7 @@ msgid "You can log into your account by visiting the URL below:"
 msgstr ""
 
 #: lib/budgeteer_web/live/meal_plan_live/index.ex:79
-#: lib/budgeteer_web/live/recipe_live/show.ex:53
+#: lib/budgeteer_web/live/recipe_live/show.ex:97
 #, elixir-autogen, elixir-format
 msgid "You don't have a grocery list yet —"
 msgstr ""
@@ -1978,7 +1975,7 @@ msgstr ""
 
 #: lib/budgeteer_web/live/meal_plan_live/index.ex:37
 #: lib/budgeteer_web/live/meal_plan_live/index.ex:80
-#: lib/budgeteer_web/live/recipe_live/show.ex:54
+#: lib/budgeteer_web/live/recipe_live/show.ex:98
 #, elixir-autogen, elixir-format
 msgid "create one"
 msgstr ""
@@ -2026,7 +2023,7 @@ msgstr ""
 
 #: lib/budgeteer_web/live/meal_plan_live/index.ex:38
 #: lib/budgeteer_web/live/meal_plan_live/index.ex:81
-#: lib/budgeteer_web/live/recipe_live/show.ex:55
+#: lib/budgeteer_web/live/recipe_live/show.ex:99
 #, elixir-autogen, elixir-format
 msgid "first."
 msgstr ""
@@ -2189,4 +2186,54 @@ msgstr ""
 #: lib/budgeteer_web/live/statement_live/upload.ex:20
 #, elixir-autogen, elixir-format
 msgid "Upload failed — please try again."
+msgstr ""
+
+#: lib/budgeteer_web/live/recipe_live/show.ex:42
+#, elixir-autogen, elixir-format
+msgid "Add an image"
+msgstr ""
+
+#: lib/budgeteer_web/controllers/recipe_image_controller.ex:95
+#, elixir-autogen, elixir-format
+msgid "Could not save image"
+msgstr ""
+
+#: lib/budgeteer_web/controllers/recipe_image_controller.ex:64
+#, elixir-autogen, elixir-format
+msgid "File content doesn't match its extension — use a real JPG or PNG"
+msgstr ""
+
+#: lib/budgeteer_web/controllers/recipe_image_controller.ex:57
+#, elixir-autogen, elixir-format
+msgid "Image is too large (max 8 MB)"
+msgstr ""
+
+#: lib/budgeteer_web/controllers/recipe_image_controller.ex:88
+#, elixir-autogen, elixir-format
+msgid "Image uploaded"
+msgstr ""
+
+#: lib/budgeteer_web/controllers/recipe_image_controller.ex:28
+#, elixir-autogen, elixir-format
+msgid "Please select an image to upload"
+msgstr ""
+
+#: lib/budgeteer_web/live/recipe_live/show.ex:63
+#, elixir-autogen, elixir-format
+msgid "Remove image"
+msgstr ""
+
+#: lib/budgeteer_web/live/recipe_live/show.ex:60
+#, elixir-autogen, elixir-format
+msgid "Remove this image?"
+msgstr ""
+
+#: lib/budgeteer_web/live/recipe_live/show.ex:42
+#, elixir-autogen, elixir-format
+msgid "Replace image"
+msgstr ""
+
+#: lib/budgeteer_web/controllers/recipe_image_controller.ex:52
+#, elixir-autogen, elixir-format
+msgid "Unsupported file type — use JPG or PNG"
 msgstr ""

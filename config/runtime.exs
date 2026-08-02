@@ -191,4 +191,10 @@ if config_env() == :prod do
   if storage_path = System.get_env("STATEMENT_STORAGE_PATH") do
     config :budgeteer, :statement_storage_path, storage_path
   end
+
+  # Recipe images on disk — same reasoning as STATEMENT_STORAGE_PATH above,
+  # point this at a subdirectory of the same mounted volume.
+  if recipe_image_storage_path = System.get_env("RECIPE_IMAGE_STORAGE_PATH") do
+    config :budgeteer, :recipe_image_storage_path, recipe_image_storage_path
+  end
 end

@@ -119,6 +119,8 @@ defmodule BudgeteerWeb.Router do
     post "/accounts/:account_id/statements", StatementController, :create
     get "/transactions/export", TransactionExportController, :download
     post "/push-tokens", PushTokenController, :create
+    post "/recipes/:id/image", RecipeImageController, :create
+    get "/recipes/:id/image", RecipeImageController, :show
   end
 
   scope "/", BudgeteerWeb do
