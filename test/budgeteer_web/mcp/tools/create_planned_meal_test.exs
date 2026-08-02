@@ -18,15 +18,20 @@ defmodule BudgeteerWeb.MCP.Tools.CreatePlannedMealTest do
     recipe = recipe_fixture(scope)
     frame = Frame.new(%{scope: scope})
 
-    params = %{recipe_name: "pancakes", date: "2026-08-01"}
+    # Relative to today, not a hardcoded literal — list_planned_meals/1
+    # only returns today-onward, so a fixed past-tense date silently
+    # breaks this test as real time moves on.
+    date = Date.add(Date.utc_today(), 1)
+    date_string = Date.to_iso8601(date)
+    params = %{recipe_name: "pancakes", date: date_string}
 
     assert {:reply, response, ^frame} = CreatePlannedMeal.execute(params, frame)
     assert [%{"text" => text}] = response.content
-    assert %{"recipe" => "Pancakes", "date" => "2026-08-01"} = JSON.decode!(text)
+    assert %{"recipe" => "Pancakes", "date" => ^date_string} = JSON.decode!(text)
 
     [planned_meal] = Meals.list_planned_meals(scope)
     assert planned_meal.recipe_id == recipe.id
-    assert planned_meal.date == ~D[2026-08-01]
+    assert planned_meal.date == date
   end
 
   test "returns an execution error when the recipe doesn't exist" do
