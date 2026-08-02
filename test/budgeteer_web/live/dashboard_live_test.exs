@@ -2,9 +2,76 @@ defmodule BudgeteerWeb.DashboardLiveTest do
   use BudgeteerWeb.ConnCase
 
   import Phoenix.LiveViewTest
+  import Mox
   import Budgeteer.LedgerFixtures
 
   setup :register_and_log_in_user
+  setup :verify_on_exit!
+
+  describe "budget insights" do
+    test "shows a Generate button with no insights yet, then the generated list", %{
+      conn: conn
+    } do
+      {:ok, view, html} = live(conn, ~p"/dashboard")
+      assert html =~ "Generate insights"
+
+      expect(Budgeteer.AI.DeepSeekClientMock, :generate_insights, fn _data ->
+        {:ok, ["You're pacing over your usual Groceries spend this month."]}
+      end)
+
+      html = view |> element("button", "Generate insights") |> render_click()
+      assert html =~ "Thinking..." or html =~ "loading-spinner"
+
+      html = render_async(view)
+      assert html =~ "You&#39;re pacing over your usual Groceries spend this month."
+      assert html =~ "Refresh"
+    end
+
+    test "shows a flash and clears the loading state when the client errors", %{conn: conn} do
+      {:ok, view, _html} = live(conn, ~p"/dashboard")
+
+      expect(Budgeteer.AI.DeepSeekClientMock, :generate_insights, fn _data ->
+        {:error, :timeout}
+      end)
+
+      view |> element("button", "Generate insights") |> render_click()
+      html = render_async(view)
+
+      assert html =~ "Couldn&#39;t generate insights"
+      refute html =~ "loading-spinner"
+    end
+
+    test "an existing empty insights list shows a friendly message, not a blank card", %{
+      conn: conn,
+      scope: scope
+    } do
+      expect(Budgeteer.AI.DeepSeekClientMock, :generate_insights, fn _data -> {:ok, []} end)
+      {:ok, _} = Budgeteer.Insights.generate_insights(scope)
+
+      {:ok, _view, html} = live(conn, ~p"/dashboard")
+      assert html =~ "Nothing notable stood out"
+    end
+
+    test "reflects another household member generating insights in real time", %{
+      conn: conn,
+      scope: scope
+    } do
+      {:ok, viewer_live, _html} = live(conn, ~p"/dashboard")
+
+      member = Budgeteer.HouseholdsFixtures.second_household_member_fixture(scope.user)
+      member_conn = log_in_user(build_conn(), member)
+      {:ok, actor_live, _html} = live(member_conn, ~p"/dashboard")
+
+      expect(Budgeteer.AI.DeepSeekClientMock, :generate_insights, fn _data ->
+        {:ok, ["Shared household insight."]}
+      end)
+
+      actor_live |> element("button", "Generate insights") |> render_click()
+      render_async(actor_live)
+
+      assert render(viewer_live) =~ "Shared household insight."
+    end
+  end
 
   test "shows the total balance and a balance trend chart", %{conn: conn, scope: scope} do
     account_fixture(scope, %{starting_balance: "150.00"})

@@ -3,6 +3,7 @@ defmodule BudgeteerWeb.DashboardLive do
 
   alias Budgeteer.Ledger
   alias Budgeteer.Subscriptions
+  alias Budgeteer.Insights
 
   @impl true
   def render(assigns) do
@@ -32,6 +33,41 @@ defmodule BudgeteerWeb.DashboardLive do
         <.link navigate={~p"/subscriptions"} class="btn btn-sm btn-outline shrink-0">
           {gettext("View all")}
         </.link>
+      </div>
+
+      <div class="mt-8 rounded border border-base-300 p-4">
+        <div class="flex items-center justify-between gap-4">
+          <div class="text-sm opacity-70">{gettext("Budget insights")}</div>
+          <.button
+            phx-click="generate_insights"
+            phx-disable-with={gettext("Thinking...")}
+            disabled={@generating_insights}
+            class="btn-sm"
+          >
+            <.icon name="hero-sparkles" />
+            {if @insights, do: gettext("Refresh"), else: gettext("Generate insights")}
+          </.button>
+        </div>
+
+        <div :if={@generating_insights} class="flex items-center gap-2 text-sm opacity-60 mt-3">
+          <span class="loading loading-spinner loading-sm"></span>
+          {gettext("Looking at your spending...")}
+        </div>
+
+        <ul :if={!@generating_insights && @insights} class="list-disc list-inside mt-3 space-y-1">
+          <li :for={insight <- @insights.insights}>{insight}</li>
+        </ul>
+
+        <p
+          :if={!@generating_insights && @insights && @insights.insights == []}
+          class="text-sm opacity-60 mt-3"
+        >
+          {gettext("Nothing notable stood out this month.")}
+        </p>
+
+        <p :if={!@generating_insights && !@insights} class="text-sm opacity-60 mt-3">
+          {gettext("Generate insights to see what stands out in your spending this month.")}
+        </p>
       </div>
 
       <h2 class="text-lg font-semibold mt-8">{gettext("This month by category")}</h2>
@@ -71,6 +107,7 @@ defmodule BudgeteerWeb.DashboardLive do
       Ledger.subscribe_transactions(scope)
       Ledger.subscribe_categories(scope)
       Subscriptions.subscribe_subscriptions(scope)
+      Insights.subscribe_insights(scope)
     end
 
     categories = Ledger.list_categories(scope)
@@ -81,10 +118,52 @@ defmodule BudgeteerWeb.DashboardLive do
      |> assign(:accounts_by_id, Map.new(Ledger.list_accounts(scope), &{&1.id, &1.name}))
      |> assign(:categories_by_id, Map.new(categories, &{&1.id, &1.name}))
      |> assign(:categories, categories)
+     |> assign(:insights, Insights.get_insights(scope))
+     |> assign(:generating_insights, false)
      |> load_data()}
   end
 
   @impl true
+  def handle_event("generate_insights", _params, socket) do
+    scope = socket.assigns.current_scope
+
+    {:noreply,
+     socket
+     |> assign(:generating_insights, true)
+     |> start_async(:generate_insights, fn -> Insights.generate_insights(scope) end)}
+  end
+
+  @impl true
+  def handle_async(:generate_insights, {:ok, {:ok, budget_insight}}, socket) do
+    {:noreply,
+     socket
+     |> assign(:insights, budget_insight)
+     |> assign(:generating_insights, false)}
+  end
+
+  def handle_async(:generate_insights, {:ok, {:error, _reason}}, socket) do
+    {:noreply,
+     socket
+     |> assign(:generating_insights, false)
+     |> put_flash(:error, gettext("Couldn't generate insights right now — please try again."))}
+  end
+
+  def handle_async(:generate_insights, {:exit, _reason}, socket) do
+    {:noreply,
+     socket
+     |> assign(:generating_insights, false)
+     |> put_flash(:error, gettext("Couldn't generate insights right now — please try again."))}
+  end
+
+  # Must come before the generic {type, _record} clause below — :updated
+  # is one of that clause's matched types, and it would otherwise swallow
+  # this message first (load_data/1 doesn't know about insights) instead
+  # of letting a household member's refresh sync to this session live.
+  @impl true
+  def handle_info({:updated, %Budgeteer.Insights.BudgetInsight{} = budget_insight}, socket) do
+    {:noreply, assign(socket, :insights, budget_insight)}
+  end
+
   def handle_info({type, _record}, socket)
       when type in [:created, :updated, :deleted, :dismissed, :undismissed] do
     scope = socket.assigns.current_scope

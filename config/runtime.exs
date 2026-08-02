@@ -27,6 +27,12 @@ config :budgeteer, BudgeteerWeb.Endpoint,
 # the AI client is mocked there (see config/test.exs).
 config :budgeteer, :anthropic_api_key, System.get_env("ANTHROPIC_API_KEY")
 
+# DeepSeek — cheaper model used only for Budgeteer.Insights (budget
+# insights are a summarization task over already-computed numbers, not
+# document extraction, so they don't need Claude's accuracy/cost). Same
+# unconditional-read tolerance as ANTHROPIC_API_KEY above.
+config :budgeteer, :deepseek_api_key, System.get_env("DEEPSEEK_API_KEY")
+
 # Google OAuth. Same tolerance as ANTHROPIC_API_KEY above — unconditional,
 # no raise if unset — rather than the RESEND_API_KEY raise-in-prod-only
 # pattern, since this needs to be testable via a real browser flow in dev
