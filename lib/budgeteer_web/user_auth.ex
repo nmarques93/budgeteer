@@ -35,10 +35,9 @@ defmodule BudgeteerWeb.UserAuth do
   """
   def log_in_user(conn, user, params \\ %{}) do
     user_return_to = get_session(conn, :user_return_to)
+    conn = create_or_extend_session(conn, user, params)
 
-    conn
-    |> create_or_extend_session(user, params)
-    |> redirect(to: user_return_to || signed_in_path(conn))
+    redirect(conn, to: user_return_to || signed_in_path(conn))
   end
 
   @doc """
@@ -115,6 +114,7 @@ defmodule BudgeteerWeb.UserAuth do
 
     conn
     |> renew_session(user)
+    |> assign(:current_scope, Scope.for_user(user))
     |> put_token_in_session(token)
     |> maybe_write_remember_me_cookie(token, params, remember_me)
   end

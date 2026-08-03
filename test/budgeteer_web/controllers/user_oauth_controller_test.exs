@@ -36,7 +36,7 @@ defmodule BudgeteerWeb.UserOAuthControllerTest do
         |> UserOAuthController.callback(%{})
 
       assert get_session(conn, :user_token)
-      assert redirected_to(conn) == ~p"/"
+      assert redirected_to(conn) == ~p"/dashboard"
     end
 
     test "creates a new household as owner for a brand-new email", %{conn: conn} do
