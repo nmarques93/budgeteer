@@ -40,7 +40,14 @@ config :budgeteer, Oban,
   notifier: Oban.Notifiers.Postgres,
   repo: Budgeteer.Repo,
   queues: [statements: 5, notifications: 5],
-  plugins: [{Oban.Plugins.Pruner, max_age: 60 * 60 * 24 * 7}]
+  plugins: [
+    {Oban.Plugins.Pruner, max_age: 60 * 60 * 24 * 7},
+    # 06:00 UTC — no timezone library in this app (Portugal-only for now,
+    # see CLAUDE.md), so this is a fixed UTC time approximating a Lisbon
+    # morning (07:00 WEST in summer, 06:00 WET in winter) rather than a
+    # true per-timezone schedule.
+    {Oban.Plugins.Cron, crontab: [{"0 6 * * *", Budgeteer.DailySummary.Worker}]}
+  ]
 
 # Local-disk storage for uploaded statements (Phase 1/2). Revisit for S3
 # when this app is actually deployed off a single host.

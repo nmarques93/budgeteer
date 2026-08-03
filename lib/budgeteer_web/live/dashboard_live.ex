@@ -4,6 +4,7 @@ defmodule BudgeteerWeb.DashboardLive do
   alias Budgeteer.Ledger
   alias Budgeteer.Subscriptions
   alias Budgeteer.Insights
+  alias Budgeteer.DailySummary
 
   @impl true
   def render(assigns) do
@@ -12,6 +13,11 @@ defmodule BudgeteerWeb.DashboardLive do
       <.header>
         {gettext("Dashboard")}
       </.header>
+
+      <div :if={@daily_summary} class="mt-4 rounded border border-base-300 p-4">
+        <div class="text-sm opacity-70">{gettext("Today")}</div>
+        <p class="mt-2">{@daily_summary.summary}</p>
+      </div>
 
       <div class="mt-4">
         <div class="text-sm opacity-70">{gettext("Total balance")}</div>
@@ -108,6 +114,7 @@ defmodule BudgeteerWeb.DashboardLive do
       Ledger.subscribe_categories(scope)
       Subscriptions.subscribe_subscriptions(scope)
       Insights.subscribe_insights(scope)
+      DailySummary.subscribe_summary(scope)
     end
 
     categories = Ledger.list_categories(scope)
@@ -120,6 +127,7 @@ defmodule BudgeteerWeb.DashboardLive do
      |> assign(:categories, categories)
      |> assign(:insights, Insights.get_insights(scope))
      |> assign(:generating_insights, false)
+     |> assign(:daily_summary, DailySummary.get_summary(scope))
      |> load_data()}
   end
 
@@ -162,6 +170,12 @@ defmodule BudgeteerWeb.DashboardLive do
   @impl true
   def handle_info({:updated, %Budgeteer.Insights.BudgetInsight{} = budget_insight}, socket) do
     {:noreply, assign(socket, :insights, budget_insight)}
+  end
+
+  # Same "must come before the generic clause" reasoning as the insights
+  # clause above — :updated is one of that clause's matched types.
+  def handle_info({:updated, %DailySummary.Summary{} = daily_summary}, socket) do
+    {:noreply, assign(socket, :daily_summary, daily_summary)}
   end
 
   def handle_info({type, _record}, socket)

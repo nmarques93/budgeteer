@@ -170,6 +170,17 @@ defmodule Budgeteer.Meals do
   end
 
   @doc """
+  Returns the household's planned meal for one specific date (or `nil`),
+  by household id (no scope) — same "background job, no user context"
+  precedent as `Households.list_household_emails/1`, used by
+  `Budgeteer.DailySummary.Worker`.
+  """
+  def get_planned_meal_for_household(household_id, %Date{} = date) do
+    Repo.get_by(PlannedMeal, household_id: household_id, date: date)
+    |> Repo.preload(:recipe)
+  end
+
+  @doc """
   Plans a meal: assigns a recipe to a date.
   """
   def create_planned_meal(%Scope{} = scope, attrs) do

@@ -435,6 +435,28 @@ defmodule Budgeteer.LedgerTest do
     end
   end
 
+  describe "monthly_category_totals_for_household/2" do
+    import Budgeteer.HouseholdsFixtures, only: [household_scope_fixture: 0]
+    import Budgeteer.LedgerFixtures
+
+    test "matches monthly_category_totals/2, by household id (no scope)" do
+      scope = household_scope_fixture()
+      account = account_fixture(scope)
+      category = category_fixture(scope, %{name: "Groceries", type: :expense, budget: "50.00"})
+      today = Date.utc_today()
+
+      transaction_fixture(scope, %{
+        account_id: account.id,
+        category_id: category.id,
+        amount: "-80.00",
+        date: today
+      })
+
+      assert Ledger.monthly_category_totals_for_household(scope.user.household_id, today) ==
+               Ledger.monthly_category_totals(scope, today)
+    end
+  end
+
   describe "balance_history/2" do
     import Budgeteer.HouseholdsFixtures, only: [household_scope_fixture: 0]
     import Budgeteer.LedgerFixtures

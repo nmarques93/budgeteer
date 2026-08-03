@@ -64,6 +64,24 @@ defmodule Budgeteer.Groceries do
   end
 
   @doc """
+  Returns the household's unchecked items across its active (non-archived)
+  grocery lists, by household id (no scope) — same "background job, no
+  user context" precedent as `Households.list_household_emails/1`, used
+  by `Budgeteer.DailySummary.Worker`.
+  """
+  def list_unchecked_items_for_household(household_id) do
+    Repo.all(
+      from i in GroceryItem,
+        join: l in GroceryList,
+        on: l.id == i.grocery_list_id,
+        where: i.household_id == ^household_id,
+        where: is_nil(l.archived_at),
+        where: i.checked == false,
+        order_by: [asc: i.name]
+    )
+  end
+
+  @doc """
   Creates a grocery list.
   """
   def create_grocery_list(%Scope{} = scope, attrs) do

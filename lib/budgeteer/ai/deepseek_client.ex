@@ -88,6 +88,34 @@ defmodule Budgeteer.AI.DeepSeekClient do
     end
   end
 
+  @daily_summary_system_prompt """
+  You are a household's morning assistant. Given the household's plans
+  for today as JSON (a planned meal, categories at or near their monthly
+  budget, unchecked grocery items, and today's calendar events — any of
+  which may be absent), write a short, warm, plain-language morning
+  summary: 2 to 4 sentences, reading as one short paragraph, not a bulleted
+  list. Mention only what's actually present in the data — if a section is
+  empty or absent, don't mention it or apologize for its absence. Never
+  invent facts not present in the data. If literally nothing is present,
+  respond with a brief, pleasant "nothing notable today" sentence instead
+  of an empty string.
+
+  Respond with JSON in this exact shape: {"summary": "..."}
+  """
+
+  @impl true
+  def generate_daily_summary(data) when is_map(data) do
+    with {:ok, decoded} <- request(@daily_summary_system_prompt, Jason.encode!(data)) do
+      case decoded do
+        %{"summary" => summary} when is_binary(summary) ->
+          {:ok, summary}
+
+        other ->
+          {:error, {:unexpected_shape, other}}
+      end
+    end
+  end
+
   defp request(system_prompt, user_content) do
     body = %{
       model: @model,

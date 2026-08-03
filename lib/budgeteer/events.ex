@@ -50,6 +50,20 @@ defmodule Budgeteer.Events do
   end
 
   @doc """
+  Returns the household's events on one specific date, by household id
+  (no scope) — same "background job, no user context" precedent as
+  `Households.list_household_emails/1`, used by
+  `Budgeteer.DailySummary.Worker`.
+  """
+  def list_events_for_household(household_id, %Date{} = date) do
+    Repo.all(
+      from e in Event,
+        where: e.household_id == ^household_id and e.date == ^date,
+        order_by: [asc: e.start_time]
+    )
+  end
+
+  @doc """
   Gets a single event, scoped to the household.
   """
   def get_event!(%Scope{} = scope, id) do

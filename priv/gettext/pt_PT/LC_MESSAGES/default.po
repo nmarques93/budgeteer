@@ -26,7 +26,7 @@ msgstr "%{name} online"
 msgid "+%{count} more"
 msgstr "+%{count} mais"
 
-#: lib/budgeteer_web/live/dashboard_live.ex:30
+#: lib/budgeteer_web/live/dashboard_live.ex:36
 #, elixir-autogen, elixir-format
 msgid "/ mo"
 msgstr "/ mês"
@@ -48,7 +48,7 @@ msgstr "Foi enviada uma ligação para confirmar a alteração do seu email para
 msgid "API access"
 msgstr "Acesso à API"
 
-#: lib/budgeteer_web/live/dashboard_live.ex:86
+#: lib/budgeteer_web/live/dashboard_live.ex:92
 #: lib/budgeteer_web/live/transaction_live/filter_form.ex:104
 #: lib/budgeteer_web/live/transaction_live/search.ex:38
 #, elixir-autogen, elixir-format
@@ -143,7 +143,7 @@ msgstr "Todas as categorias"
 msgid "Already registered?"
 msgstr "Já tem conta?"
 
-#: lib/budgeteer_web/live/dashboard_live.ex:90
+#: lib/budgeteer_web/live/dashboard_live.ex:96
 #: lib/budgeteer_web/live/statement_live/review.ex:33
 #: lib/budgeteer_web/live/subscription_live/index.ex:28
 #: lib/budgeteer_web/live/transaction_live/form.ex:21
@@ -169,7 +169,7 @@ msgstr "Foi enviado um email para %{email}; aceda-lhe para confirmar a sua conta
 msgid "An invite was sent to %{email}."
 msgstr "Foi enviado um convite para %{email}."
 
-#: lib/budgeteer_web/live/dashboard_live.ex:274
+#: lib/budgeteer_web/live/dashboard_live.ex:288
 #, elixir-autogen, elixir-format
 msgid "Apr"
 msgstr "abr"
@@ -205,7 +205,7 @@ msgstr "Tem a certeza de que quer eliminar este evento?"
 msgid "Are you sure?"
 msgstr "Tem a certeza?"
 
-#: lib/budgeteer_web/live/dashboard_live.ex:278
+#: lib/budgeteer_web/live/dashboard_live.ex:292
 #, elixir-autogen, elixir-format
 msgid "Aug"
 msgstr "ago"
@@ -251,7 +251,7 @@ msgstr "Nome do banco"
 #: lib/budgeteer_web/live/category_live/form.ex:19
 #: lib/budgeteer_web/live/category_live/index.ex:26
 #: lib/budgeteer_web/live/category_live/show.ex:25
-#: lib/budgeteer_web/live/dashboard_live.ex:79
+#: lib/budgeteer_web/live/dashboard_live.ex:85
 #, elixir-autogen, elixir-format
 msgid "Budget"
 msgstr "Orçamento"
@@ -298,8 +298,8 @@ msgstr "Cancelar"
 msgid "Categories"
 msgstr "Categorias"
 
-#: lib/budgeteer_web/live/dashboard_live.ex:76
-#: lib/budgeteer_web/live/dashboard_live.ex:93
+#: lib/budgeteer_web/live/dashboard_live.ex:82
+#: lib/budgeteer_web/live/dashboard_live.ex:99
 #: lib/budgeteer_web/live/grocery_list_live/show.ex:52
 #: lib/budgeteer_web/live/statement_live/review.ex:36
 #: lib/budgeteer_web/live/subscription_live/index.ex:35
@@ -466,14 +466,14 @@ msgid "Dark"
 msgstr "Escuro"
 
 #: lib/budgeteer_web/components/layouts/root.html.heex:138
-#: lib/budgeteer_web/live/dashboard_live.ex:13
-#: lib/budgeteer_web/live/dashboard_live.ex:117
+#: lib/budgeteer_web/live/dashboard_live.ex:14
+#: lib/budgeteer_web/live/dashboard_live.ex:124
 #, elixir-autogen, elixir-format
 msgid "Dashboard"
 msgstr "Painel"
 
 #: lib/budgeteer_web/live/calendar_live/form.ex:16
-#: lib/budgeteer_web/live/dashboard_live.ex:85
+#: lib/budgeteer_web/live/dashboard_live.ex:91
 #: lib/budgeteer_web/live/meal_plan_live/index.ex:23
 #: lib/budgeteer_web/live/statement_live/review.ex:32
 #: lib/budgeteer_web/live/transaction_live/form.ex:17
@@ -484,7 +484,7 @@ msgstr "Painel"
 msgid "Date"
 msgstr "Data"
 
-#: lib/budgeteer_web/live/dashboard_live.ex:282
+#: lib/budgeteer_web/live/dashboard_live.ex:296
 #, elixir-autogen, elixir-format
 msgid "Dec"
 msgstr "dez"
@@ -679,7 +679,7 @@ msgstr "A extrair..."
 msgid "Failed"
 msgstr "Falhou"
 
-#: lib/budgeteer_web/live/dashboard_live.ex:272
+#: lib/budgeteer_web/live/dashboard_live.ex:286
 #, elixir-autogen, elixir-format
 msgid "Feb"
 msgstr "fev"
@@ -835,7 +835,7 @@ msgstr "Convide o seu parceiro. Cada conta, categoria e transação é partilhad
 msgid "Item"
 msgstr "Item"
 
-#: lib/budgeteer_web/live/dashboard_live.ex:271
+#: lib/budgeteer_web/live/dashboard_live.ex:285
 #, elixir-autogen, elixir-format
 msgid "Jan"
 msgstr "jan"
@@ -845,7 +845,7 @@ msgstr "jan"
 msgid "January"
 msgstr "janeiro"
 
-#: lib/budgeteer_web/live/dashboard_live.ex:277
+#: lib/budgeteer_web/live/dashboard_live.ex:291
 #, elixir-autogen, elixir-format
 msgid "Jul"
 msgstr "jul"
@@ -855,7 +855,7 @@ msgstr "jul"
 msgid "July"
 msgstr "julho"
 
-#: lib/budgeteer_web/live/dashboard_live.ex:276
+#: lib/budgeteer_web/live/dashboard_live.ex:290
 #, elixir-autogen, elixir-format
 msgid "Jun"
 msgstr "jun"
@@ -875,7 +875,7 @@ msgstr "Manter sessão iniciada neste dispositivo"
 msgid "Language"
 msgstr "Idioma"
 
-#: lib/budgeteer_web/live/dashboard_live.ex:19
+#: lib/budgeteer_web/live/dashboard_live.ex:25
 #, elixir-autogen, elixir-format
 msgid "Last 30 days"
 msgstr "Últimos 30 dias"
@@ -967,7 +967,7 @@ msgstr "A ligação de acesso é inválida ou expirou."
 msgid "Manage your account email address and password settings"
 msgstr "Faça a gestão do endereço de email e da palavra-passe da sua conta"
 
-#: lib/budgeteer_web/live/dashboard_live.ex:273
+#: lib/budgeteer_web/live/dashboard_live.ex:287
 #, elixir-autogen, elixir-format
 msgid "Mar"
 msgstr "mar"
@@ -983,7 +983,7 @@ msgid "Max amount"
 msgstr "Valor máximo"
 
 #: lib/budgeteer_web/live/calendar_live/index.ex:222
-#: lib/budgeteer_web/live/dashboard_live.ex:275
+#: lib/budgeteer_web/live/dashboard_live.ex:289
 #, elixir-autogen, elixir-format
 msgid "May"
 msgstr "maio"
@@ -999,7 +999,7 @@ msgstr "Plano de Refeições"
 msgid "Meal plan"
 msgstr "Plano de refeições"
 
-#: lib/budgeteer_web/live/dashboard_live.ex:89
+#: lib/budgeteer_web/live/dashboard_live.ex:95
 #: lib/budgeteer_web/live/statement_live/review.ex:34
 #: lib/budgeteer_web/live/subscription_live/index.ex:27
 #: lib/budgeteer_web/live/transaction_live/form.ex:24
@@ -1143,7 +1143,7 @@ msgstr "Não é realmente uma subscrição? Isto vai deixar de a mostrar."
 msgid "Notes"
 msgstr "Notas"
 
-#: lib/budgeteer_web/live/dashboard_live.ex:281
+#: lib/budgeteer_web/live/dashboard_live.ex:295
 #, elixir-autogen, elixir-format
 msgid "Nov"
 msgstr "nov"
@@ -1153,7 +1153,7 @@ msgstr "nov"
 msgid "November"
 msgstr "novembro"
 
-#: lib/budgeteer_web/live/dashboard_live.ex:280
+#: lib/budgeteer_web/live/dashboard_live.ex:294
 #, elixir-autogen, elixir-format
 msgid "Oct"
 msgstr "out"
@@ -1168,7 +1168,7 @@ msgstr "outubro"
 msgid "One ledger, whole household"
 msgstr "Um livro-razão, todo o agregado familiar"
 
-#: lib/budgeteer_web/live/dashboard_live.ex:242
+#: lib/budgeteer_web/live/dashboard_live.ex:256
 #: lib/budgeteer_web/live/grocery_list_live/show.ex:176
 #, elixir-autogen, elixir-format
 msgid "Other"
@@ -1241,7 +1241,7 @@ msgid_plural "Processing %{count} statements…"
 msgstr[0] "A processar 1 extrato…"
 msgstr[1] "A processar %{count} extratos…"
 
-#: lib/budgeteer_web/live/dashboard_live.ex:80
+#: lib/budgeteer_web/live/dashboard_live.ex:86
 #, elixir-autogen, elixir-format
 msgid "Progress"
 msgstr "Progresso"
@@ -1258,7 +1258,7 @@ msgstr "Qtd"
 msgid "Quarterly"
 msgstr "Trimestral"
 
-#: lib/budgeteer_web/live/dashboard_live.ex:83
+#: lib/budgeteer_web/live/dashboard_live.ex:89
 #, elixir-autogen, elixir-format
 msgid "Recent transactions"
 msgstr "Transações recentes"
@@ -1303,7 +1303,7 @@ msgstr "Receitas"
 msgid "Recurring Charges"
 msgstr "Cobranças Recorrentes"
 
-#: lib/budgeteer_web/live/dashboard_live.ex:28
+#: lib/budgeteer_web/live/dashboard_live.ex:34
 #, elixir-autogen, elixir-format
 msgid "Recurring charges detected"
 msgstr "Cobranças recorrentes detetadas"
@@ -1475,7 +1475,7 @@ msgstr "Enviar convite"
 msgid "Sending..."
 msgstr "A enviar..."
 
-#: lib/budgeteer_web/live/dashboard_live.ex:279
+#: lib/budgeteer_web/live/dashboard_live.ex:293
 #, elixir-autogen, elixir-format
 msgid "Sep"
 msgstr "set"
@@ -1542,7 +1542,7 @@ msgstr "Algo correu mal ao extrair a receita — tente novamente."
 msgid "Spend vs. budget, per category"
 msgstr "Gasto vs. orçamento, por categoria"
 
-#: lib/budgeteer_web/live/dashboard_live.ex:78
+#: lib/budgeteer_web/live/dashboard_live.ex:84
 #, elixir-autogen, elixir-format
 msgid "Spent"
 msgstr "Gasto"
@@ -1640,7 +1640,7 @@ msgstr "Tema"
 msgid "This invite link is invalid or has expired."
 msgstr "Esta ligação de convite é inválida ou expirou."
 
-#: lib/budgeteer_web/live/dashboard_live.ex:73
+#: lib/budgeteer_web/live/dashboard_live.ex:79
 #, elixir-autogen, elixir-format
 msgid "This month by category"
 msgstr "Este mês por categoria"
@@ -1676,6 +1676,7 @@ msgid "To"
 msgstr "Até"
 
 #: lib/budgeteer_web/live/calendar_live/index.ex:38
+#: lib/budgeteer_web/live/dashboard_live.ex:18
 #, elixir-autogen, elixir-format
 msgid "Today"
 msgstr "Hoje"
@@ -1701,7 +1702,7 @@ msgid "Too many tokens created — please wait a while and try again."
 msgstr "Demasiados tokens criados — aguarde um pouco e tente novamente."
 
 #: lib/budgeteer_web/controllers/page_html/home.html.heex:122
-#: lib/budgeteer_web/live/dashboard_live.ex:17
+#: lib/budgeteer_web/live/dashboard_live.ex:23
 #, elixir-autogen, elixir-format
 msgid "Total balance"
 msgstr "Saldo total"
@@ -1750,7 +1751,7 @@ msgstr "ter"
 #: lib/budgeteer_web/live/category_live/form.ex:25
 #: lib/budgeteer_web/live/category_live/index.ex:29
 #: lib/budgeteer_web/live/category_live/show.ex:26
-#: lib/budgeteer_web/live/dashboard_live.ex:77
+#: lib/budgeteer_web/live/dashboard_live.ex:83
 #, elixir-autogen, elixir-format
 msgid "Type"
 msgstr "Tipo"
@@ -1760,8 +1761,8 @@ msgstr "Tipo"
 msgid "Unarchive"
 msgstr "Desarquivar"
 
-#: lib/budgeteer_web/live/dashboard_live.ex:289
-#: lib/budgeteer_web/live/dashboard_live.ex:292
+#: lib/budgeteer_web/live/dashboard_live.ex:303
+#: lib/budgeteer_web/live/dashboard_live.ex:306
 #: lib/budgeteer_web/live/grocery_list_live/show.ex:167
 #: lib/budgeteer_web/live/statement_live/review.ex:85
 #: lib/budgeteer_web/live/subscription_live/index.ex:143
@@ -1784,7 +1785,7 @@ msgstr "Sem categoria"
 msgid "Unit"
 msgstr "Unidade"
 
-#: lib/budgeteer_web/live/dashboard_live.ex:287
+#: lib/budgeteer_web/live/dashboard_live.ex:301
 #, elixir-autogen, elixir-format
 msgid "Unknown account"
 msgstr "Conta desconhecida"
@@ -1858,7 +1859,7 @@ msgstr "Use este formulário para gerir listas de compras."
 msgid "Use this form to manage recipes."
 msgstr "Use este formulário para gerir receitas."
 
-#: lib/budgeteer_web/live/dashboard_live.ex:34
+#: lib/budgeteer_web/live/dashboard_live.ex:40
 #, elixir-autogen, elixir-format
 msgid "View all"
 msgstr "Ver tudo"
@@ -2317,43 +2318,43 @@ msgstr "Mercearia"
 msgid "Produce"
 msgstr "Frutas e Legumes"
 
-#: lib/budgeteer_web/live/dashboard_live.ex:40
+#: lib/budgeteer_web/live/dashboard_live.ex:46
 #, elixir-autogen, elixir-format
 msgid "Budget insights"
 msgstr "Análise do orçamento"
 
-#: lib/budgeteer_web/live/dashboard_live.ex:148
-#: lib/budgeteer_web/live/dashboard_live.ex:155
+#: lib/budgeteer_web/live/dashboard_live.ex:156
+#: lib/budgeteer_web/live/dashboard_live.ex:163
 #, elixir-autogen, elixir-format
 msgid "Couldn't generate insights right now — please try again."
 msgstr "Não foi possível gerar a análise neste momento — tente novamente."
 
-#: lib/budgeteer_web/live/dashboard_live.ex:48
+#: lib/budgeteer_web/live/dashboard_live.ex:54
 #, elixir-autogen, elixir-format
 msgid "Generate insights"
 msgstr "Gerar análise"
 
-#: lib/budgeteer_web/live/dashboard_live.ex:69
+#: lib/budgeteer_web/live/dashboard_live.ex:75
 #, elixir-autogen, elixir-format
 msgid "Generate insights to see what stands out in your spending this month."
 msgstr "Gere uma análise para ver o que se destaca nas suas despesas este mês."
 
-#: lib/budgeteer_web/live/dashboard_live.ex:54
+#: lib/budgeteer_web/live/dashboard_live.ex:60
 #, elixir-autogen, elixir-format
 msgid "Looking at your spending..."
 msgstr "A analisar as suas despesas..."
 
-#: lib/budgeteer_web/live/dashboard_live.ex:65
+#: lib/budgeteer_web/live/dashboard_live.ex:71
 #, elixir-autogen, elixir-format
 msgid "Nothing notable stood out this month."
 msgstr "Nada de relevante a assinalar este mês."
 
-#: lib/budgeteer_web/live/dashboard_live.ex:48
+#: lib/budgeteer_web/live/dashboard_live.ex:54
 #, elixir-autogen, elixir-format
 msgid "Refresh"
 msgstr "Atualizar"
 
-#: lib/budgeteer_web/live/dashboard_live.ex:43
+#: lib/budgeteer_web/live/dashboard_live.ex:49
 #, elixir-autogen, elixir-format
 msgid "Thinking..."
 msgstr "A pensar..."
@@ -2372,3 +2373,14 @@ msgstr "Email de receção de extratos"
 #, elixir-autogen, elixir-format
 msgid "Not set up yet"
 msgstr "Ainda não configurado"
+
+#: lib/budgeteer/daily_summary/notifier.ex:42
+#, elixir-autogen, elixir-format
+msgid "Good morning,"
+msgstr "Bom dia,"
+
+#: lib/budgeteer/daily_summary/notifier.ex:37
+#: lib/budgeteer/daily_summary/notifier.ex:59
+#, elixir-autogen, elixir-format
+msgid "Your morning summary"
+msgstr "O seu resumo matinal"

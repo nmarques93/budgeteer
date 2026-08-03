@@ -127,6 +127,24 @@ defmodule Budgeteer.GroceriesTest do
       assert Groceries.list_items(scope, grocery_list) == [eggs, milk, bread, soap]
     end
 
+    test "list_unchecked_items_for_household/1 returns only unchecked items on active lists, for that household" do
+      scope = household_scope_fixture()
+      active_list = grocery_list_fixture(scope)
+      unchecked = grocery_item_fixture(scope, active_list, %{name: "Milk"})
+      checked = grocery_item_fixture(scope, active_list, %{name: "Bread"})
+      Groceries.check_item(scope, checked)
+
+      archived_list = grocery_list_fixture(scope)
+      {:ok, archived_list} = Groceries.archive_grocery_list(scope, archived_list)
+      grocery_item_fixture(scope, archived_list, %{name: "Rice"})
+
+      other_scope = household_scope_fixture()
+      other_list = grocery_list_fixture(other_scope)
+      grocery_item_fixture(other_scope, other_list, %{name: "Other household's item"})
+
+      assert Groceries.list_unchecked_items_for_household(scope.user.household_id) == [unchecked]
+    end
+
     test "create_item/3 rejects a category outside the fixed list" do
       scope = household_scope_fixture()
       grocery_list = grocery_list_fixture(scope)

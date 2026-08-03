@@ -13,4 +13,5 @@ defmodule Budgeteer.AI.DeepSeekClientBehaviour do
 
   @callback generate_insights(data :: map()) :: {:ok, [String.t()]} | {:error, term()}
   @callback parse_recipe(text :: String.t()) :: {:ok, map()} | {:error, term()}
+  @callback generate_daily_summary(data :: map()) :: {:ok, String.t()} | {:error, term()}
 end

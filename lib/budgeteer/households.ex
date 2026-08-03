@@ -85,6 +85,15 @@ defmodule Budgeteer.Households do
   end
 
   @doc """
+  Returns every household's id — for a scheduled job (like
+  `Budgeteer.DailySummary.Worker`) that needs to run once per household,
+  not once per request/user.
+  """
+  def list_household_ids do
+    Repo.all(from h in Household, select: h.id)
+  end
+
+  @doc """
   Returns every member of the current scope's household, ordered by name
   (falling back to email — `name` is optional, e.g. for a password
   registration that never set one). Used to color-code and assign calendar

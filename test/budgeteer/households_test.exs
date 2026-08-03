@@ -681,6 +681,16 @@ defmodule Budgeteer.HouseholdsTest do
     end
   end
 
+  describe "list_household_ids/0" do
+    test "returns every household's id" do
+      user = user_fixture()
+      other_user = user_fixture()
+
+      assert Enum.sort(Households.list_household_ids()) ==
+               Enum.sort([user.household_id, other_user.household_id])
+    end
+  end
+
   describe "inspect/2 for the User module" do
     test "does not include password" do
       refute inspect(%User{password: "123456"}) =~ "password: \"123456\""

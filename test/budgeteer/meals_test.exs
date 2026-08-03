@@ -175,6 +175,19 @@ defmodule Budgeteer.MealsTest do
       refute Enum.any?(Meals.list_planned_meals(scope), &(&1.id == past.id))
     end
 
+    test "get_planned_meal_for_household/2 returns the meal planned for that exact date, or nil" do
+      scope = household_scope_fixture()
+      recipe = recipe_fixture(scope)
+      today = Date.utc_today()
+      planned_meal_fixture(scope, recipe, %{date: today})
+
+      assert %PlannedMeal{recipe: %Budgeteer.Meals.Recipe{}} =
+               Meals.get_planned_meal_for_household(scope.user.household_id, today)
+
+      assert Meals.get_planned_meal_for_household(scope.user.household_id, Date.add(today, 1)) ==
+               nil
+    end
+
     test "create_planned_meal/2 with valid data plans a meal" do
       scope = household_scope_fixture()
       recipe = recipe_fixture(scope)

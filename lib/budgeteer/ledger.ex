@@ -542,6 +542,16 @@ defmodule Budgeteer.Ledger do
   transactions within the given month (defaults to the current month).
   """
   def monthly_category_totals(%Scope{} = scope, date \\ Date.utc_today()) do
+    monthly_category_totals_for_household(scope.user.household_id, date)
+  end
+
+  @doc """
+  Same as `monthly_category_totals/2`, by household id (no scope) — same
+  "background job, no user context" precedent as
+  `Households.list_household_emails/1`, used by
+  `Budgeteer.DailySummary.Worker`.
+  """
+  def monthly_category_totals_for_household(household_id, date \\ Date.utc_today()) do
     start_of_month = Date.beginning_of_month(date)
     end_of_month = Date.end_of_month(date)
 
@@ -549,7 +559,7 @@ defmodule Budgeteer.Ledger do
       from t in Transaction,
         join: c in Category,
         on: c.id == t.category_id,
-        where: t.household_id == ^scope.user.household_id,
+        where: t.household_id == ^household_id,
         where: t.date >= ^start_of_month and t.date <= ^end_of_month,
         group_by: [c.id, c.name, c.type, c.budget_cents],
         order_by: [asc: c.name],

@@ -38,6 +38,20 @@ defmodule Budgeteer.EventsTest do
     end
   end
 
+  describe "list_events_for_household/2" do
+    test "returns only events on that exact date, for that household" do
+      scope = household_scope_fixture()
+      today = event_fixture(scope, %{title: "Today", date: ~D[2026-08-15]})
+      _other_day = event_fixture(scope, %{title: "Other day", date: ~D[2026-08-16]})
+
+      other_scope = household_scope_fixture()
+      event_fixture(other_scope, %{title: "Other household", date: ~D[2026-08-15]})
+
+      assert [event] = Events.list_events_for_household(scope.user.household_id, ~D[2026-08-15])
+      assert event.id == today.id
+    end
+  end
+
   describe "create_event/2" do
     test "creates an event owned by the household, attributed to its creator" do
       scope = household_scope_fixture()
