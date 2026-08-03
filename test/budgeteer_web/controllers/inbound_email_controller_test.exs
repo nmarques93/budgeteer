@@ -10,7 +10,7 @@ defmodule BudgeteerWeb.InboundEmailControllerTest do
   setup :verify_on_exit!
 
   # Matches config/test.exs's fixed test-only value.
-  @secret "whsec_dGVzdC1zZWNyZXQta2V5LWZvci1zaWduaW5n"
+  @secret "whsec_" <> Base.encode64("test-secret-key-for-signing")
 
   defp webhook_payload(to, attachments) do
     Jason.encode!(%{

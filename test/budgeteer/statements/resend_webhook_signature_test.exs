@@ -3,7 +3,7 @@ defmodule Budgeteer.Statements.ResendWebhookSignatureTest do
 
   alias Budgeteer.Statements.ResendWebhookSignature
 
-  @secret "whsec_dGVzdC1zZWNyZXQta2V5LWZvci1zaWduaW5n"
+  @secret "whsec_" <> Base.encode64("test-secret-key-for-signing")
 
   defp sign(id, timestamp, body, secret \\ @secret) do
     key = secret |> String.replace_prefix("whsec_", "") |> Base.decode64!()
