@@ -38,6 +38,7 @@ defmodule BudgeteerWeb.AccountLive.Index do
         </:action>
         <:action :let={{id, account}}>
           <.link
+            :if={@current_scope.user.role == :owner}
             phx-click={JS.push("delete", value: %{id: account.id}) |> hide("##{id}")}
             data-confirm={gettext("Are you sure?")}
           >
@@ -64,9 +65,15 @@ defmodule BudgeteerWeb.AccountLive.Index do
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
     account = Ledger.get_account!(socket.assigns.current_scope, id)
-    {:ok, _} = Ledger.delete_account(socket.assigns.current_scope, account)
 
-    {:noreply, stream_delete(socket, :accounts, account)}
+    case Ledger.delete_account(socket.assigns.current_scope, account) do
+      {:ok, _} ->
+        {:noreply, stream_delete(socket, :accounts, account)}
+
+      {:error, :forbidden} ->
+        {:noreply,
+         put_flash(socket, :error, gettext("Only the household owner can delete accounts."))}
+    end
   end
 
   @impl true

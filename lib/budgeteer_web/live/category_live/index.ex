@@ -35,6 +35,7 @@ defmodule BudgeteerWeb.CategoryLive.Index do
         </:action>
         <:action :let={{id, category}}>
           <.link
+            :if={@current_scope.user.role == :owner}
             phx-click={JS.push("delete", value: %{id: category.id}) |> hide("##{id}")}
             data-confirm={gettext("Are you sure?")}
           >
@@ -61,9 +62,15 @@ defmodule BudgeteerWeb.CategoryLive.Index do
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
     category = Ledger.get_category!(socket.assigns.current_scope, id)
-    {:ok, _} = Ledger.delete_category(socket.assigns.current_scope, category)
 
-    {:noreply, stream_delete(socket, :categories, category)}
+    case Ledger.delete_category(socket.assigns.current_scope, category) do
+      {:ok, _} ->
+        {:noreply, stream_delete(socket, :categories, category)}
+
+      {:error, :forbidden} ->
+        {:noreply,
+         put_flash(socket, :error, gettext("Only the household owner can delete categories."))}
+    end
   end
 
   @impl true

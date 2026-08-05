@@ -4,6 +4,7 @@ defmodule BudgeteerWeb.MCP.Tools.CreatePlannedMealTest do
   import Budgeteer.HouseholdsFixtures
 
   alias Anubis.Server.Frame
+  alias Budgeteer.Households.AccessToken
   alias Budgeteer.Meals
   alias BudgeteerWeb.MCP.Tools.CreatePlannedMeal
 
@@ -16,7 +17,7 @@ defmodule BudgeteerWeb.MCP.Tools.CreatePlannedMealTest do
   test "plans a meal by recipe name, case-insensitively" do
     scope = household_scope_fixture()
     recipe = recipe_fixture(scope)
-    frame = Frame.new(%{scope: scope})
+    frame = Frame.new(%{scope: scope, access_token: %AccessToken{scopes: ["read", "meal_write"]}})
 
     # Relative to today, not a hardcoded literal — list_planned_meals/1
     # only returns today-onward, so a fixed past-tense date silently
@@ -36,7 +37,7 @@ defmodule BudgeteerWeb.MCP.Tools.CreatePlannedMealTest do
 
   test "returns an execution error when the recipe doesn't exist" do
     scope = household_scope_fixture()
-    frame = Frame.new(%{scope: scope})
+    frame = Frame.new(%{scope: scope, access_token: %AccessToken{scopes: ["read", "meal_write"]}})
 
     params = %{recipe_name: "Nonexistent", date: "2026-08-01"}
 
@@ -50,7 +51,7 @@ defmodule BudgeteerWeb.MCP.Tools.CreatePlannedMealTest do
   test "returns an execution error for a malformed date" do
     scope = household_scope_fixture()
     recipe_fixture(scope)
-    frame = Frame.new(%{scope: scope})
+    frame = Frame.new(%{scope: scope, access_token: %AccessToken{scopes: ["read", "meal_write"]}})
 
     params = %{recipe_name: "Pancakes", date: "not-a-date"}
 

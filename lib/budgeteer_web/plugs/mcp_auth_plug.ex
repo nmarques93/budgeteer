@@ -35,8 +35,11 @@ defmodule BudgeteerWeb.MCPAuthPlug do
 
   defp authenticate(conn) do
     with ["Bearer " <> token] <- get_req_header(conn, "authorization"),
-         %Households.User{} = user <- Households.get_user_by_access_token(token) do
-      assign(conn, :scope, Households.Scope.for_user(user))
+         {%Households.User{} = user, access_token} <-
+           Households.get_user_and_access_token_by_access_token(token) do
+      conn
+      |> assign(:scope, Households.Scope.for_user(user))
+      |> assign(:access_token, access_token)
     else
       _ -> unauthorized(conn)
     end

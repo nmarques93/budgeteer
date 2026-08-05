@@ -4,9 +4,10 @@ defmodule BudgeteerWeb.MCP.Server do
   MCP clients (Claude Desktop, etc.), authenticated by a personal access
   token — see `BudgeteerWeb.MCPAuthPlug`.
 
-  Every tool reads `frame.assigns.scope`, set by the auth plug from the
-  token's owning user. No tool accepts a household/user identifier as an
-  argument, so a client can never query outside the token's own household.
+   Every tool reads `frame.assigns.scope`, set by the auth plug from the
+   token's owning user. Write tools additionally require the token's explicit
+   `meal_write` scope. No tool accepts a household/user identifier as an
+   argument, so a client can never query outside the token's own household.
 
   Read-only for the household's financial and grocery data (accounts,
   transactions, categories, grocery lists) — no tool can create, update, or

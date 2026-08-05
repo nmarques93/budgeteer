@@ -4,12 +4,13 @@ defmodule BudgeteerWeb.MCP.Tools.CreateRecipeTest do
   import Budgeteer.HouseholdsFixtures
 
   alias Anubis.Server.Frame
+  alias Budgeteer.Households.AccessToken
   alias Budgeteer.Meals
   alias BudgeteerWeb.MCP.Tools.CreateRecipe
 
   test "creates a recipe with its ingredients" do
     scope = household_scope_fixture()
-    frame = Frame.new(%{scope: scope})
+    frame = Frame.new(%{scope: scope, access_token: %AccessToken{scopes: ["read", "meal_write"]}})
 
     params = %{
       name: "Pancakes",
@@ -33,11 +34,22 @@ defmodule BudgeteerWeb.MCP.Tools.CreateRecipeTest do
 
   test "returns an execution error for invalid input" do
     scope = household_scope_fixture()
-    frame = Frame.new(%{scope: scope})
+    frame = Frame.new(%{scope: scope, access_token: %AccessToken{scopes: ["read", "meal_write"]}})
 
     params = %{name: "", notes: nil, ingredients: []}
 
     assert {:error, %Anubis.MCP.Error{}, ^frame} = CreateRecipe.execute(params, frame)
+    assert Meals.list_recipes(scope) == []
+  end
+
+  test "rejects recipe writes without the meal_write scope" do
+    scope = household_scope_fixture()
+    frame = Frame.new(%{scope: scope, access_token: %AccessToken{scopes: ["read"]}})
+
+    assert {:error, %Anubis.MCP.Error{} = error, ^frame} =
+             CreateRecipe.execute(%{name: "Blocked", notes: nil, ingredients: []}, frame)
+
+    assert error.message =~ "meal_write"
     assert Meals.list_recipes(scope) == []
   end
 end

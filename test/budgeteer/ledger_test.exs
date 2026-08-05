@@ -8,7 +8,14 @@ defmodule Budgeteer.LedgerTest do
   describe "accounts" do
     alias Budgeteer.Ledger.Account
 
-    import Budgeteer.HouseholdsFixtures, only: [household_scope_fixture: 0]
+    import Budgeteer.HouseholdsFixtures,
+      only: [
+        household_scope_fixture: 0,
+        household_scope_fixture: 1,
+        second_household_member_fixture: 1,
+        user_fixture: 0
+      ]
+
     import Budgeteer.LedgerFixtures
 
     @invalid_attrs %{name: nil, currency: nil, bank_name: nil, starting_balance: nil}
@@ -123,6 +130,16 @@ defmodule Budgeteer.LedgerTest do
       assert_raise Ecto.NoResultsError, fn -> Ledger.get_account!(scope, account.id) end
     end
 
+    test "members cannot delete accounts" do
+      owner = user_fixture()
+      member = second_household_member_fixture(owner)
+      scope = household_scope_fixture(member)
+      account = account_fixture(scope)
+
+      assert {:error, :forbidden} = Ledger.delete_account(scope, account)
+      assert Ledger.get_account!(scope, account.id).id == account.id
+    end
+
     test "delete_account/2 with invalid scope raises" do
       scope = household_scope_fixture()
       other_scope = household_scope_fixture()
@@ -202,8 +219,10 @@ defmodule Budgeteer.LedgerTest do
                  category_id: other_category.id
                })
 
-      assert %{account_id: ["does not belong to this household"],
-               category_id: ["does not belong to this household"]} = errors_on(changeset)
+      assert %{
+               account_id: ["does not belong to this household"],
+               category_id: ["does not belong to this household"]
+             } = errors_on(changeset)
     end
 
     test "update_transaction/3 rejects moving a transaction to another household's account" do
@@ -677,7 +696,9 @@ defmodule Budgeteer.LedgerTest do
       # doesn't interfere with the proven email path when it actually runs.
       scope = household_scope_fixture()
       drain_mailbox()
-      {:ok, _device_token} = Budgeteer.Households.register_device_token(scope, "test-device-token")
+
+      {:ok, _device_token} =
+        Budgeteer.Households.register_device_token(scope, "test-device-token")
 
       account = account_fixture(scope)
       category = category_fixture(scope, %{type: :expense, budget: "50.00"})

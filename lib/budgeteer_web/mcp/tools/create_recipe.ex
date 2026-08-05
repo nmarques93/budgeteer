@@ -11,6 +11,7 @@ defmodule BudgeteerWeb.MCP.Tools.CreateRecipe do
   alias Anubis.MCP.Error
   alias Anubis.Server.Response
   alias Budgeteer.Meals
+  alias BudgeteerWeb.MCP.Permissions
   alias BudgeteerWeb.MCP.Tools.ChangesetError
 
   schema do
@@ -30,6 +31,14 @@ defmodule BudgeteerWeb.MCP.Tools.CreateRecipe do
 
   @impl true
   def execute(params, frame) do
+    if not Permissions.allow?(frame, "meal_write") do
+      Permissions.denied(frame, "meal_write")
+    else
+      execute_create(params, frame)
+    end
+  end
+
+  defp execute_create(params, frame) do
     attrs = %{
       "name" => params.name,
       "notes" => Map.get(params, :notes),

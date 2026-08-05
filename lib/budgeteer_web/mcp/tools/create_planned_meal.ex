@@ -11,6 +11,7 @@ defmodule BudgeteerWeb.MCP.Tools.CreatePlannedMeal do
   alias Anubis.MCP.Error
   alias Anubis.Server.Response
   alias Budgeteer.Meals
+  alias BudgeteerWeb.MCP.Permissions
   alias BudgeteerWeb.MCP.Tools.ChangesetError
 
   schema do
@@ -22,6 +23,14 @@ defmodule BudgeteerWeb.MCP.Tools.CreatePlannedMeal do
 
   @impl true
   def execute(%{recipe_name: recipe_name, date: date_str}, frame) do
+    if not Permissions.allow?(frame, "meal_write") do
+      Permissions.denied(frame, "meal_write")
+    else
+      execute_create(recipe_name, date_str, frame)
+    end
+  end
+
+  defp execute_create(recipe_name, date_str, frame) do
     scope = frame.assigns.scope
 
     with {:ok, date} <- parse_date(date_str),

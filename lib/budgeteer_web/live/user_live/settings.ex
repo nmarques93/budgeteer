@@ -76,7 +76,12 @@ defmodule BudgeteerWeb.UserLive.Settings do
 
       <div class="divider" />
 
-      <.form for={@invite_form} id="invite_form" phx-submit="send_invite">
+      <.form
+        :if={@current_scope.user.role == :owner}
+        for={@invite_form}
+        id="invite_form"
+        phx-submit="send_invite"
+      >
         <.input
           field={@invite_form[:email]}
           type="email"
@@ -124,6 +129,12 @@ defmodule BudgeteerWeb.UserLive.Settings do
             placeholder={gettext("e.g. My budgeting app")}
             required
           />
+          <.input
+            :if={@current_scope.user.role == :owner}
+            field={@access_token_form[:meal_write]}
+            type="checkbox"
+            label={gettext("Allow recipe and meal-plan changes")}
+          />
           <.button variant="primary" phx-disable-with={gettext("Generating...")}>
             {gettext("Generate token")}
           </.button>
@@ -132,6 +143,7 @@ defmodule BudgeteerWeb.UserLive.Settings do
         <div class="mt-4">
           <.table id="access-tokens" rows={@access_tokens}>
             <:col :let={token} label={gettext("Name")}>{token.name}</:col>
+            <:col :let={token} label={gettext("Scopes")}>{Enum.join(token.scopes, ", ")}</:col>
             <:col :let={token} label={gettext("Created")}>{token.inserted_at}</:col>
             <:col :let={token} label={gettext("Last used")}>
               {token.last_used_at || gettext("Never")}
@@ -179,7 +191,10 @@ defmodule BudgeteerWeb.UserLive.Settings do
       |> assign(:trigger_submit, false)
       |> assign(:invite_form, to_form(%{"email" => ""}, as: "invite"))
       |> assign(:new_token, nil)
-      |> assign(:access_token_form, to_form(%{"name" => ""}, as: "access_token"))
+      |> assign(
+        :access_token_form,
+        to_form(%{"name" => "", "meal_write" => false}, as: "access_token")
+      )
       |> assign(:access_tokens, Households.list_access_tokens(socket.assigns.current_scope))
 
     {:ok, socket}
@@ -248,38 +263,31 @@ defmodule BudgeteerWeb.UserLive.Settings do
   def handle_event("send_invite", %{"invite" => %{"email" => email}}, socket) do
     user = socket.assigns.current_scope.user
 
-    if RateLimit.check("invite:#{user.id}", @invite_scale, @invite_limit) == :ok do
-      Households.deliver_household_invite(
-        user,
-        email,
-        &url(~p"/users/register?#{[token: &1]}")
-      )
-
-      {:noreply,
-       socket
-       |> put_flash(:info, gettext("An invite was sent to %{email}.", email: email))
-       |> assign(:invite_form, to_form(%{"email" => ""}, as: "invite"))}
+    if user.role != :owner do
+      {:noreply, put_flash(socket, :error, gettext("Only the household owner can send invites."))}
     else
-      {:noreply,
-       put_flash(
-         socket,
-         :error,
-         gettext("Too many invites sent — please wait a while and try again.")
-       )}
+      send_invite(socket, user, email)
     end
   end
 
-  def handle_event("create_access_token", %{"access_token" => %{"name" => name}}, socket) do
+  def handle_event("create_access_token", %{"access_token" => token_params}, socket) do
     scope = socket.assigns.current_scope
+    name = token_params["name"]
+
+    scopes =
+      if token_params["meal_write"] in ["true", true], do: ["read", "meal_write"], else: ["read"]
 
     if RateLimit.check("access_token:#{scope.user.id}", @access_token_scale, @access_token_limit) ==
          :ok do
-      case Households.create_access_token(scope, name) do
+      case Households.create_access_token(scope, name, scopes) do
         {:ok, raw_token, _access_token} ->
           {:noreply,
            socket
            |> assign(:new_token, raw_token)
-           |> assign(:access_token_form, to_form(%{"name" => ""}, as: "access_token"))
+           |> assign(
+             :access_token_form,
+             to_form(%{"name" => "", "meal_write" => false}, as: "access_token")
+           )
            |> assign(:access_tokens, Households.list_access_tokens(scope))}
 
         {:error, _changeset} ->
@@ -308,6 +316,28 @@ defmodule BudgeteerWeb.UserLive.Settings do
 
       {:error, :not_found} ->
         {:noreply, put_flash(socket, :error, gettext("That token no longer exists."))}
+    end
+  end
+
+  defp send_invite(socket, user, email) do
+    if RateLimit.check("invite:#{user.id}", @invite_scale, @invite_limit) == :ok do
+      Households.deliver_household_invite(
+        user,
+        email,
+        &url(~p"/users/register?#{[token: &1]}")
+      )
+
+      {:noreply,
+       socket
+       |> put_flash(:info, gettext("An invite was sent to %{email}.", email: email))
+       |> assign(:invite_form, to_form(%{"email" => ""}, as: "invite"))}
+    else
+      {:noreply,
+       put_flash(
+         socket,
+         :error,
+         gettext("Too many invites sent — please wait a while and try again.")
+       )}
     end
   end
 end

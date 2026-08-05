@@ -19,6 +19,7 @@ defmodule BudgeteerWeb.MCPAuthPlugTest do
 
       refute conn.halted
       assert conn.assigns.scope.user.id == user.id
+      assert conn.assigns.access_token.scopes == ["read"]
     end
 
     test "halts with 401 when the authorization header is missing", %{conn: conn} do

@@ -559,7 +559,25 @@ defmodule Budgeteer.HouseholdsTest do
       assert String.starts_with?(raw_token, "bgtpat_")
       assert access_token.name == "Claude Desktop"
       assert access_token.token != raw_token
+      assert access_token.scopes == ["read"]
       assert Households.get_user_by_access_token(raw_token).id == user.id
+    end
+
+    test "only owners can grant meal-writing scope" do
+      owner = user_fixture()
+      owner_scope = Households.Scope.for_user(owner)
+      member = second_household_member_fixture(owner)
+      member_scope = Households.Scope.for_user(member)
+
+      assert {:ok, _, owner_token} =
+               Households.create_access_token(owner_scope, "Meal app", ["read", "meal_write"])
+
+      assert owner_token.scopes == ["read", "meal_write"]
+
+      assert {:error, changeset} =
+               Households.create_access_token(member_scope, "Meal app", ["read", "meal_write"])
+
+      assert %{name: ["has invalid or unauthorized scopes"]} = errors_on(changeset)
     end
 
     test "create_access_token/2 requires a name" do
@@ -639,7 +657,9 @@ defmodule Budgeteer.HouseholdsTest do
       member_scope = Households.Scope.for_user(member)
 
       assert {:ok, _} = Households.register_device_token(owner_scope, "shared-device-token")
-      assert {:ok, device_token} = Households.register_device_token(member_scope, "shared-device-token")
+
+      assert {:ok, device_token} =
+               Households.register_device_token(member_scope, "shared-device-token")
 
       assert device_token.user_id == member.id
       assert [%{user_id: user_id}] = Budgeteer.Repo.all(Budgeteer.Households.DeviceToken)

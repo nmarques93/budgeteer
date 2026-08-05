@@ -278,6 +278,15 @@ defmodule Budgeteer.Households do
 
   ## Settings
 
+  @doc "Returns whether the scoped user is the household owner."
+  def owner?(%Scope{user: %User{role: :owner}}), do: true
+  def owner?(%Scope{}), do: false
+
+  @doc "Returns `:ok` for owners and `{:error, :forbidden}` for members."
+  def require_owner(%Scope{} = scope) do
+    if owner?(scope), do: :ok, else: {:error, :forbidden}
+  end
+
   @doc """
   Checks whether the user is in sudo mode.
 
@@ -528,23 +537,50 @@ defmodule Budgeteer.Households do
   available here, at creation time. Only its hash is persisted, so it must
   be shown to the user immediately and can never be recovered later.
   """
-  def create_access_token(%Scope{} = scope, name) do
+  def create_access_token(%Scope{} = scope, name, scopes \\ ["read"]) do
     {raw_token, hashed_token} = AccessToken.build_token()
+    scopes = normalize_access_token_scopes(scopes)
 
     changeset = AccessToken.changeset(%AccessToken{}, %{name: name})
 
-    if changeset.valid? do
-      changeset
-      |> Ecto.Changeset.put_change(:token, hashed_token)
-      |> Ecto.Changeset.put_change(:user_id, scope.user.id)
-      |> Repo.insert()
-      |> case do
-        {:ok, access_token} -> {:ok, raw_token, access_token}
-        {:error, changeset} -> {:error, changeset}
-      end
-    else
-      {:error, %{changeset | action: :insert}}
+    cond do
+      not changeset.valid? ->
+        {:error, %{changeset | action: :insert}}
+
+      not valid_access_token_scopes?(scope, scopes) ->
+        {:error,
+         changeset
+         |> Ecto.Changeset.add_error(:name, "has invalid or unauthorized scopes")
+         |> Map.put(:action, :insert)}
+
+      true ->
+        changeset
+        |> Ecto.Changeset.put_change(:token, hashed_token)
+        |> Ecto.Changeset.put_change(:user_id, scope.user.id)
+        |> Ecto.Changeset.put_change(:scopes, scopes)
+        |> Repo.insert()
+        |> case do
+          {:ok, access_token} -> {:ok, raw_token, access_token}
+          {:error, changeset} -> {:error, changeset}
+        end
     end
+  end
+
+  @doc "The scopes supported by personal access tokens."
+  def access_token_scopes, do: ["read", "meal_write"]
+
+  defp normalize_access_token_scopes(scopes) when is_list(scopes) do
+    scopes
+    |> Enum.filter(&is_binary/1)
+    |> Enum.uniq()
+  end
+
+  defp normalize_access_token_scopes(_scopes), do: []
+
+  defp valid_access_token_scopes?(scope, scopes) do
+    scopes != [] and
+      Enum.all?(scopes, &(&1 in access_token_scopes())) and
+      (owner?(scope) or scopes == ["read"])
   end
 
   @doc """
@@ -574,13 +610,21 @@ defmodule Budgeteer.Households do
   on success. Returns `nil` for a malformed, unknown, or revoked token.
   """
   def get_user_by_access_token(raw_token) when is_binary(raw_token) do
+    case get_user_and_access_token_by_access_token(raw_token) do
+      {user, _access_token} -> user
+      nil -> nil
+    end
+  end
+
+  @doc "Looks up a token owner and the token's scopes, touching last-used time."
+  def get_user_and_access_token_by_access_token(raw_token) when is_binary(raw_token) do
     with {:ok, query} <- AccessToken.verify_query(raw_token),
          {user, access_token} <- Repo.one(query) do
       access_token
       |> Ecto.Changeset.change(last_used_at: DateTime.utc_now(:second))
       |> Repo.update()
 
-      user
+      {user, access_token}
     else
       _ -> nil
     end

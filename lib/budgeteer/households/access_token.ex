@@ -13,6 +13,7 @@ defmodule Budgeteer.Households.AccessToken do
   schema "access_tokens" do
     field :name, :string
     field :token, :binary
+    field :scopes, {:array, :string}, default: ["read"]
     field :last_used_at, :utc_datetime
     belongs_to :user, Budgeteer.Households.User
 

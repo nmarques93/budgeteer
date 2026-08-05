@@ -6,6 +6,7 @@ defmodule Budgeteer.Ledger do
   import Ecto.Query, warn: false
   alias Budgeteer.Repo
 
+  alias Budgeteer.Households
   alias Budgeteer.Ledger.{Account, Category}
   alias Budgeteer.Ledger.Transaction
   alias Budgeteer.Households.Scope
@@ -132,12 +133,17 @@ defmodule Budgeteer.Ledger do
 
   """
   def delete_account(%Scope{} = scope, %Account{} = account) do
-    true = account.household_id == scope.user.household_id
+    case Households.require_owner(scope) do
+      :ok ->
+        true = account.household_id == scope.user.household_id
 
-    with {:ok, account = %Account{}} <-
-           Repo.delete(account) do
-      broadcast_account(scope, {:deleted, account})
-      {:ok, account}
+        with {:ok, account = %Account{}} <- Repo.delete(account) do
+          broadcast_account(scope, {:deleted, account})
+          {:ok, account}
+        end
+
+      {:error, :forbidden} = error ->
+        error
     end
   end
 
@@ -351,7 +357,9 @@ defmodule Budgeteer.Ledger do
   """
   def update_transaction(%Scope{} = scope, %Transaction{} = transaction, attrs) do
     true = transaction.household_id == scope.user.household_id
-    changeset = transaction |> Transaction.changeset(attrs, scope) |> validate_transaction_scope(scope)
+
+    changeset =
+      transaction |> Transaction.changeset(attrs, scope) |> validate_transaction_scope(scope)
 
     with {:ok, transaction = %Transaction{}} <-
            Repo.update(changeset) do
@@ -374,12 +382,17 @@ defmodule Budgeteer.Ledger do
 
   """
   def delete_transaction(%Scope{} = scope, %Transaction{} = transaction) do
-    true = transaction.household_id == scope.user.household_id
+    case Households.require_owner(scope) do
+      :ok ->
+        true = transaction.household_id == scope.user.household_id
 
-    with {:ok, transaction = %Transaction{}} <-
-           Repo.delete(transaction) do
-      broadcast_transaction(scope, {:deleted, transaction})
-      {:ok, transaction}
+        with {:ok, transaction = %Transaction{}} <- Repo.delete(transaction) do
+          broadcast_transaction(scope, {:deleted, transaction})
+          {:ok, transaction}
+        end
+
+      {:error, :forbidden} = error ->
+        error
     end
   end
 
@@ -532,12 +545,17 @@ defmodule Budgeteer.Ledger do
 
   """
   def delete_category(%Scope{} = scope, %Category{} = category) do
-    true = category.household_id == scope.user.household_id
+    case Households.require_owner(scope) do
+      :ok ->
+        true = category.household_id == scope.user.household_id
 
-    with {:ok, category = %Category{}} <-
-           Repo.delete(category) do
-      broadcast_category(scope, {:deleted, category})
-      {:ok, category}
+        with {:ok, category = %Category{}} <- Repo.delete(category) do
+          broadcast_category(scope, {:deleted, category})
+          {:ok, category}
+        end
+
+      {:error, :forbidden} = error ->
+        error
     end
   end
 

@@ -65,6 +65,7 @@ defmodule BudgeteerWeb.TransactionLive.Index do
         </:action>
         <:action :let={{id, transaction}}>
           <.link
+            :if={@current_scope.user.role == :owner}
             phx-click={JS.push("delete", value: %{id: transaction.id}) |> hide("##{id}")}
             data-confirm={gettext("Are you sure?")}
           >
@@ -103,9 +104,15 @@ defmodule BudgeteerWeb.TransactionLive.Index do
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
     transaction = Ledger.get_transaction!(socket.assigns.current_scope, id)
-    {:ok, _} = Ledger.delete_transaction(socket.assigns.current_scope, transaction)
 
-    {:noreply, stream_delete(socket, :transactions, transaction)}
+    case Ledger.delete_transaction(socket.assigns.current_scope, transaction) do
+      {:ok, _} ->
+        {:noreply, stream_delete(socket, :transactions, transaction)}
+
+      {:error, :forbidden} ->
+        {:noreply,
+         put_flash(socket, :error, gettext("Only the household owner can delete transactions."))}
+    end
   end
 
   @impl true
