@@ -31,4 +31,4 @@ Visit [`localhost:4000`](http://localhost:4000). Statement parsing needs your ow
 
 ## Deployment
 
-Deployed on Fly.io — see `fly.toml` and CLAUDE.md's deployment-hardening decision for the current setup (Docker release, secrets, volume-backed statement storage, and encryption key management). The engineering hardening backlog in CLAUDE.md tracks remaining backup, readiness, and failure-recovery work.
+Deployed on Fly.io — see `fly.toml` and CLAUDE.md's deployment-hardening decision for the current setup (Docker release, secrets, volume-backed statement storage, encryption key management, and liveness/readiness checks). The engineering hardening backlog in CLAUDE.md tracks the remaining external backup and restore-drill setup.

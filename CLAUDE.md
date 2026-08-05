@@ -341,10 +341,13 @@ tests and operational verification exist.
 
 ### P1 — Production Reliability And Security
 
-- [ ] **Harden deployment durability.** Add automated Postgres and volume
-  backups, perform a restore drill, add a database-aware readiness check, and
-  verify that Oban cron jobs cannot be skipped by Fly auto-stopping the only
-  machine.
+- [x] **Harden runtime deployment behavior.** Add liveness/readiness checks
+  and keep the Fly scheduler machine running so Oban cron jobs cannot be
+  skipped by auto-stopping the only machine.
+- [ ] **Complete deployment backup operations.** Add automated Postgres and
+  volume backups and perform a documented restore drill. The external
+  Postgres provider and Fly volume backup mechanism still need to be selected
+  and configured outside this repository.
 - [ ] **Define and enforce household roles.** Decide which actions require an
   owner, especially invitations, account deletion, destructive ledger actions,
   and personal access token creation. Add policy tests.

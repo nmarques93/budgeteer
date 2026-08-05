@@ -19,7 +19,7 @@ config :budgeteer, BudgeteerWeb.Endpoint,
       # Safe to exclude: Fly's edge (force_https in fly.toml) already
       # redirects all real internet traffic to HTTPS before it reaches this
       # app at all.
-      paths: ["/"],
+       paths: ["/", "/health/live", "/health/ready"],
       hosts: ["localhost", "127.0.0.1"]
     ]
   ]

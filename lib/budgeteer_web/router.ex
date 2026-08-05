@@ -32,6 +32,8 @@ defmodule BudgeteerWeb.Router do
   scope "/", BudgeteerWeb do
     pipe_through :api
 
+    get "/health/live", HealthController, :live
+    get "/health/ready", HealthController, :ready
     post "/webhooks/resend-inbound", InboundEmailController, :create
   end
 

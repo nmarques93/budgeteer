@@ -24,9 +24,12 @@ kill_signal = 'SIGTERM'
 [http_service]
   internal_port = 8080
   force_https = true
-  auto_stop_machines = 'stop'
+  # Oban's daily summary cron runs inside the Phoenix machine. Keep one
+  # machine alive so scheduled work is not skipped when there is no HTTP
+  # traffic to trigger auto-start.
+  auto_stop_machines = 'off'
   auto_start_machines = true
-  min_machines_running = 0
+  min_machines_running = 1
   processes = ['app']
 
   [http_service.concurrency]
@@ -39,7 +42,15 @@ kill_signal = 'SIGTERM'
     timeout = '2s'
     grace_period = '10s'
     method = 'GET'
-    path = '/'
+    path = '/health/live'
+    protocol = 'http'
+
+  [[http_service.checks]]
+    interval = '30s'
+    timeout = '5s'
+    grace_period = '10s'
+    method = 'GET'
+    path = '/health/ready'
     protocol = 'http'
 
 [[vm]]
