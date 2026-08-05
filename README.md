@@ -17,7 +17,7 @@ A family budgeting PWA. Upload a bank statement (PDF or photo) and Claude extrac
 
 ## Stack
 
-Elixir + Phoenix + LiveView, PostgreSQL, Oban for background jobs, the Claude API for statement parsing. See [CLAUDE.md](CLAUDE.md) for the full history of decisions behind this app.
+Elixir + Phoenix + LiveView, PostgreSQL, Oban for background jobs, the Claude API for statement parsing. See [CLAUDE.md](CLAUDE.md) for settled architecture, operational decisions, and the active hardening backlog. [PLAN.md](PLAN.md) is the historical scaffold plan.
 
 ## Local development
 
@@ -31,4 +31,4 @@ Visit [`localhost:4000`](http://localhost:4000). Statement parsing needs your ow
 
 ## Deployment
 
-Deployed on Fly.io — see `fly.toml` and CLAUDE.md's "Deployment hardening" decision for the full setup (Docker release, secrets, volume-backed statement storage, encryption key management).
+Deployed on Fly.io — see `fly.toml` and CLAUDE.md's deployment-hardening decision for the current setup (Docker release, secrets, volume-backed statement storage, and encryption key management). The engineering hardening backlog in CLAUDE.md tracks remaining backup, readiness, and failure-recovery work.

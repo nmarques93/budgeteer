@@ -1,4 +1,9 @@
-# Budgeteer — Build Plan
+# Budgeteer — Historical Build Plan
+
+> This document describes the original scaffold and phased build plan. It is
+> retained as project history, not as the current implementation contract. See
+> `CLAUDE.md` for settled architectural decisions, the current data model, and
+> the active Engineering Hardening Backlog.
 
 A family budgeting PWA built in Elixir/Phoenix. Reads bank statements via AI, syncs in real time across household members, includes a shared grocery list.
 
