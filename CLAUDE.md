@@ -326,12 +326,12 @@ tests and operational verification exist.
 
 ### P0 — Data Safety And Tenant Isolation
 
-- [ ] **Enforce cross-household foreign-key integrity.** Validate account,
+- [x] **Enforce cross-household foreign-key integrity.** Validate account,
   category, list, member, and other related IDs under the current scope before
   writes. Add database-level composite constraints where denormalized
   `household_id` columns can diverge from their parent records. Add explicit
   cross-household negative tests for every child resource.
-- [ ] **Make file upload, database insert, and Oban enqueue recoverable as one
+- [x] **Make file upload, database insert, and Oban enqueue recoverable as one
   workflow.** Prevent orphaned encrypted files and statements stuck in
   `pending` when a later step fails. Add cleanup for failed writes and delete
   statement files when statements are deleted.

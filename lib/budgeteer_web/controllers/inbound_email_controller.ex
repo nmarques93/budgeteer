@@ -107,6 +107,7 @@ defmodule BudgeteerWeb.InboundEmailController do
 
     File.mkdir_p!(storage_dir)
     storage_path = Path.join(storage_dir, file_hash <> ext)
+    file_preexisted? = File.exists?(storage_path)
     File.write!(storage_path, Budgeteer.Vault.encrypt!(bytes))
 
     attrs = %{
@@ -121,6 +122,8 @@ defmodule BudgeteerWeb.InboundEmailController do
         :ok
 
       {:error, changeset} ->
+        if not file_preexisted?, do: File.rm(storage_path)
+
         Logger.info("Inbound-statement create failed: #{inspect(changeset.errors)}")
     end
   end

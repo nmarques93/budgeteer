@@ -13,14 +13,14 @@ defmodule Budgeteer.Statements.ParseWorker do
   @impl true
   def perform(%Oban.Job{args: %{"statement_id" => statement_id}} = job) do
     statement = Statements.get_statement!(statement_id)
-    {:ok, statement} = Statements.mark_processing(statement)
-    category_names = Ledger.list_category_names(statement.household_id)
 
-    with {:ok, encrypted_bytes} <- File.read(statement.storage_path),
+    with {:ok, processing_statement} <- Statements.mark_processing(statement),
+         category_names <- Ledger.list_category_names(processing_statement.household_id),
+         {:ok, encrypted_bytes} <- File.read(processing_statement.storage_path),
          {:ok, file_bytes} <- Budgeteer.Vault.decrypt(encrypted_bytes),
-         media_type <- media_type(statement.filename),
-         {:ok, parsed} <- ai_client().parse_statement(file_bytes, media_type, category_names) do
-      Statements.mark_processed(statement, parsed)
+         media_type <- media_type(processing_statement.filename),
+         {:ok, parsed} <- ai_client().parse_statement(file_bytes, media_type, category_names),
+         {:ok, _processed_statement} <- Statements.mark_processed(processing_statement, parsed) do
       :ok
     else
       {:error, reason} ->

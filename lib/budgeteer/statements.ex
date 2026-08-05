@@ -67,14 +67,20 @@ defmodule Budgeteer.Statements do
       |> Statement.changeset(attrs, scope)
       |> validate_account_scope(scope)
 
-    with {:ok, statement = %Statement{}} <-
-           Repo.insert(changeset),
-         {:ok, _job} <-
-           %{"statement_id" => statement.id}
-           |> ParseWorker.new()
-           |> Oban.insert() do
-      broadcast_statement(statement.household_id, {:created, statement})
-      {:ok, statement}
+    multi =
+      Ecto.Multi.new()
+      |> Ecto.Multi.insert(:statement, changeset)
+      |> Oban.insert(:parse_job, fn %{statement: statement} ->
+        ParseWorker.new(%{"statement_id" => statement.id})
+      end)
+
+    case Repo.transaction(multi) do
+      {:ok, %{statement: statement}} ->
+        broadcast_statement(statement.household_id, {:created, statement})
+        {:ok, statement}
+
+      {:error, _operation, changeset, _changes} ->
+        {:error, changeset}
     end
   end
 
@@ -117,16 +123,22 @@ defmodule Budgeteer.Statements do
   outside a request/user context.
   """
   def create_statement_from_email(%Account{} = account, attrs) do
-    with {:ok, statement = %Statement{}} <-
-           %Statement{}
-           |> Statement.email_changeset(attrs, account.household_id)
-           |> Repo.insert(),
-         {:ok, _job} <-
-           %{"statement_id" => statement.id}
-           |> ParseWorker.new()
-           |> Oban.insert() do
-      broadcast_statement(statement.household_id, {:created, statement})
-      {:ok, statement}
+    changeset = Statement.email_changeset(%Statement{}, attrs, account.household_id)
+
+    multi =
+      Ecto.Multi.new()
+      |> Ecto.Multi.insert(:statement, changeset)
+      |> Oban.insert(:parse_job, fn %{statement: statement} ->
+        ParseWorker.new(%{"statement_id" => statement.id})
+      end)
+
+    case Repo.transaction(multi) do
+      {:ok, %{statement: statement}} ->
+        broadcast_statement(statement.household_id, {:created, statement})
+        {:ok, statement}
+
+      {:error, _operation, changeset, _changes} ->
+        {:error, changeset}
     end
   end
 
@@ -137,6 +149,7 @@ defmodule Budgeteer.Statements do
     true = statement.household_id == scope.user.household_id
 
     with {:ok, statement = %Statement{}} <- Repo.delete(statement) do
+      File.rm(statement.storage_path)
       broadcast_statement(scope.user.household_id, {:deleted, statement})
       {:ok, statement}
     end

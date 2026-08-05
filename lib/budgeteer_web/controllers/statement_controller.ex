@@ -67,6 +67,7 @@ defmodule BudgeteerWeb.StatementController do
 
     File.mkdir_p!(storage_dir)
     storage_path = Path.join(storage_dir, file_hash <> Path.extname(upload.filename))
+    file_preexisted? = File.exists?(storage_path)
     # The raw bank statement itself (not just the AI-extracted JSON) is
     # sensitive — encrypted at rest with the same Vault as raw_ai_output,
     # so a compromised disk/volume doesn't expose plaintext statements.
@@ -87,6 +88,8 @@ defmodule BudgeteerWeb.StatementController do
         |> redirect(to: ~p"/accounts/#{account}/statements")
 
       {:error, %Ecto.Changeset{} = changeset} ->
+        if not file_preexisted?, do: File.rm(storage_path)
+
         conn
         |> put_flash(:error, changeset_error_message(changeset))
         |> redirect(to: ~p"/accounts/#{account}/statements/new")
