@@ -184,10 +184,13 @@ defmodule Budgeteer.Meals do
   Plans a meal: assigns a recipe to a date.
   """
   def create_planned_meal(%Scope{} = scope, attrs) do
+    changeset =
+      %PlannedMeal{}
+      |> PlannedMeal.changeset(attrs, scope)
+      |> validate_recipe_scope(scope)
+
     with {:ok, planned_meal = %PlannedMeal{}} <-
-           %PlannedMeal{}
-           |> PlannedMeal.changeset(attrs, scope)
-           |> Repo.insert() do
+           Repo.insert(changeset) do
       planned_meal = Repo.preload(planned_meal, :recipe)
       broadcast_planned_meal(planned_meal.household_id, {:created, planned_meal})
       {:ok, planned_meal}
@@ -245,6 +248,24 @@ defmodule Budgeteer.Meals do
     end
 
     {:ok, length(items)}
+  end
+
+  defp validate_recipe_scope(changeset, %Scope{} = scope) do
+    case Ecto.Changeset.get_field(changeset, :recipe_id) do
+      nil ->
+        changeset
+
+      recipe_id ->
+        query =
+          from r in Recipe,
+            where: r.id == ^recipe_id and r.household_id == ^scope.user.household_id
+
+        if Repo.exists?(query) do
+          changeset
+        else
+          Ecto.Changeset.add_error(changeset, :recipe_id, "does not belong to this household")
+        end
+    end
   end
 
   defp merge_ingredients([first | _] = group) do

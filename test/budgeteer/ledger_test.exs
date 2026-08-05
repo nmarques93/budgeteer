@@ -185,6 +185,37 @@ defmodule Budgeteer.LedgerTest do
       assert transaction.merchant == "some merchant"
       assert transaction.notes == "some notes"
       assert transaction.household_id == scope.user.household_id
+      assert transaction.added_by_id == scope.user.id
+    end
+
+    test "create_transaction/2 rejects account and category from another household" do
+      scope = household_scope_fixture()
+      other_scope = household_scope_fixture()
+      other_account = account_fixture(other_scope)
+      other_category = category_fixture(other_scope)
+
+      assert {:error, changeset} =
+               Ledger.create_transaction(scope, %{
+                 date: ~D[2026-07-25],
+                 amount: "0.42",
+                 account_id: other_account.id,
+                 category_id: other_category.id
+               })
+
+      assert %{account_id: ["does not belong to this household"],
+               category_id: ["does not belong to this household"]} = errors_on(changeset)
+    end
+
+    test "update_transaction/3 rejects moving a transaction to another household's account" do
+      scope = household_scope_fixture()
+      other_scope = household_scope_fixture()
+      transaction = transaction_fixture(scope)
+      other_account = account_fixture(other_scope)
+
+      assert {:error, changeset} =
+               Ledger.update_transaction(scope, transaction, %{account_id: other_account.id})
+
+      assert %{account_id: ["does not belong to this household"]} = errors_on(changeset)
     end
 
     test "create_transaction/2 with invalid data returns error changeset" do

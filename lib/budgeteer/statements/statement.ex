@@ -28,8 +28,9 @@ defmodule Budgeteer.Statements.Statement do
   """
   def changeset(statement, attrs, household_scope) do
     statement
-    |> cast(attrs, [:filename, :storage_path, :file_hash, :account_id, :uploaded_by_id])
+    |> cast(attrs, [:filename, :storage_path, :file_hash, :account_id])
     |> validate_required([:filename, :storage_path, :file_hash, :account_id])
+    |> put_change(:uploaded_by_id, household_scope.user.id)
     |> put_change(:household_id, household_scope.user.household_id)
     |> unique_constraint(:file_hash,
       name: :statements_account_id_file_hash_index,

@@ -62,16 +62,37 @@ defmodule Budgeteer.Statements do
   parses it. Callers don't need to know about Oban.
   """
   def create_statement(%Scope{} = scope, attrs) do
+    changeset =
+      %Statement{}
+      |> Statement.changeset(attrs, scope)
+      |> validate_account_scope(scope)
+
     with {:ok, statement = %Statement{}} <-
-           %Statement{}
-           |> Statement.changeset(attrs, scope)
-           |> Repo.insert(),
+           Repo.insert(changeset),
          {:ok, _job} <-
            %{"statement_id" => statement.id}
            |> ParseWorker.new()
            |> Oban.insert() do
       broadcast_statement(statement.household_id, {:created, statement})
       {:ok, statement}
+    end
+  end
+
+  defp validate_account_scope(changeset, %Scope{} = scope) do
+    case Ecto.Changeset.get_field(changeset, :account_id) do
+      nil ->
+        changeset
+
+      account_id ->
+        query =
+          from a in Account,
+            where: a.id == ^account_id and a.household_id == ^scope.user.household_id
+
+        if Repo.exists?(query) do
+          changeset
+        else
+          Ecto.Changeset.add_error(changeset, :account_id, "does not belong to this household")
+        end
     end
   end
 

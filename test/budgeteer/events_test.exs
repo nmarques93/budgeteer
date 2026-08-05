@@ -97,6 +97,20 @@ defmodule Budgeteer.EventsTest do
 
       assert event.user_id == member.id
     end
+
+    test "rejects assignment to a member from another household" do
+      scope = household_scope_fixture()
+      other_scope = household_scope_fixture()
+
+      assert {:error, changeset} =
+               Events.create_event(scope, %{
+                 title: "Private event",
+                 date: ~D[2026-08-20],
+                 user_id: other_scope.user.id
+               })
+
+      assert %{user_id: ["does not belong to this household"]} = errors_on(changeset)
+    end
   end
 
   describe "update_event/3 and delete_event/2" do

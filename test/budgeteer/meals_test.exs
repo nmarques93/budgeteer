@@ -199,6 +199,17 @@ defmodule Budgeteer.MealsTest do
       assert planned_meal.household_id == scope.user.household_id
     end
 
+    test "create_planned_meal/2 rejects a recipe from another household" do
+      scope = household_scope_fixture()
+      other_scope = household_scope_fixture()
+      recipe = recipe_fixture(other_scope)
+
+      assert {:error, changeset} =
+               Meals.create_planned_meal(scope, %{recipe_id: recipe.id, date: Date.utc_today()})
+
+      assert %{recipe_id: ["does not belong to this household"]} = errors_on(changeset)
+    end
+
     test "create_planned_meal/2 with invalid data returns error changeset" do
       scope = household_scope_fixture()
 

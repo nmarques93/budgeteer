@@ -114,6 +114,22 @@ defmodule Budgeteer.StatementsTest do
 
       assert "has already been uploaded for this account" in errors_on(changeset).file_hash
     end
+
+    test "rejects an account from another household" do
+      scope = household_scope_fixture()
+      other_scope = household_scope_fixture()
+      other_account = account_fixture(other_scope)
+
+      attrs = %{
+        filename: "statement.pdf",
+        storage_path: write_temp_statement_file!(),
+        file_hash: "hash-#{System.unique_integer([:positive])}",
+        account_id: other_account.id
+      }
+
+      assert {:error, changeset} = Statements.create_statement(scope, attrs)
+      assert %{account_id: ["does not belong to this household"]} = errors_on(changeset)
+    end
   end
 
   describe "create_statement/2" do

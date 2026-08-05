@@ -14,6 +14,7 @@ defmodule Budgeteer.Ledger.Transaction do
     field :account_id, :binary_id
     field :category_id, :binary_id
     field :statement_id, :binary_id
+    field :added_by_id, :binary_id
     field :household_id, :binary_id
 
     timestamps(type: :utc_datetime)
@@ -34,6 +35,7 @@ defmodule Budgeteer.Ledger.Transaction do
     ])
     |> validate_required([:date, :amount, :account_id])
     |> put_amount_cents()
+    |> put_change(:added_by_id, household_scope.user.id)
     |> put_change(:household_id, household_scope.user.household_id)
   end
 

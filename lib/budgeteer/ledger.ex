@@ -6,7 +6,7 @@ defmodule Budgeteer.Ledger do
   import Ecto.Query, warn: false
   alias Budgeteer.Repo
 
-  alias Budgeteer.Ledger.Account
+  alias Budgeteer.Ledger.{Account, Category}
   alias Budgeteer.Ledger.Transaction
   alias Budgeteer.Households.Scope
 
@@ -234,6 +234,30 @@ defmodule Budgeteer.Ledger do
   defp apply_transaction_filter({:amount_max, cents}, query) when is_integer(cents),
     do: where(query, [t], fragment("abs(?)", t.amount_cents) <= ^cents)
 
+  defp validate_transaction_scope(changeset, %Scope{} = scope) do
+    changeset
+    |> validate_scoped_reference(:account_id, Account, scope)
+    |> validate_scoped_reference(:category_id, Category, scope)
+  end
+
+  defp validate_scoped_reference(changeset, field, schema, %Scope{} = scope) do
+    case Ecto.Changeset.get_field(changeset, field) do
+      nil ->
+        changeset
+
+      id ->
+        query =
+          from record in schema,
+            where: record.id == ^id and record.household_id == ^scope.user.household_id
+
+        if Repo.exists?(query) do
+          changeset
+        else
+          Ecto.Changeset.add_error(changeset, field, "does not belong to this household")
+        end
+    end
+  end
+
   @doc """
   Subscribes to scoped notifications about any transaction changes.
 
@@ -300,10 +324,13 @@ defmodule Budgeteer.Ledger do
 
   """
   def create_transaction(%Scope{} = scope, attrs) do
+    changeset =
+      %Transaction{}
+      |> Transaction.changeset(attrs, scope)
+      |> validate_transaction_scope(scope)
+
     with {:ok, transaction = %Transaction{}} <-
-           %Transaction{}
-           |> Transaction.changeset(attrs, scope)
-           |> Repo.insert() do
+           Repo.insert(changeset) do
       broadcast_transaction(scope, {:created, transaction})
       maybe_send_budget_alert(scope, transaction.category_id)
       {:ok, transaction}
@@ -324,11 +351,10 @@ defmodule Budgeteer.Ledger do
   """
   def update_transaction(%Scope{} = scope, %Transaction{} = transaction, attrs) do
     true = transaction.household_id == scope.user.household_id
+    changeset = transaction |> Transaction.changeset(attrs, scope) |> validate_transaction_scope(scope)
 
     with {:ok, transaction = %Transaction{}} <-
-           transaction
-           |> Transaction.changeset(attrs, scope)
-           |> Repo.update() do
+           Repo.update(changeset) do
       broadcast_transaction(scope, {:updated, transaction})
       maybe_send_budget_alert(scope, transaction.category_id)
       {:ok, transaction}

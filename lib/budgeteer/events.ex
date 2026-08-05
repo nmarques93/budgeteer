@@ -16,6 +16,7 @@ defmodule Budgeteer.Events do
 
   alias Budgeteer.Events.Event
   alias Budgeteer.Households.Scope
+  alias Budgeteer.Households.User
 
   @doc """
   Subscribes to scoped notifications about event changes.
@@ -74,11 +75,14 @@ defmodule Budgeteer.Events do
   Creates an event, attributed to the scoped user as its creator.
   """
   def create_event(%Scope{} = scope, attrs) do
+    changeset =
+      %Event{}
+      |> Event.changeset(attrs, scope)
+      |> validate_user_scope(scope)
+      |> Ecto.Changeset.put_change(:created_by_id, scope.user.id)
+
     with {:ok, event = %Event{}} <-
-           %Event{}
-           |> Event.changeset(attrs, scope)
-           |> Ecto.Changeset.put_change(:created_by_id, scope.user.id)
-           |> Repo.insert() do
+           Repo.insert(changeset) do
       broadcast_event(event.household_id, {:created, event})
       {:ok, event}
     end
@@ -89,11 +93,10 @@ defmodule Budgeteer.Events do
   """
   def update_event(%Scope{} = scope, %Event{} = event, attrs) do
     true = event.household_id == scope.user.household_id
+    changeset = event |> Event.changeset(attrs, scope) |> validate_user_scope(scope)
 
     with {:ok, event = %Event{}} <-
-           event
-           |> Event.changeset(attrs, scope)
-           |> Repo.update() do
+           Repo.update(changeset) do
       broadcast_event(event.household_id, {:updated, event})
       {:ok, event}
     end
@@ -116,5 +119,23 @@ defmodule Budgeteer.Events do
   """
   def change_event(%Scope{} = scope, %Event{} = event, attrs \\ %{}) do
     Event.changeset(event, attrs, scope)
+  end
+
+  defp validate_user_scope(changeset, %Scope{} = scope) do
+    case Ecto.Changeset.get_field(changeset, :user_id) do
+      nil ->
+        changeset
+
+      user_id ->
+        query =
+          from u in User,
+            where: u.id == ^user_id and u.household_id == ^scope.user.household_id
+
+        if Repo.exists?(query) do
+          changeset
+        else
+          Ecto.Changeset.add_error(changeset, :user_id, "does not belong to this household")
+        end
+    end
   end
 end
