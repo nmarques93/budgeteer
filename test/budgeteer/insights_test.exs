@@ -2,7 +2,15 @@ defmodule Budgeteer.InsightsTest do
   use Budgeteer.DataCase
 
   import Mox
-  import Budgeteer.HouseholdsFixtures, only: [household_scope_fixture: 0]
+
+  import Budgeteer.HouseholdsFixtures,
+    only: [
+      household_scope_fixture: 0,
+      household_scope_fixture: 1,
+      second_household_member_fixture: 1,
+      user_fixture: 0
+    ]
+
   import Budgeteer.LedgerFixtures
 
   alias Budgeteer.Insights
@@ -17,6 +25,29 @@ defmodule Budgeteer.InsightsTest do
   end
 
   describe "generate_insights/1" do
+    test "stores one localized variant for each household locale" do
+      owner = user_fixture()
+      member = second_household_member_fixture(owner)
+      {:ok, member} = Budgeteer.Households.update_user_locale(member, "pt_PT")
+      owner_scope = household_scope_fixture(owner)
+      member_scope = household_scope_fixture(member)
+
+      expect(Budgeteer.AI.DeepSeekClientMock, :generate_insights, 2, fn data ->
+        case data["locale"] do
+          "en" -> {:ok, ["English insight"]}
+          "pt_PT" -> {:ok, ["Insight em português"]}
+        end
+      end)
+
+      assert {:ok, english} = Insights.generate_insights(owner_scope)
+      assert english.locale == "en"
+      assert english.insights == ["English insight"]
+
+      portuguese = Insights.get_insights(member_scope)
+      assert portuguese.locale == "pt_PT"
+      assert portuguese.insights == ["Insight em português"]
+    end
+
     test "builds spend data from Ledger and stores the client's insights" do
       scope = household_scope_fixture()
       account = account_fixture(scope, %{starting_balance: "1000.00"})
@@ -113,9 +144,13 @@ defmodule Budgeteer.InsightsTest do
       scope = household_scope_fixture()
 
       expect(Budgeteer.AI.DeepSeekClientMock, :generate_insights, fn _data -> {:ok, ["first"]} end)
+
       assert {:ok, first} = Insights.generate_insights(scope)
 
-      expect(Budgeteer.AI.DeepSeekClientMock, :generate_insights, fn _data -> {:ok, ["second"]} end)
+      expect(Budgeteer.AI.DeepSeekClientMock, :generate_insights, fn _data ->
+        {:ok, ["second"]}
+      end)
+
       assert {:ok, second} = Insights.generate_insights(scope)
 
       assert first.id == second.id

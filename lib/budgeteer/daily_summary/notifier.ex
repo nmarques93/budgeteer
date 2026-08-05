@@ -2,10 +2,8 @@ defmodule Budgeteer.DailySummary.Notifier do
   @moduledoc """
   Delivers the daily morning summary by email and push. Mirrors
   `Budgeteer.Ledger.BudgetNotifier`'s plain-text delivery pattern exactly
-  — same per-recipient-locale reasoning (this runs inside an Oban job
-  process with no locale of its own), except the AI-generated summary
-  text itself is not locale-aware (see CLAUDE.md's Decisions section) —
-  only the surrounding subject/greeting is.
+  — the summary variant is already generated for the recipient's locale, and
+  the surrounding subject/greeting is localized independently as well.
   """
 
   use Gettext, backend: BudgeteerWeb.Gettext

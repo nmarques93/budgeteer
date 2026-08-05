@@ -84,6 +84,21 @@ defmodule Budgeteer.Households do
     )
   end
 
+  @doc "Returns the supported locales used by members of a household."
+  def list_household_locales(household_id) do
+    locales =
+      Repo.all(
+        from u in User,
+          where: u.household_id == ^household_id,
+          select: u.locale
+      )
+      |> Enum.map(&(&1 || "en"))
+      |> Enum.filter(&(&1 in ~w(en pt_PT)))
+      |> Enum.uniq()
+
+    if locales == [], do: ["en"], else: locales
+  end
+
   @doc """
   Returns every household's id — for a scheduled job (like
   `Budgeteer.DailySummary.Worker`) that needs to run once per household,

@@ -44,7 +44,10 @@ defmodule Budgeteer.DailySummary do
   if none has been generated yet.
   """
   def get_summary(%Scope{} = scope) do
-    Repo.get_by(Summary, household_id: scope.user.household_id)
+    Repo.get_by(Summary,
+      household_id: scope.user.household_id,
+      locale: user_locale(scope)
+    )
   end
 
   @doc """
@@ -54,30 +57,30 @@ defmodule Budgeteer.DailySummary do
   `Groceries`/`Events` (each via their own unscoped, household-id-based
   helper — see each context for the "background job, no user context"
   precedent), asks the configured DeepSeek client to phrase them, and
-  upserts the result (one row per household — this replaces yesterday's
-  summary, it doesn't keep history).
+  upserts the result per household locale (this replaces yesterday's summary
+  for that locale, it doesn't keep history).
   """
-  def generate_summary_for_household(household_id) when is_binary(household_id) do
-    data = build_summary_data(household_id)
+  def generate_summary_for_household(household_id, locale \\ "en") when is_binary(household_id) do
+    data = build_summary_data(household_id, locale)
 
     with {:ok, summary} <- deepseek_client().generate_daily_summary(data) do
-      upsert_summary(household_id, summary)
+      upsert_summary(household_id, locale, summary)
     end
   end
 
-  defp upsert_summary(household_id, summary) do
+  defp upsert_summary(household_id, locale, summary) do
     attrs = %{
       household_id: household_id,
       summary: summary,
+      locale: locale,
       generated_at: DateTime.truncate(DateTime.utc_now(), :second)
     }
 
     %Summary{}
-    |> Ecto.Changeset.cast(attrs, [:household_id, :summary, :generated_at])
-    |> Ecto.Changeset.unique_constraint(:household_id)
+    |> Ecto.Changeset.cast(attrs, [:household_id, :summary, :locale, :generated_at])
     |> Repo.insert(
       on_conflict: {:replace, [:summary, :generated_at, :updated_at]},
-      conflict_target: :household_id,
+      conflict_target: [:household_id, :locale],
       returning: true
     )
     |> case do
@@ -90,7 +93,7 @@ defmodule Budgeteer.DailySummary do
     end
   end
 
-  defp build_summary_data(household_id) do
+  defp build_summary_data(household_id, locale) do
     today = Date.utc_today()
 
     %{
@@ -98,7 +101,8 @@ defmodule Budgeteer.DailySummary do
       "planned_meal" => planned_meal_data(household_id, today),
       "budget_categories" => budget_categories_data(household_id, today),
       "grocery_items" => grocery_items_data(household_id),
-      "events" => events_data(household_id, today)
+      "events" => events_data(household_id, today),
+      "locale" => locale
     }
   end
 
@@ -143,4 +147,7 @@ defmodule Budgeteer.DailySummary do
 
   defp deepseek_client,
     do: Application.get_env(:budgeteer, :deepseek_client, Budgeteer.AI.DeepSeekClient)
+
+  defp user_locale(%Scope{user: %{locale: "pt_PT"}}), do: "pt_PT"
+  defp user_locale(%Scope{}), do: "en"
 end

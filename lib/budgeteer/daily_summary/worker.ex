@@ -31,17 +31,23 @@ defmodule Budgeteer.DailySummary.Worker do
   end
 
   defp run_for_household(household_id) do
-    case DailySummary.generate_summary_for_household(household_id) do
-      {:ok, summary} ->
-        notify_household(household_id, summary.summary)
+    Households.list_household_locales(household_id)
+    |> Enum.reduce_while(:ok, fn locale, :ok ->
+      case DailySummary.generate_summary_for_household(household_id, locale) do
+        {:ok, summary} ->
+          case notify_household(household_id, locale, summary.summary) do
+            :ok -> {:cont, :ok}
+            {:error, reason} -> {:halt, {:error, reason}}
+          end
 
-      {:error, reason} ->
-        Logger.warning(
-          "Daily summary generation failed for household #{household_id}: #{inspect(reason)}"
-        )
+        {:error, reason} ->
+          Logger.warning(
+            "Daily summary generation failed for household #{household_id} (#{locale}): #{inspect(reason)}"
+          )
 
-        :ok
-    end
+          {:cont, :ok}
+      end
+    end)
   rescue
     exception ->
       Logger.error(
@@ -51,28 +57,38 @@ defmodule Budgeteer.DailySummary.Worker do
       {:error, {:household_crash, household_id, exception}}
   end
 
-  defp notify_household(household_id, summary_text) do
+  defp notify_household(household_id, locale, summary_text) do
     date = Date.to_iso8601(Date.utc_today())
 
-    deliveries =
-      Enum.map(Households.list_household_emails(household_id), fn %{email: email, locale: locale} ->
+    email_deliveries =
+      household_id
+      |> Households.list_household_emails()
+      |> Enum.filter(&(recipient_locale(&1.locale) == locale))
+      |> Enum.map(fn %{email: email, locale: recipient_locale} ->
         %{
           "channel" => "email",
           "recipient_email" => email,
-          "recipient_locale" => locale,
+          "recipient_locale" => recipient_locale,
           "summary" => summary_text,
           "dedupe_key" => "daily-summary:#{household_id}:#{date}:email:#{email}"
         }
-      end) ++
-        Enum.map(Households.list_household_device_tokens(household_id), fn %{token: token, locale: locale} ->
-          %{
-            "channel" => "push",
-            "device_token" => token,
-            "recipient_locale" => locale,
-            "summary" => summary_text,
-            "dedupe_key" => "daily-summary:#{household_id}:#{date}:push:#{token}"
-          }
-        end)
+      end)
+
+    push_deliveries =
+      household_id
+      |> Households.list_household_device_tokens()
+      |> Enum.filter(&(recipient_locale(&1.locale) == locale))
+      |> Enum.map(fn %{token: token, locale: recipient_locale} ->
+        %{
+          "channel" => "push",
+          "device_token" => token,
+          "recipient_locale" => recipient_locale,
+          "summary" => summary_text,
+          "dedupe_key" => "daily-summary:#{household_id}:#{date}:push:#{token}"
+        }
+      end)
+
+    deliveries = email_deliveries ++ push_deliveries
 
     Enum.reduce_while(deliveries, :ok, fn args, :ok ->
       job =
@@ -86,4 +102,7 @@ defmodule Budgeteer.DailySummary.Worker do
       end
     end)
   end
+
+  defp recipient_locale("pt_PT"), do: "pt_PT"
+  defp recipient_locale(_locale), do: "en"
 end

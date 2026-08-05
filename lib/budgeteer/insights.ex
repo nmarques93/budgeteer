@@ -14,6 +14,7 @@ defmodule Budgeteer.Insights do
   import Ecto.Query, warn: false
   alias Budgeteer.Repo
   alias Budgeteer.Insights.BudgetInsight
+  alias Budgeteer.Households
   alias Budgeteer.Households.Scope
   alias Budgeteer.Ledger
   alias Budgeteer.Money
@@ -46,37 +47,61 @@ defmodule Budgeteer.Insights do
   none have been generated yet.
   """
   def get_insights(%Scope{} = scope) do
-    Repo.get_by(BudgetInsight, household_id: scope.user.household_id)
+    Repo.get_by(BudgetInsight,
+      household_id: scope.user.household_id,
+      locale: user_locale(scope)
+    )
   end
 
   @doc """
   Generates fresh insights for the household: gathers this month's
   category spend (and the prior 3 months, as a "usual" baseline) from
   `Budgeteer.Ledger`, asks the configured insights client to pick out
-  what's notable, and stores the result (one row per household — this
-  replaces any previous insights, it doesn't keep history).
+  what's notable, and stores one localized row per household locale — this
+  replaces the previous insight for that locale, it doesn't keep history.
   """
   def generate_insights(%Scope{} = scope) do
-    data = build_insight_data(scope)
+    locales = Households.list_household_locales(scope.user.household_id)
 
-    with {:ok, insights} <- deepseek_client().generate_insights(data) do
-      upsert_insights(scope, insights)
+    with {:ok, localized_insights} <- generate_for_locales(scope, locales),
+         {:ok, stored} <- store_localized_insights(scope, localized_insights) do
+      {:ok, Enum.find(stored, &(&1.locale == user_locale(scope)))}
     end
   end
 
-  defp upsert_insights(%Scope{} = scope, insights) do
+  defp generate_for_locales(scope, locales) do
+    Enum.reduce_while(locales, {:ok, []}, fn locale, {:ok, acc} ->
+      data = build_insight_data(scope, locale)
+
+      case deepseek_client().generate_insights(data) do
+        {:ok, insights} -> {:cont, {:ok, [{locale, insights} | acc]}}
+        {:error, reason} -> {:halt, {:error, reason}}
+      end
+    end)
+  end
+
+  defp store_localized_insights(%Scope{} = scope, localized_insights) do
+    localized_insights
+    |> Enum.map(fn {locale, insights} -> upsert_insights(scope, locale, insights) end)
+    |> Enum.reduce_while({:ok, []}, fn
+      {:ok, insight}, {:ok, acc} -> {:cont, {:ok, [insight | acc]}}
+      {:error, reason}, _acc -> {:halt, {:error, reason}}
+    end)
+  end
+
+  defp upsert_insights(%Scope{} = scope, locale, insights) do
     attrs = %{
       household_id: scope.user.household_id,
       insights: insights,
+      locale: locale,
       generated_at: DateTime.truncate(DateTime.utc_now(), :second)
     }
 
     %BudgetInsight{}
-    |> Ecto.Changeset.cast(attrs, [:household_id, :insights, :generated_at])
-    |> Ecto.Changeset.unique_constraint(:household_id)
+    |> Ecto.Changeset.cast(attrs, [:household_id, :insights, :locale, :generated_at])
     |> Repo.insert(
       on_conflict: {:replace, [:insights, :generated_at, :updated_at]},
-      conflict_target: :household_id,
+      conflict_target: [:household_id, :locale],
       returning: true
     )
     |> case do
@@ -94,7 +119,7 @@ defmodule Budgeteer.Insights do
   # this app (AI.Client's parse_statement/parse_recipe_from_file,
   # DeepSeekClient's parse_recipe) follows the same rule: the model
   # extracts/summarizes stated facts, it never computes them.
-  defp build_insight_data(%Scope{} = scope) do
+  defp build_insight_data(%Scope{} = scope, locale) do
     today = Date.utc_today()
     day_of_month = today.day
     days_in_month = Date.days_in_month(today)
@@ -126,7 +151,8 @@ defmodule Budgeteer.Insights do
       "days_in_month" => days_in_month,
       "categories" => categories,
       "current_balance" => Money.format(Ledger.total_balance_cents(scope)),
-      "balance_30_days_ago" => balance_30_days_ago(balance_history)
+      "balance_30_days_ago" => balance_30_days_ago(balance_history),
+      "locale" => locale
     }
   end
 
@@ -162,6 +188,9 @@ defmodule Budgeteer.Insights do
 
   defp format_or_nil(nil), do: nil
   defp format_or_nil(cents), do: Money.format(cents)
+
+  defp user_locale(%Scope{user: %{locale: "pt_PT"}}), do: "pt_PT"
+  defp user_locale(%Scope{}), do: "en"
 
   defp deepseek_client,
     do: Application.get_env(:budgeteer, :deepseek_client, Budgeteer.AI.DeepSeekClient)

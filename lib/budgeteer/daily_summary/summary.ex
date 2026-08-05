@@ -6,6 +6,7 @@ defmodule Budgeteer.DailySummary.Summary do
   schema "daily_summaries" do
     field :summary, :string, default: ""
     field :generated_at, :utc_datetime
+    field :locale, :string, default: "en"
     field :household_id, :binary_id
 
     timestamps(type: :utc_datetime)

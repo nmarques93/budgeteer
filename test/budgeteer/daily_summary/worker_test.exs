@@ -52,4 +52,24 @@ defmodule Budgeteer.DailySummary.WorkerTest do
     assert DailySummary.get_summary(failing_scope) == nil
     assert DailySummary.get_summary(succeeding_scope).summary == "All good."
   end
+
+  test "generates and delivers a variant for each member locale" do
+    owner = Budgeteer.HouseholdsFixtures.user_fixture()
+    member = Budgeteer.HouseholdsFixtures.second_household_member_fixture(owner)
+    {:ok, member} = Budgeteer.Households.update_user_locale(member, "pt_PT")
+    owner_scope = Budgeteer.HouseholdsFixtures.household_scope_fixture(owner)
+    member_scope = Budgeteer.HouseholdsFixtures.household_scope_fixture(member)
+    drain_mailbox()
+
+    expect(Budgeteer.AI.DeepSeekClientMock, :generate_daily_summary, 2, fn data ->
+      case data["locale"] do
+        "en" -> {:ok, "English summary"}
+        "pt_PT" -> {:ok, "Resumo em português"}
+      end
+    end)
+
+    assert :ok = perform_job(Worker, %{})
+    assert DailySummary.get_summary(owner_scope).summary == "English summary"
+    assert DailySummary.get_summary(member_scope).summary == "Resumo em português"
+  end
 end

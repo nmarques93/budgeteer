@@ -37,7 +37,11 @@ defmodule Budgeteer.AI.DeepSeekClient do
 
   @impl true
   def generate_insights(data) when is_map(data) do
-    with {:ok, decoded} <- request(@insights_system_prompt, Jason.encode!(data)) do
+    locale = Map.get(data, "locale", "en")
+    data = Map.delete(data, "locale")
+
+    with {:ok, decoded} <-
+           request(localized_prompt(@insights_system_prompt, locale), Jason.encode!(data)) do
       case decoded do
         %{"insights" => insights} when is_list(insights) ->
           {:ok, Enum.filter(insights, &is_binary/1)}
@@ -76,7 +80,10 @@ defmodule Budgeteer.AI.DeepSeekClient do
   @impl true
   def parse_recipe(text) when is_binary(text) do
     with {:ok, decoded} <-
-           request(@recipe_system_prompt, "Extract the recipe from the following text:\n\n" <> text) do
+           request(
+             @recipe_system_prompt,
+             "Extract the recipe from the following text:\n\n" <> text
+           ) do
       case decoded do
         %{"name" => _, "notes" => _, "ingredients" => ingredients} = parsed
         when is_list(ingredients) ->
@@ -105,7 +112,11 @@ defmodule Budgeteer.AI.DeepSeekClient do
 
   @impl true
   def generate_daily_summary(data) when is_map(data) do
-    with {:ok, decoded} <- request(@daily_summary_system_prompt, Jason.encode!(data)) do
+    locale = Map.get(data, "locale", "en")
+    data = Map.delete(data, "locale")
+
+    with {:ok, decoded} <-
+           request(localized_prompt(@daily_summary_system_prompt, locale), Jason.encode!(data)) do
       case decoded do
         %{"summary" => summary} when is_binary(summary) ->
           {:ok, summary}
@@ -163,4 +174,12 @@ defmodule Budgeteer.AI.DeepSeekClient do
   end
 
   defp decode(body), do: {:error, {:unexpected_response, body}}
+
+  defp localized_prompt(prompt, "pt_PT") do
+    prompt <> "\n\nWrite all natural-language output in European Portuguese (pt-PT)."
+  end
+
+  defp localized_prompt(prompt, _locale) do
+    prompt <> "\n\nWrite all natural-language output in English."
+  end
 end

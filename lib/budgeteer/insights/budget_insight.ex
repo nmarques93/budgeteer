@@ -6,6 +6,7 @@ defmodule Budgeteer.Insights.BudgetInsight do
   schema "budget_insights" do
     field :insights, {:array, :string}, default: []
     field :generated_at, :utc_datetime
+    field :locale, :string, default: "en"
     field :household_id, :binary_id
 
     timestamps(type: :utc_datetime)
