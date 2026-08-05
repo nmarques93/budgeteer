@@ -711,7 +711,8 @@ defmodule Budgeteer.Ledger do
     if claimed > 0 do
       %{
         "category_id" => category.id,
-        "spent_cents" => spent_cents
+        "spent_cents" => spent_cents,
+        "month" => Date.to_iso8601(month_start)
       }
       |> Budgeteer.Ledger.BudgetAlertWorker.new()
       |> Oban.insert()

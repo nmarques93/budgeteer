@@ -335,7 +335,7 @@ tests and operational verification exist.
   workflow.** Prevent orphaned encrypted files and statements stuck in
   `pending` when a later step fails. Add cleanup for failed writes and delete
   statement files when statements are deleted.
-- [ ] **Make budget-alert and notification delivery durable.** Do not mark an
+- [x] **Make budget-alert and notification delivery durable.** Do not mark an
   Oban job successful when email or push delivery failed. Use an outbox or
   per-recipient jobs with retry and idempotency protection.
 

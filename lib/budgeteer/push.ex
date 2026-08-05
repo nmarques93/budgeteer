@@ -34,9 +34,8 @@ defmodule Budgeteer.Push do
 
   @doc """
   Sends a push notification (`%{title:, body:}`) to one device token.
-  Always returns `:ok` — including `{:ok, :skipped}` when APNs isn't
-  configured, or when the send itself fails; see the moduledoc for why
-  failures are swallowed here rather than propagated.
+  Returns `{:ok, :skipped}` when APNs isn't configured. Configured delivery
+  failures return `{:error, reason}` so an Oban delivery worker can retry them.
   """
   def send(device_token, %{title: _title, body: _body} = notification) do
     case config() do
@@ -49,7 +48,7 @@ defmodule Budgeteer.Push do
         "Budgeteer.Push send failed: #{Exception.format(:error, error, __STACKTRACE__)}"
       )
 
-      {:ok, :skipped}
+      {:error, {:exception, error}}
   end
 
   defp config do
