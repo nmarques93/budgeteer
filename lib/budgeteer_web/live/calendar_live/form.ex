@@ -11,6 +11,10 @@ defmodule BudgeteerWeb.CalendarLive.Form do
     <Layouts.app flash={@flash} current_scope={@current_scope} online_members={@online_members}>
       <.header>{@page_title}</.header>
 
+      <p :if={@event.source == :google} class="alert alert-info mb-4">
+        {gettext("This event comes from Google Calendar and is read-only here.")}
+      </p>
+
       <.form for={@form} id="event-form" phx-change="validate" phx-submit="save">
         <.input field={@form[:title]} type="text" label={gettext("Title")} />
         <.input field={@form[:date]} type="date" label={gettext("Date")} />
@@ -25,12 +29,16 @@ defmodule BudgeteerWeb.CalendarLive.Form do
         />
         <.input field={@form[:description]} type="textarea" label={gettext("Description")} />
         <footer class="flex items-center gap-2">
-          <.button phx-disable-with={gettext("Saving...")} variant="primary">
+          <.button
+            :if={@event.source != :google}
+            phx-disable-with={gettext("Saving...")}
+            variant="primary"
+          >
             {gettext("Save Event")}
           </.button>
           <.button navigate={~p"/calendar"}>{gettext("Cancel")}</.button>
           <.link
-            :if={@live_action == :edit}
+            :if={@live_action == :edit and @event.source != :google}
             phx-click={JS.push("delete")}
             data-confirm={gettext("Are you sure you want to delete this event?")}
             class="ml-auto text-error"
@@ -95,12 +103,19 @@ defmodule BudgeteerWeb.CalendarLive.Form do
   end
 
   def handle_event("delete", _params, socket) do
-    {:ok, _} = Events.delete_event(socket.assigns.current_scope, socket.assigns.event)
+    case Events.delete_event(socket.assigns.current_scope, socket.assigns.event) do
+      {:ok, _} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, gettext("Event deleted successfully"))
+         |> push_navigate(to: ~p"/calendar")}
 
-    {:noreply,
-     socket
-     |> put_flash(:info, gettext("Event deleted successfully"))
-     |> push_navigate(to: ~p"/calendar")}
+      {:error, :read_only} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, gettext("Google Calendar events are read-only."))
+         |> push_navigate(to: ~p"/calendar")}
+    end
   end
 
   defp save_event(socket, :edit, event_params) do
@@ -113,6 +128,12 @@ defmodule BudgeteerWeb.CalendarLive.Form do
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
+
+      {:error, :read_only} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, gettext("Google Calendar events are read-only."))
+         |> push_navigate(to: ~p"/calendar")}
     end
   end
 

@@ -124,6 +124,8 @@ defmodule BudgeteerWeb.Router do
     end
 
     post "/users/update-password", UserSessionController, :update_password
+    get "/users/settings/google-calendar/connect", GoogleCalendarController, :connect
+    get "/users/settings/google-calendar/callback", GoogleCalendarController, :callback
     post "/accounts/:account_id/statements", StatementController, :create
     get "/transactions/export", TransactionExportController, :download
     post "/push-tokens", PushTokenController, :create

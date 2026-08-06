@@ -12,6 +12,7 @@ A family budgeting PWA. Upload a bank statement (PDF or photo) and Claude extrac
 - **Meal planning** — recipes with one-click "add ingredients to grocery list"
 - **Dashboard** — balance history, spend vs. budget by category, category-spend breakdown
 - **Google sign-in**, alongside email/password and magic-link login
+- **Google Calendar import** — read-only sync of a member's primary calendar into the shared calendar
 - **PWA** — installable to a phone's home screen
 - **MCP server** — query your household's data from an MCP client via a personal access token; write access for creating recipes and planning meals
 

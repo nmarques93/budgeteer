@@ -14,6 +14,7 @@ defmodule Budgeteer.Households.User do
     field :authenticated_at, :utc_datetime, virtual: true
     field :household_name, :string, virtual: true
     field :locale, :string
+    field :google_calendar, Budgeteer.Encrypted.Map, redact: true
 
     belongs_to :household, Budgeteer.Households.Household
 

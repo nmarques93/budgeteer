@@ -14,6 +14,7 @@ defmodule BudgeteerWeb.UserLive.SettingsTest do
 
       assert html =~ "Change Email"
       assert html =~ "Save Password"
+      assert html =~ "Connect Google Calendar"
     end
 
     test "redirects if user is not logged in", %{conn: conn} do

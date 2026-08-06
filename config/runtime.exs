@@ -69,7 +69,9 @@ end
 # pattern, since this needs to be testable via a real browser flow in dev
 # once set locally, and should degrade gracefully (the button just won't
 # work) rather than crash boot. Register a redirect URI of
-# "<host>/auth/google/callback" in Google Cloud Console to get these.
+# "<host>/auth/google/callback" and
+# "<host>/users/settings/google-calendar/callback" in Google Cloud Console to
+# get these.
 config :ueberauth, Ueberauth.Strategy.Google.OAuth,
   client_id: System.get_env("GOOGLE_CLIENT_ID"),
   client_secret: System.get_env("GOOGLE_CLIENT_SECRET")

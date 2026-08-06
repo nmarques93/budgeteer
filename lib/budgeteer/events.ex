@@ -64,6 +64,84 @@ defmodule Budgeteer.Events do
     )
   end
 
+  @doc "Replaces one user's imported Google events for a calendar."
+  def replace_google_events(%Scope{} = scope, calendar_id, google_events)
+      when is_binary(calendar_id) and is_list(google_events) do
+    attrs =
+      google_events
+      |> Enum.filter(&(&1["status"] != "cancelled"))
+      |> Enum.flat_map(fn event ->
+        case google_event_attrs(event, scope, calendar_id) do
+          {:ok, attrs} -> [attrs]
+          :skip -> []
+        end
+      end)
+
+    external_ids = Enum.map(attrs, & &1.external_id)
+
+    with {:ok, {imported, stale}} <-
+           Repo.transaction(fn ->
+             imported =
+               Enum.map(attrs, fn attrs ->
+                 %Event{}
+                 |> Event.google_changeset(attrs, scope)
+                 |> Repo.insert!(
+                   on_conflict:
+                     {:replace,
+                      [
+                        :title,
+                        :description,
+                        :date,
+                        :start_time,
+                        :end_time,
+                        :external_url,
+                        :updated_at
+                      ]},
+                   conflict_target:
+                     {:unsafe_fragment,
+                      "(source, user_id, external_calendar_id, external_id) WHERE source = 'google' AND external_id IS NOT NULL"},
+                   returning: true
+                 )
+               end)
+
+             stale_query =
+               from e in Event,
+                 where:
+                   e.household_id == ^scope.user.household_id and
+                     e.source == :google and
+                     e.user_id == ^scope.user.id and
+                     e.external_calendar_id == ^calendar_id
+
+             stale_query =
+               if external_ids == [],
+                 do: stale_query,
+                 else: where(stale_query, [e], e.external_id not in ^external_ids)
+
+             stale = Repo.all(stale_query)
+             Repo.delete_all(stale_query)
+             {imported, stale}
+           end) do
+      Enum.each(imported, &broadcast_event(scope.user.household_id, {:updated, &1}))
+      Enum.each(stale, &broadcast_event(scope.user.household_id, {:deleted, &1}))
+      {:ok, length(imported)}
+    end
+  end
+
+  @doc "Deletes the current user's imported Google events when disconnecting."
+  def delete_google_events(%Scope{} = scope) do
+    query =
+      from e in Event,
+        where:
+          e.household_id == ^scope.user.household_id and
+            e.source == :google and
+            e.user_id == ^scope.user.id
+
+    events = Repo.all(query)
+    {count, _} = Repo.delete_all(query)
+    Enum.each(events, &broadcast_event(scope.user.household_id, {:deleted, &1}))
+    {:ok, count}
+  end
+
   @doc """
   Gets a single event, scoped to the household.
   """
@@ -93,12 +171,16 @@ defmodule Budgeteer.Events do
   """
   def update_event(%Scope{} = scope, %Event{} = event, attrs) do
     true = event.household_id == scope.user.household_id
-    changeset = event |> Event.changeset(attrs, scope) |> validate_user_scope(scope)
 
-    with {:ok, event = %Event{}} <-
-           Repo.update(changeset) do
-      broadcast_event(event.household_id, {:updated, event})
-      {:ok, event}
+    if event.source == :google do
+      {:error, :read_only}
+    else
+      changeset = event |> Event.changeset(attrs, scope) |> validate_user_scope(scope)
+
+      with {:ok, event = %Event{}} <- Repo.update(changeset) do
+        broadcast_event(event.household_id, {:updated, event})
+        {:ok, event}
+      end
     end
   end
 
@@ -108,9 +190,13 @@ defmodule Budgeteer.Events do
   def delete_event(%Scope{} = scope, %Event{} = event) do
     true = event.household_id == scope.user.household_id
 
-    with {:ok, event = %Event{}} <- Repo.delete(event) do
-      broadcast_event(event.household_id, {:deleted, event})
-      {:ok, event}
+    if event.source == :google do
+      {:error, :read_only}
+    else
+      with {:ok, event = %Event{}} <- Repo.delete(event) do
+        broadcast_event(event.household_id, {:deleted, event})
+        {:ok, event}
+      end
     end
   end
 
@@ -138,4 +224,37 @@ defmodule Budgeteer.Events do
         end
     end
   end
+
+  defp google_event_attrs(event, %Scope{} = scope, calendar_id) do
+    with external_id when is_binary(external_id) <- event["id"],
+         {:ok, start} <- google_datetime(event["start"]),
+         {:ok, finish} <- google_datetime(event["end"]) do
+      {:ok,
+       %{
+         title: event["summary"] || "Untitled event",
+         description: event["description"],
+         date: start.date,
+         start_time: start.time,
+         end_time: finish.time,
+         user_id: scope.user.id,
+         external_calendar_id: calendar_id,
+         external_id: external_id,
+         external_url: event["htmlLink"]
+       }}
+    else
+      _ -> :skip
+    end
+  end
+
+  defp google_datetime(%{"date" => date}) when is_binary(date) do
+    with {:ok, date} <- Date.from_iso8601(date), do: {:ok, %{date: date, time: nil}}
+  end
+
+  defp google_datetime(%{"dateTime" => date_time}) when is_binary(date_time) do
+    with {:ok, date_time, _offset} <- DateTime.from_iso8601(date_time) do
+      {:ok, %{date: DateTime.to_date(date_time), time: DateTime.to_time(date_time)}}
+    end
+  end
+
+  defp google_datetime(_), do: :error
 end

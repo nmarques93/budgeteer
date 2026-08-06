@@ -4,6 +4,8 @@ defmodule BudgeteerWeb.UserLive.Settings do
   on_mount {BudgeteerWeb.UserAuth, :require_sudo_mode}
 
   alias Budgeteer.Households
+  alias Budgeteer.Events
+  alias Budgeteer.GoogleCalendar.SyncWorker
   alias Budgeteer.RateLimit
 
   @invite_scale :timer.hours(1)
@@ -94,6 +96,36 @@ defmodule BudgeteerWeb.UserLive.Settings do
           {gettext("Send invite")}
         </.button>
       </.form>
+
+      <div class="divider" />
+
+      <div>
+        <.header>
+          {gettext("Google Calendar")}
+          <:subtitle>
+            {gettext("Import your primary Google Calendar into the shared household calendar.")}
+          </:subtitle>
+        </.header>
+
+        <%= if @google_calendar_connected do %>
+          <div class="flex items-center gap-2 mt-4">
+            <span class="text-success">{gettext("Connected")}</span>
+            <.button phx-click="sync_google_calendar" phx-disable-with={gettext("Syncing...")}>
+              {gettext("Sync now")}
+            </.button>
+            <.button
+              phx-click="disconnect_google_calendar"
+              data-confirm={gettext("Disconnect Google Calendar?")}
+            >
+              {gettext("Disconnect")}
+            </.button>
+          </div>
+        <% else %>
+          <.link href={~p"/users/settings/google-calendar/connect"} class="btn btn-primary mt-4">
+            {gettext("Connect Google Calendar")}
+          </.link>
+        <% end %>
+      </div>
 
       <div class="divider" />
 
@@ -191,6 +223,7 @@ defmodule BudgeteerWeb.UserLive.Settings do
       |> assign(:trigger_submit, false)
       |> assign(:invite_form, to_form(%{"email" => ""}, as: "invite"))
       |> assign(:new_token, nil)
+      |> assign(:google_calendar_connected, not is_nil(user.google_calendar))
       |> assign(
         :access_token_form,
         to_form(%{"name" => "", "meal_write" => false}, as: "access_token")
@@ -316,6 +349,37 @@ defmodule BudgeteerWeb.UserLive.Settings do
 
       {:error, :not_found} ->
         {:noreply, put_flash(socket, :error, gettext("That token no longer exists."))}
+    end
+  end
+
+  def handle_event("sync_google_calendar", _params, socket) do
+    user = socket.assigns.current_scope.user
+
+    case Oban.insert(SyncWorker.new(%{"user_id" => user.id})) do
+      {:ok, _job} ->
+        {:noreply, put_flash(socket, :info, gettext("Google Calendar sync started."))}
+
+      {:error, _reason} ->
+        {:noreply,
+         put_flash(socket, :error, gettext("Google Calendar sync could not be started."))}
+    end
+  end
+
+  def handle_event("disconnect_google_calendar", _params, socket) do
+    scope = socket.assigns.current_scope
+    user = scope.user
+    {:ok, _count} = Events.delete_google_events(scope)
+
+    case Households.disconnect_google_calendar(user) do
+      {:ok, _user} ->
+        {:noreply,
+         socket
+         |> assign(:google_calendar_connected, false)
+         |> put_flash(:info, gettext("Google Calendar disconnected."))}
+
+      {:error, _changeset} ->
+        {:noreply,
+         put_flash(socket, :error, gettext("Google Calendar could not be disconnected."))}
     end
   end
 

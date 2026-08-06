@@ -39,7 +39,7 @@ config :budgeteer, Oban,
   engine: Oban.Engines.Basic,
   notifier: Oban.Notifiers.Postgres,
   repo: Budgeteer.Repo,
-  queues: [statements: 5, notifications: 5],
+  queues: [statements: 5, notifications: 5, calendar: 2],
   plugins: [
     {Oban.Plugins.Pruner, max_age: 60 * 60 * 24 * 7},
     # 06:00 UTC — no timezone library in this app (Portugal-only for now,

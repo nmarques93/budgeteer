@@ -113,6 +113,27 @@ defmodule Budgeteer.EventsTest do
     end
   end
 
+  describe "imported Google events" do
+    test "cannot be updated or deleted locally" do
+      scope = household_scope_fixture()
+
+      assert {:ok, 1} =
+               Events.replace_google_events(scope, "primary", [
+                 %{
+                   "id" => "google-event",
+                   "summary" => "Imported",
+                   "start" => %{"date" => "2026-08-20"},
+                   "end" => %{"date" => "2026-08-21"}
+                 }
+               ])
+
+      [event] = Events.list_events(scope, ~D[2026-08-01], ~D[2026-08-31])
+
+      assert {:error, :read_only} = Events.update_event(scope, event, %{title: "Changed"})
+      assert {:error, :read_only} = Events.delete_event(scope, event)
+    end
+  end
+
   describe "update_event/3 and delete_event/2" do
     test "updates an event" do
       scope = household_scope_fixture()

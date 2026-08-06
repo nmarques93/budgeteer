@@ -302,6 +302,24 @@ defmodule Budgeteer.Households do
     if owner?(scope), do: :ok, else: {:error, :forbidden}
   end
 
+  @doc "Stores a user's encrypted Google Calendar refresh-token configuration."
+  def save_google_calendar(%User{} = user, refresh_token, calendar_ids)
+      when is_binary(refresh_token) and is_list(calendar_ids) do
+    user
+    |> Ecto.Changeset.change(%{
+      google_calendar: %{
+        "refresh_token" => refresh_token,
+        "calendar_ids" => calendar_ids
+      }
+    })
+    |> Repo.update()
+  end
+
+  @doc "Disconnects the user's Google Calendar integration."
+  def disconnect_google_calendar(%User{} = user) do
+    user |> Ecto.Changeset.change(google_calendar: nil) |> Repo.update()
+  end
+
   @doc """
   Checks whether the user is in sudo mode.
 

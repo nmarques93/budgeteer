@@ -80,15 +80,28 @@ defmodule BudgeteerWeb.CalendarLive.Index do
           >
             {date.day}
           </.link>
-          <.link
-            :for={event <- Enum.take(Map.get(@events_by_date, date, []), 3)}
-            navigate={~p"/calendar/#{event}/edit"}
-            class="block truncate rounded px-1 py-0.5 text-left text-white"
-            style={"background-color: #{event_color(@member_colors, event)}"}
-            title={event.title}
-          >
-            {event.title}
-          </.link>
+          <%= for event <- Enum.take(Map.get(@events_by_date, date, []), 3) do %>
+            <a
+              :if={event.source == :google}
+              href={event.external_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="block truncate rounded px-1 py-0.5 text-left text-white"
+              style={"background-color: #{event_color(@member_colors, event)}"}
+              title={event.title}
+            >
+              {event.title}
+            </a>
+            <.link
+              :if={event.source != :google}
+              navigate={~p"/calendar/#{event}/edit"}
+              class="block truncate rounded px-1 py-0.5 text-left text-white"
+              style={"background-color: #{event_color(@member_colors, event)}"}
+              title={event.title}
+            >
+              {event.title}
+            </.link>
+          <% end %>
           <div
             :if={length(Map.get(@events_by_date, date, [])) > 3}
             class="px-1 text-[10px] opacity-60"
