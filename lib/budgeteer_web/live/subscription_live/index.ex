@@ -33,7 +33,7 @@ defmodule BudgeteerWeb.SubscriptionLive.Index do
           <:col :let={sub} label={gettext("Last charged")}>{sub.last_date}</:col>
           <:col :let={sub} label={gettext("Next expected")}>{sub.next_expected_date}</:col>
           <:col :let={sub} label={gettext("Category")}>
-            {category_name(@categories_by_id, sub.category_id)}
+            <.category_badge category={Map.get(@categories_by_id, sub.category_id)} />
           </:col>
           <:action :let={sub}>
             <.link
@@ -84,7 +84,7 @@ defmodule BudgeteerWeb.SubscriptionLive.Index do
     {:ok,
      socket
      |> assign(:page_title, gettext("Recurring Charges"))
-     |> assign(:categories_by_id, Map.new(categories, &{&1.id, &1.name}))
+     |> assign(:categories_by_id, Map.new(categories, &{&1.id, &1}))
      |> load_data()}
   end
 
@@ -139,11 +139,6 @@ defmodule BudgeteerWeb.SubscriptionLive.Index do
 
   defp normalize_cents(cents) when is_integer(cents), do: cents
   defp normalize_cents(cents) when is_binary(cents), do: String.to_integer(cents)
-
-  defp category_name(_categories_by_id, nil), do: gettext("Uncategorized")
-
-  defp category_name(categories_by_id, category_id),
-    do: Map.get(categories_by_id, category_id, gettext("Uncategorized"))
 
   defp cadence_label(:weekly), do: gettext("Weekly")
   defp cadence_label(:biweekly), do: gettext("Every 2 weeks")

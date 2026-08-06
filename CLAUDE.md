@@ -117,7 +117,8 @@ accounts                           # Budgeteer.Ledger (planned) — bank account
 
 categories
   id (uuid), household_id (uuid FK)
-  name, color, budget_cents (nullable), type (income | expense)
+  name, icon (curated Heroicon name), color, budget_cents (nullable)
+  type (income | expense)
   budget_alert_sent_for (date, nullable)  -- month a budget alert was last sent, see Decisions
   unique on (household_id, name)
 

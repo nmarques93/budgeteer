@@ -14,6 +14,12 @@ defmodule BudgeteerWeb.CategoryLive.Form do
         <.input field={@form[:name]} type="text" label={gettext("Name")} />
         <.input field={@form[:color]} type="text" label={gettext("Color")} />
         <.input
+          field={@form[:icon]}
+          type="select"
+          label={gettext("Icon")}
+          options={icon_options()}
+        />
+        <.input
           field={@form[:budget]}
           type="text"
           label={gettext("Budget")}
@@ -121,4 +127,25 @@ defmodule BudgeteerWeb.CategoryLive.Form do
 
   defp return_path(_scope, "index", _category), do: ~p"/categories"
   defp return_path(_scope, "show", category), do: ~p"/categories/#{category}"
+
+  defp icon_options do
+    [
+      {gettext("Tag"), "hero-tag"},
+      {gettext("Shopping"), "hero-shopping-cart"},
+      {gettext("Home"), "hero-home"},
+      {gettext("Utilities"), "hero-bolt"},
+      {gettext("Health"), "hero-heart"},
+      {gettext("Entertainment"), "hero-film"},
+      {gettext("Education"), "hero-academic-cap"},
+      {gettext("Money"), "hero-banknotes"},
+      {gettext("Transport"), "hero-truck"},
+      {gettext("Gifts"), "hero-gift"},
+      {gettext("Food"), "hero-beaker"},
+      {gettext("Phone"), "hero-device-phone-mobile"},
+      {gettext("Tools"), "hero-wrench-screwdriver"},
+      {gettext("Work"), "hero-briefcase"},
+      {gettext("Office"), "hero-building-office-2"},
+      {gettext("Special"), "hero-sparkles"}
+    ]
+  end
 end

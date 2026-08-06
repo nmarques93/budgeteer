@@ -4,9 +4,31 @@ defmodule Budgeteer.Ledger.Category do
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
+  @icons ~w(
+    hero-tag
+    hero-shopping-cart
+    hero-home
+    hero-bolt
+    hero-heart
+    hero-film
+    hero-academic-cap
+    hero-banknotes
+    hero-truck
+    hero-gift
+    hero-beaker
+    hero-device-phone-mobile
+    hero-wrench-screwdriver
+    hero-briefcase
+    hero-building-office-2
+    hero-sparkles
+  )
+
+  def icons, do: @icons
+
   schema "categories" do
     field :name, :string
     field :color, :string
+    field :icon, :string, default: "hero-tag"
     field :budget_cents, :integer
     field :budget, :string, virtual: true
     field :type, Ecto.Enum, values: [:income, :expense]
@@ -19,8 +41,9 @@ defmodule Budgeteer.Ledger.Category do
   @doc false
   def changeset(category, attrs, household_scope) do
     category
-    |> cast(attrs, [:name, :color, :budget, :type])
+    |> cast(attrs, [:name, :color, :icon, :budget, :type])
     |> validate_required([:name, :type])
+    |> validate_inclusion(:icon, @icons)
     |> put_budget_cents()
     |> put_change(:household_id, household_scope.user.household_id)
     |> unique_constraint(:name, name: :categories_household_id_name_index)

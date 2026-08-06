@@ -46,7 +46,7 @@ defmodule BudgeteerWeb.TransactionLive.Search do
           {transaction.description}
         </:col>
         <:col :let={{_id, transaction}} label={gettext("Category")}>
-          {category_name(@categories_by_id, transaction.category_id)}
+          <.category_badge category={Map.get(@categories_by_id, transaction.category_id)} />
         </:col>
       </.table>
     </Layouts.app>
@@ -72,7 +72,7 @@ defmodule BudgeteerWeb.TransactionLive.Search do
      |> assign(:accounts, accounts)
      |> assign(:accounts_by_id, Map.new(accounts, &{&1.id, &1.name}))
      |> assign(:categories, categories)
-     |> assign(:categories_by_id, Map.new(categories, &{&1.id, &1.name}))
+     |> assign(:categories_by_id, Map.new(categories, &{&1.id, &1}))
      |> assign(:filter_params, filter_params)
      |> assign(:result_count, length(results))
      |> stream(:transactions, results)}
@@ -109,11 +109,6 @@ defmodule BudgeteerWeb.TransactionLive.Search do
      |> assign(:result_count, length(results))
      |> stream(:transactions, results, reset: true)}
   end
-
-  defp category_name(_categories_by_id, nil), do: gettext("Uncategorized")
-
-  defp category_name(categories_by_id, category_id),
-    do: Map.get(categories_by_id, category_id, gettext("Uncategorized"))
 
   defp account_name(accounts_by_id, account_id), do: Map.get(accounts_by_id, account_id, "—")
 end

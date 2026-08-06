@@ -97,7 +97,7 @@ defmodule BudgeteerWeb.DashboardLive do
           <.money cents={transaction.amount_cents} />
         </:col>
         <:col :let={transaction} label={gettext("Category")}>
-          {category_name(@categories_by_id, transaction.category_id)}
+          <.category_badge category={Map.get(@categories_by_id, transaction.category_id)} />
         </:col>
       </.table>
     </Layouts.app>
@@ -123,7 +123,7 @@ defmodule BudgeteerWeb.DashboardLive do
      socket
      |> assign(:page_title, gettext("Dashboard"))
      |> assign(:accounts_by_id, Map.new(Ledger.list_accounts(scope), &{&1.id, &1.name}))
-     |> assign(:categories_by_id, Map.new(categories, &{&1.id, &1.name}))
+     |> assign(:categories_by_id, Map.new(categories, &{&1.id, &1}))
      |> assign(:categories, categories)
      |> assign(:insights, Insights.get_insights(scope))
      |> assign(:generating_insights, false)
@@ -186,7 +186,7 @@ defmodule BudgeteerWeb.DashboardLive do
     {:noreply,
      socket
      |> assign(:accounts_by_id, Map.new(Ledger.list_accounts(scope), &{&1.id, &1.name}))
-     |> assign(:categories_by_id, Map.new(categories, &{&1.id, &1.name}))
+     |> assign(:categories_by_id, Map.new(categories, &{&1.id, &1}))
      |> assign(:categories, categories)
      |> load_data()}
   end
@@ -299,11 +299,6 @@ defmodule BudgeteerWeb.DashboardLive do
 
   defp account_name(accounts_by_id, account_id),
     do: Map.get(accounts_by_id, account_id, gettext("Unknown account"))
-
-  defp category_name(_categories_by_id, nil), do: gettext("Uncategorized")
-
-  defp category_name(categories_by_id, category_id),
-    do: Map.get(categories_by_id, category_id, gettext("Uncategorized"))
 
   @doc """
   Renders the household's balance trend as a hairline SVG line chart with a

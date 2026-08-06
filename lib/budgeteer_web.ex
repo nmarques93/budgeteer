@@ -88,6 +88,7 @@ defmodule BudgeteerWeb do
       import Phoenix.HTML
       # Core UI components
       import BudgeteerWeb.CoreComponents
+      import BudgeteerWeb.CategoryComponents
 
       # Common modules used in templates
       alias Phoenix.LiveView.JS

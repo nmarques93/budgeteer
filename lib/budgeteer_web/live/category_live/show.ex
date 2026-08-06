@@ -8,7 +8,10 @@ defmodule BudgeteerWeb.CategoryLive.Show do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} online_members={@online_members}>
       <.header>
-        {@category.name}
+        <span class="inline-flex items-center gap-2">
+          <.icon name={@category.icon} class="size-5 text-primary" />
+          {@category.name}
+        </span>
         <:actions>
           <.button navigate={~p"/categories"}>
             <.icon name="hero-arrow-left" />
@@ -20,7 +23,12 @@ defmodule BudgeteerWeb.CategoryLive.Show do
       </.header>
 
       <.list>
-        <:item title={gettext("Name")}>{@category.name}</:item>
+        <:item title={gettext("Name")}>
+          <span class="inline-flex items-center gap-2">
+            <.icon name={@category.icon} class="size-4 text-primary" />
+            {@category.name}
+          </span>
+        </:item>
         <:item title={gettext("Color")}>{@category.color}</:item>
         <:item title={gettext("Budget")}><.money cents={@category.budget_cents} /></:item>
         <:item title={gettext("Type")}>{@category.type}</:item>

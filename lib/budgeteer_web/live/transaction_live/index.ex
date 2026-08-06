@@ -51,7 +51,7 @@ defmodule BudgeteerWeb.TransactionLive.Index do
         </:col>
         <:col :let={{_id, transaction}} label={gettext("Notes")}>{transaction.notes}</:col>
         <:col :let={{_id, transaction}} label={gettext("Category")}>
-          {category_name(@categories_by_id, transaction.category_id)}
+          <.category_badge category={Map.get(@categories_by_id, transaction.category_id)} />
         </:col>
         <:action :let={{_id, transaction}}>
           <div class="sr-only">
@@ -86,7 +86,7 @@ defmodule BudgeteerWeb.TransactionLive.Index do
     end
 
     categories = Ledger.list_categories(socket.assigns.current_scope)
-    categories_by_id = Map.new(categories, &{&1.id, &1.name})
+    categories_by_id = Map.new(categories, &{&1.id, &1})
     filter_params = FilterForm.normalize_params(%{})
     results = search(socket.assigns.current_scope, account, filter_params)
 
@@ -143,9 +143,4 @@ defmodule BudgeteerWeb.TransactionLive.Index do
     filters = filter_params |> FilterForm.to_filters() |> Map.put(:account_id, account.id)
     Ledger.search_transactions(scope, filters)
   end
-
-  defp category_name(_categories_by_id, nil), do: gettext("Uncategorized")
-
-  defp category_name(categories_by_id, category_id),
-    do: Map.get(categories_by_id, category_id, gettext("Uncategorized"))
 end

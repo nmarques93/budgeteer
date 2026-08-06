@@ -4,7 +4,13 @@ defmodule BudgeteerWeb.CategoryLiveTest do
   import Phoenix.LiveViewTest
   import Budgeteer.LedgerFixtures
 
-  @create_attrs %{name: "some name", type: :income, color: "some color", budget: "0.42"}
+  @create_attrs %{
+    name: "some name",
+    type: :income,
+    color: "some color",
+    icon: "hero-banknotes",
+    budget: "0.42"
+  }
   @update_attrs %{
     name: "some updated name",
     type: :expense,
@@ -29,6 +35,7 @@ defmodule BudgeteerWeb.CategoryLiveTest do
 
       assert html =~ "Listing Categories"
       assert html =~ category.name
+      assert html =~ "hero-tag"
     end
 
     test "saves new category", %{conn: conn} do
@@ -55,6 +62,7 @@ defmodule BudgeteerWeb.CategoryLiveTest do
       html = render(index_live)
       assert html =~ "Category created successfully"
       assert html =~ "some name"
+      assert html =~ "hero-banknotes"
     end
 
     test "updates category in listing", %{conn: conn, category: category} do

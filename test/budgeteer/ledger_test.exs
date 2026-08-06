@@ -413,13 +413,21 @@ defmodule Budgeteer.LedgerTest do
     end
 
     test "create_category/2 with valid data creates a category" do
-      valid_attrs = %{name: "some name", type: :income, color: "some color", budget: "0.42"}
+      valid_attrs = %{
+        name: "some name",
+        type: :income,
+        color: "some color",
+        icon: "hero-banknotes",
+        budget: "0.42"
+      }
+
       scope = household_scope_fixture()
 
       assert {:ok, %Category{} = category} = Ledger.create_category(scope, valid_attrs)
       assert category.name == "some name"
       assert category.type == :income
       assert category.color == "some color"
+      assert category.icon == "hero-banknotes"
       assert category.budget_cents == 42
       assert category.household_id == scope.user.household_id
     end
@@ -427,6 +435,15 @@ defmodule Budgeteer.LedgerTest do
     test "create_category/2 with invalid data returns error changeset" do
       scope = household_scope_fixture()
       assert {:error, %Ecto.Changeset{}} = Ledger.create_category(scope, @invalid_attrs)
+    end
+
+    test "create_category/2 rejects an icon outside the curated set" do
+      scope = household_scope_fixture()
+
+      assert {:error, changeset} =
+               Ledger.create_category(scope, %{name: "Invalid", type: :expense, icon: "hero-nope"})
+
+      assert %{icon: ["is invalid"]} = errors_on(changeset)
     end
 
     test "update_category/3 with valid data updates the category" do

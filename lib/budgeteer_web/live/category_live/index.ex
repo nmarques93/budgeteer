@@ -21,7 +21,12 @@ defmodule BudgeteerWeb.CategoryLive.Index do
         rows={@streams.categories}
         row_click={fn {_id, category} -> JS.navigate(~p"/categories/#{category}") end}
       >
-        <:col :let={{_id, category}} label={gettext("Name")}>{category.name}</:col>
+        <:col :let={{_id, category}} label={gettext("Name")}>
+          <span class="inline-flex items-center gap-2">
+            <.icon name={category.icon} class="size-4 text-primary" />
+            {category.name}
+          </span>
+        </:col>
         <:col :let={{_id, category}} label={gettext("Color")}>{category.color}</:col>
         <:col :let={{_id, category}} label={gettext("Budget")}>
           <.money cents={category.budget_cents} />
