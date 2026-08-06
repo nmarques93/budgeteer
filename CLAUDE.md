@@ -390,8 +390,8 @@ Priorities below were assigned during a 2026-07-30 competitive-analysis pass aga
 
 ### P1 — Next up, worth doing
 
-1. **Meal suggestions from historical data** — surface recipe/meal-plan suggestions based on what the household has actually cooked before (`Meals.list_planned_meals`/recipe history), instead of picking manually every time. Natural extension of meal planning once there's enough real history to suggest from; not scoped.
-2. **Google Calendar sync** — raised alongside the original family-calendar idea as a maybe (two-way sync, or at minimum reading a member's existing calendar), deliberately deferred when the calendar itself shipped as in-app-only. Would be a fourth external integration alongside Anthropic/Resend/Google-OAuth, with its own API/quota/auth surface. Not scoped.
+1. **Google Calendar sync** — raised alongside the original family-calendar idea as a maybe (two-way sync, or at minimum reading a member's existing calendar), deliberately deferred when the calendar itself shipped as in-app-only. Would be a fourth external integration alongside Anthropic/Resend/Google-OAuth, with its own API/quota/auth surface. Not scoped.
+2. **Meal suggestions from historical data (NTH)** — defer until the household has enough meaningful meal history and the data model records whether a planned meal was actually cooked. A future implementation should rank suggestions deterministically from completion frequency, recency, weekday patterns, variety, and grocery overlap; an LLM is not required for the core feature.
 
 ### P2 — Deprioritized (real value, but lower than the above relative to effort)
 
