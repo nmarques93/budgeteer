@@ -1,6 +1,8 @@
 defmodule BudgeteerWeb.GoogleCalendarController do
   use BudgeteerWeb, :controller
 
+  require Logger
+
   alias Budgeteer.GoogleCalendar
 
   @authorization_url "https://accounts.google.com/o/oauth2/v2/auth"
@@ -47,7 +49,11 @@ defmodule BudgeteerWeb.GoogleCalendarController do
         )
         |> redirect(to: ~p"/users/settings")
 
-      {:error, _reason} ->
+      {:error, reason} ->
+        Logger.warning(
+          "Google Calendar connection failed for user #{conn.assigns.current_scope.user.id}: #{inspect(reason, limit: 10, printable_limit: 500)}"
+        )
+
         conn
         |> put_flash(:error, gettext("Google Calendar could not be connected."))
         |> redirect(to: ~p"/users/settings")

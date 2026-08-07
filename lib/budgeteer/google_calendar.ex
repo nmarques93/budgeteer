@@ -16,28 +16,38 @@ defmodule Budgeteer.GoogleCalendar do
 
   @doc "Exchanges a Google authorization code, stores the refresh token, and syncs events."
   def connect_user(%User{} = user, code, redirect_uri) do
-    with {:ok, token_response} <- client().exchange_code(code, redirect_uri),
-         refresh_token when is_binary(refresh_token) <- token_response["refresh_token"],
-         {:ok, user} <- Households.save_google_calendar(user, refresh_token, @calendar_ids),
-         {:ok, count} <- sync_user(user) do
-      {:ok, count}
-    else
-      nil -> {:error, :missing_refresh_token}
-      {:error, reason} -> {:error, reason}
+    case client().exchange_code(code, redirect_uri) do
+      {:ok, %{"refresh_token" => refresh_token}} when is_binary(refresh_token) ->
+        with {:ok, user} <- Households.save_google_calendar(user, refresh_token, @calendar_ids),
+             {:ok, count} <- sync_user(user) do
+          {:ok, count}
+        else
+          {:error, reason} -> {:error, {:initial_sync, reason}}
+        end
+
+      {:ok, _response} ->
+        {:error, {:token_exchange, :missing_refresh_token}}
+
+      {:error, reason} ->
+        {:error, {:token_exchange, reason}}
     end
   end
 
   @doc "Refreshes credentials and imports the configured calendars for a user."
   def sync_user(%User{google_calendar: config} = user) when is_map(config) do
-    with {:ok, token_response} <- client().refresh_access_token(config["refresh_token"]),
-         access_token when is_binary(access_token) <- token_response["access_token"],
-         {:ok, scope} <- {:ok, Scope.for_user(user)},
-         {:ok, count} <-
-           sync_calendars(scope, access_token, config["calendar_ids"] || @calendar_ids) do
-      {:ok, count}
-    else
-      nil -> {:error, :missing_access_token}
-      {:error, reason} -> {:error, reason}
+    case client().refresh_access_token(config["refresh_token"]) do
+      {:ok, %{"access_token" => access_token}} when is_binary(access_token) ->
+        sync_calendars(
+          Scope.for_user(user),
+          access_token,
+          config["calendar_ids"] || @calendar_ids
+        )
+
+      {:ok, _response} ->
+        {:error, {:token_refresh, :missing_access_token}}
+
+      {:error, reason} ->
+        {:error, {:token_refresh, reason}}
     end
   end
 
@@ -52,11 +62,11 @@ defmodule Budgeteer.GoogleCalendar do
         {:ok, events} ->
           case Events.replace_google_events(scope, calendar_id, events) do
             {:ok, imported_count} -> {:cont, {:ok, count + imported_count}}
-            {:error, reason} -> {:halt, {:error, reason}}
+            {:error, reason} -> {:halt, {:error, {:event_import, reason}}}
           end
 
         {:error, reason} ->
-          {:halt, {:error, reason}}
+          {:halt, {:error, {:events_fetch, calendar_id, reason}}}
       end
     end)
   end
