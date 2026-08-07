@@ -80,13 +80,13 @@ defmodule BudgeteerWeb.CalendarLive.Index do
           >
             {date.day}
           </.link>
-          <%= for event <- Enum.take(Map.get(@events_by_date, date, []), 3) do %>
+          <%= for event <- visible_events(@events_by_date, date, @expanded_dates) do %>
             <a
               :if={event.source == :google}
               href={event.external_url}
               target="_blank"
               rel="noopener noreferrer"
-              class="block truncate rounded px-1 py-0.5 text-left text-white"
+              class={event_classes(event)}
               style={"background-color: #{event_color(@member_colors, event)}"}
               title={event.title}
             >
@@ -95,7 +95,7 @@ defmodule BudgeteerWeb.CalendarLive.Index do
             <.link
               :if={event.source != :google}
               navigate={~p"/calendar/#{event}/edit"}
-              class="block truncate rounded px-1 py-0.5 text-left text-white"
+              class={event_classes(event)}
               style={"background-color: #{event_color(@member_colors, event)}"}
               title={event.title}
             >
@@ -106,7 +106,18 @@ defmodule BudgeteerWeb.CalendarLive.Index do
             :if={length(Map.get(@events_by_date, date, [])) > 3}
             class="px-1 text-[10px] opacity-60"
           >
-            {gettext("+%{count} more", count: length(Map.get(@events_by_date, date, [])) - 3)}
+            <button
+              type="button"
+              phx-click="toggle_day"
+              phx-value-date={Date.to_iso8601(date)}
+              class="link"
+            >
+              <%= if MapSet.member?(@expanded_dates, date) do %>
+                {gettext("Show less")}
+              <% else %>
+                {gettext("+%{count} more", count: length(Map.get(@events_by_date, date, [])) - 3)}
+              <% end %>
+            </button>
           </div>
         </div>
       </div>
@@ -129,7 +140,8 @@ defmodule BudgeteerWeb.CalendarLive.Index do
      |> assign(:page_title, gettext("Calendar"))
      |> assign(:today, Date.utc_today())
      |> assign(:members, members)
-     |> assign(:member_colors, member_colors(members))}
+     |> assign(:member_colors, member_colors(members))
+     |> assign(:expanded_dates, MapSet.new())}
   end
 
   @impl true
@@ -159,6 +171,24 @@ defmodule BudgeteerWeb.CalendarLive.Index do
     {:noreply, socket |> assign(:events_by_date, reload_events(socket))}
   end
 
+  @impl true
+  def handle_event("toggle_day", %{"date" => date_string}, socket) do
+    case Date.from_iso8601(date_string) do
+      {:ok, date} ->
+        expanded_dates =
+          if MapSet.member?(socket.assigns.expanded_dates, date) do
+            MapSet.delete(socket.assigns.expanded_dates, date)
+          else
+            MapSet.put(socket.assigns.expanded_dates, date)
+          end
+
+        {:noreply, assign(socket, :expanded_dates, expanded_dates)}
+
+      {:error, _reason} ->
+        {:noreply, socket}
+    end
+  end
+
   defp reload_events(socket) do
     grid_dates = socket.assigns.grid_dates
 
@@ -169,6 +199,16 @@ defmodule BudgeteerWeb.CalendarLive.Index do
     )
     |> Enum.group_by(& &1.date)
   end
+
+  defp visible_events(events_by_date, date, expanded_dates) do
+    events = Map.get(events_by_date, date, [])
+    if MapSet.member?(expanded_dates, date), do: events, else: Enum.take(events, 3)
+  end
+
+  defp event_classes(%{source: :google}),
+    do: "block truncate rounded px-1 py-0.5 text-left text-base-content bg-base-300"
+
+  defp event_classes(_event), do: "block truncate rounded px-1 py-0.5 text-left text-white"
 
   defp parse_month(nil), do: Date.beginning_of_month(Date.utc_today())
 
@@ -210,11 +250,12 @@ defmodule BudgeteerWeb.CalendarLive.Index do
   defp color_for_slot(index) when index <= 8, do: "var(--series-#{index})"
   defp color_for_slot(_index), do: "var(--series-other)"
 
-  defp member_color(_member_colors, nil), do: "var(--color-base-content)"
+  defp member_color(_member_colors, nil), do: "var(--color-base-300)"
 
   defp member_color(member_colors, user_id),
-    do: Map.get(member_colors, user_id, "var(--color-base-content)")
+    do: Map.get(member_colors, user_id, "var(--color-base-300)")
 
+  defp event_color(_member_colors, %{source: :google}), do: "var(--color-base-300)"
   defp event_color(member_colors, event), do: member_color(member_colors, event.user_id)
 
   defp display_name(user), do: user.name || user.email

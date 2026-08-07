@@ -16,18 +16,44 @@ defmodule BudgeteerWeb.CalendarLive.Form do
       </p>
 
       <.form for={@form} id="event-form" phx-change="validate" phx-submit="save">
-        <.input field={@form[:title]} type="text" label={gettext("Title")} />
-        <.input field={@form[:date]} type="date" label={gettext("Date")} />
-        <.input field={@form[:start_time]} type="time" label={gettext("Start time")} />
-        <.input field={@form[:end_time]} type="time" label={gettext("End time")} />
+        <.input
+          field={@form[:title]}
+          type="text"
+          label={gettext("Title")}
+          disabled={@event.source == :google}
+        />
+        <.input
+          field={@form[:date]}
+          type="date"
+          label={gettext("Date")}
+          disabled={@event.source == :google}
+        />
+        <.input
+          field={@form[:start_time]}
+          type="time"
+          label={gettext("Start time")}
+          disabled={@event.source == :google}
+        />
+        <.input
+          field={@form[:end_time]}
+          type="time"
+          label={gettext("End time")}
+          disabled={@event.source == :google}
+        />
         <.input
           field={@form[:user_id]}
           type="select"
           label={gettext("For")}
           prompt={gettext("Whole household")}
           options={Enum.map(@members, &{display_name(&1), &1.id})}
+          disabled={@event.source == :google}
         />
-        <.input field={@form[:description]} type="textarea" label={gettext("Description")} />
+        <.input
+          field={@form[:description]}
+          type="textarea"
+          label={gettext("Description")}
+          disabled={@event.source == :google}
+        />
         <footer class="flex items-center gap-2">
           <.button
             :if={@event.source != :google}

@@ -19,6 +19,24 @@ defmodule BudgeteerWeb.CalendarLive.IndexTest do
     assert html =~ "Dentist appointment"
   end
 
+  test "expands a day with more than three events", %{conn: conn, scope: scope} do
+    for index <- 1..4 do
+      event_fixture(scope, %{
+        title: "Event #{index}",
+        date: Date.utc_today(),
+        start_time: Time.add(~T[09:00:00], index * 3600)
+      })
+    end
+
+    {:ok, live, html} = live(conn, ~p"/calendar")
+    assert html =~ "+1 more"
+    refute html =~ "Event 4"
+
+    html = live |> element("button", "+1 more") |> render_click()
+    assert html =~ "Event 4"
+    assert html =~ "Show less"
+  end
+
   test "the next/previous month links navigate and change the visible events", %{
     conn: conn,
     scope: scope

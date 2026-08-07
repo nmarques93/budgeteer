@@ -18,7 +18,7 @@ defmodule BudgeteerWeb.MealPlanLive.Index do
         for={@plan_form}
         id="plan-meal-form"
         phx-submit="plan_meal"
-        class="flex gap-2 items-end mt-4"
+        class="grid grid-cols-1 sm:grid-cols-[auto_minmax(0,1fr)_auto] gap-2 items-end mt-4"
       >
         <.input field={@plan_form[:date]} type="date" label={gettext("Date")} />
         <.input
@@ -62,7 +62,7 @@ defmodule BudgeteerWeb.MealPlanLive.Index do
           for={@add_form}
           id="add-to-list-form"
           phx-submit="add_to_grocery_list"
-          class="flex gap-2 items-end"
+          class="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto] gap-2 items-end"
         >
           <.input
             field={@add_form[:grocery_list_id]}

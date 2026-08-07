@@ -51,6 +51,25 @@ defmodule BudgeteerWeb.CalendarLive.FormTest do
   end
 
   describe "edit event" do
+    test "renders imported Google events as disabled and read-only", %{conn: conn, scope: scope} do
+      assert {:ok, 1} =
+               Events.replace_google_events(scope, "primary", [
+                 %{
+                   "id" => "google-event",
+                   "summary" => "Imported",
+                   "start" => %{"date" => "2026-08-20"},
+                   "end" => %{"date" => "2026-08-21"}
+                 }
+               ])
+
+      [event] = Events.list_events(scope, ~D[2026-08-01], ~D[2026-08-31])
+      {:ok, live, html} = live(conn, ~p"/calendar/#{event}/edit")
+
+      assert html =~ "read-only"
+      assert has_element?(live, "#event_title[disabled]")
+      refute has_element?(live, "button", "Save Event")
+    end
+
     test "updates an event", %{conn: conn, scope: scope} do
       event = event_fixture(scope, %{title: "Old title"})
       {:ok, live, _html} = live(conn, ~p"/calendar/#{event}/edit")

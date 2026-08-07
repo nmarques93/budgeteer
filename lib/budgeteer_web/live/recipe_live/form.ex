@@ -21,7 +21,7 @@ defmodule BudgeteerWeb.RecipeLive.Form do
           <legend class="fieldset-legend">{gettext("Ingredients")}</legend>
 
           <.inputs_for :let={ingredient_form} field={@form[:ingredients]}>
-            <div class="flex gap-2 items-end mb-2">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_auto] gap-2 items-end mb-2">
               <.input
                 field={ingredient_form[:name]}
                 type="text"

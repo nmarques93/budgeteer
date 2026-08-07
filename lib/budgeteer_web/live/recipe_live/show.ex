@@ -80,7 +80,7 @@ defmodule BudgeteerWeb.RecipeLive.Show do
           for={@add_form}
           id="add-to-list-form"
           phx-submit="add_to_grocery_list"
-          class="flex gap-2 items-end"
+          class="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto] gap-2 items-end"
         >
           <.input
             field={@add_form[:grocery_list_id]}

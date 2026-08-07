@@ -108,7 +108,7 @@ defmodule BudgeteerWeb.UserLive.Settings do
         </.header>
 
         <%= if @google_calendar_connected do %>
-          <div class="flex items-center gap-2 mt-4">
+          <div class="flex flex-wrap items-center gap-2 mt-4">
             <span class="text-success">{gettext("Connected")}</span>
             <.button phx-click="sync_google_calendar" phx-disable-with={gettext("Syncing...")}>
               {gettext("Sync now")}

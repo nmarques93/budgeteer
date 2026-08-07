@@ -26,7 +26,7 @@ defmodule BudgeteerWeb.UserLive.Login do
               <% else %>
                 {gettext("Don't have an account?")} <.link
                   navigate={~p"/users/register"}
-                  class="font-semibold text-brand hover:underline"
+                  class="font-semibold text-primary hover:underline"
                   phx-no-format
                 >{gettext("Sign up")}</.link> {gettext("for an account now.")}
               <% end %>
@@ -145,7 +145,9 @@ defmodule BudgeteerWeb.UserLive.Login do
     end
 
     info =
-      gettext("If your email is in our system, you will receive instructions for logging in shortly.")
+      gettext(
+        "If your email is in our system, you will receive instructions for logging in shortly."
+      )
 
     {:noreply,
      socket
