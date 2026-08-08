@@ -131,6 +131,26 @@ defmodule BudgeteerWeb.UserLive.Settings do
 
       <div>
         <.header>
+          {gettext("Daily summary email")}
+          <:subtitle>
+            {gettext("Receive a morning email with today's plans and budget alerts.")}
+          </:subtitle>
+        </.header>
+        <form id="daily-summary-email-form" phx-change="update_daily_summary_email" class="mt-4">
+          <.input
+            name="daily_summary_email_enabled"
+            type="checkbox"
+            value="true"
+            checked={@daily_summary_email_enabled}
+            label={gettext("Send me the daily summary email")}
+          />
+        </form>
+      </div>
+
+      <div class="divider" />
+
+      <div>
+        <.header>
           {gettext("API access")}
           <:subtitle>
             {gettext(
@@ -224,6 +244,7 @@ defmodule BudgeteerWeb.UserLive.Settings do
       |> assign(:invite_form, to_form(%{"email" => ""}, as: "invite"))
       |> assign(:new_token, nil)
       |> assign(:google_calendar_connected, not is_nil(user.google_calendar))
+      |> assign(:daily_summary_email_enabled, user.daily_summary_email_enabled)
       |> assign(
         :access_token_form,
         to_form(%{"name" => "", "meal_write" => false}, as: "access_token")
@@ -334,6 +355,28 @@ defmodule BudgeteerWeb.UserLive.Settings do
          :error,
          gettext("Too many tokens created — please wait a while and try again.")
        )}
+    end
+  end
+
+  def handle_event(
+        "update_daily_summary_email",
+        %{"daily_summary_email_enabled" => enabled},
+        socket
+      ) do
+    enabled = enabled == "true"
+    user = socket.assigns.current_scope.user
+
+    case Households.update_daily_summary_email_preference(user, enabled) do
+      {:ok, _user} ->
+        {:noreply, assign(socket, :daily_summary_email_enabled, enabled)}
+
+      {:error, _changeset} ->
+        {:noreply,
+         put_flash(
+           socket,
+           :error,
+           gettext("The daily summary email preference could not be saved.")
+         )}
     end
   end
 

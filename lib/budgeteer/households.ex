@@ -84,6 +84,23 @@ defmodule Budgeteer.Households do
     )
   end
 
+  @doc "Returns members who explicitly opted into daily-summary email."
+  def list_daily_summary_emails(household_id) do
+    Repo.all(
+      from u in User,
+        where: u.household_id == ^household_id and u.daily_summary_email_enabled == true,
+        select: %{user_id: u.id, email: u.email, locale: u.locale}
+    )
+  end
+
+  @doc "Updates the current user's daily-summary email preference."
+  def update_daily_summary_email_preference(%User{} = user, enabled)
+      when is_boolean(enabled) do
+    user
+    |> Ecto.Changeset.change(daily_summary_email_enabled: enabled)
+    |> Repo.update()
+  end
+
   @doc "Returns the supported locales used by members of a household."
   def list_household_locales(household_id) do
     locales =

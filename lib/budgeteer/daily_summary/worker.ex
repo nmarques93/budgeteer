@@ -62,11 +62,12 @@ defmodule Budgeteer.DailySummary.Worker do
 
     email_deliveries =
       household_id
-      |> Households.list_household_emails()
+      |> Households.list_daily_summary_emails()
       |> Enum.filter(&(recipient_locale(&1.locale) == locale))
-      |> Enum.map(fn %{email: email, locale: recipient_locale} ->
+      |> Enum.map(fn %{user_id: user_id, email: email, locale: recipient_locale} ->
         %{
           "channel" => "email",
+          "recipient_user_id" => user_id,
           "recipient_email" => email,
           "recipient_locale" => recipient_locale,
           "summary" => summary_text,

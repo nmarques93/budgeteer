@@ -9,6 +9,7 @@ defmodule Budgeteer.DailySummary.WorkerTest do
 
   alias Budgeteer.DailySummary
   alias Budgeteer.DailySummary.Worker
+  alias Budgeteer.Households
 
   setup :verify_on_exit!
 
@@ -23,6 +24,7 @@ defmodule Budgeteer.DailySummary.WorkerTest do
   test "generates and emails a summary for every household" do
     scope = household_scope_fixture()
     drain_mailbox()
+    {:ok, _user} = Households.update_daily_summary_email_preference(scope.user, true)
 
     expect(Budgeteer.AI.DeepSeekClientMock, :generate_daily_summary, fn _data ->
       {:ok, "Nothing notable today."}
@@ -32,6 +34,19 @@ defmodule Budgeteer.DailySummary.WorkerTest do
 
     assert DailySummary.get_summary(scope).summary == "Nothing notable today."
     assert_email_sent(subject: "Your morning summary")
+  end
+
+  test "does not email members by default" do
+    scope = household_scope_fixture()
+    drain_mailbox()
+
+    expect(Budgeteer.AI.DeepSeekClientMock, :generate_daily_summary, fn _data ->
+      {:ok, "Nothing notable today."}
+    end)
+
+    assert :ok = perform_job(Worker, %{})
+    refute_email_sent(subject: "Your morning summary")
+    assert DailySummary.get_summary(scope).summary == "Nothing notable today."
   end
 
   test "one household's AI failure doesn't block another household's summary" do
