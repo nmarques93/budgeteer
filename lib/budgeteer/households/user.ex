@@ -16,6 +16,7 @@ defmodule Budgeteer.Households.User do
     field :locale, :string
     field :google_calendar, Budgeteer.Encrypted.Map, redact: true
     field :daily_summary_email_enabled, :boolean, default: false
+    field :auth_providers, {:array, :string}, default: ["email"]
 
     belongs_to :household, Budgeteer.Households.Household
 

@@ -255,7 +255,7 @@ defmodule Budgeteer.Households do
 
     case get_user_by_email(email) do
       %User{} = user ->
-        {:ok, user}
+        record_oauth_provider(user)
 
       nil ->
         case resolve_matching_invite(invite_token, email) do
@@ -281,6 +281,7 @@ defmodule Budgeteer.Households do
       changeset
       |> Ecto.Changeset.put_change(:household_id, household.id)
       |> Ecto.Changeset.put_change(:role, :member)
+      |> Ecto.Changeset.put_change(:auth_providers, ["google"])
       |> Ecto.Changeset.put_change(:confirmed_at, DateTime.utc_now(:second))
       |> Repo.insert()
     else
@@ -298,6 +299,7 @@ defmodule Budgeteer.Households do
                changeset
                |> Ecto.Changeset.put_change(:household_id, household.id)
                |> Ecto.Changeset.put_change(:role, :owner)
+               |> Ecto.Changeset.put_change(:auth_providers, ["google"])
                |> Ecto.Changeset.put_change(:confirmed_at, DateTime.utc_now(:second))
                |> Repo.insert() do
           {:ok, user}
@@ -305,6 +307,16 @@ defmodule Budgeteer.Households do
       end)
     else
       {:error, %{changeset | action: :insert}}
+    end
+  end
+
+  defp record_oauth_provider(%User{auth_providers: providers} = user) do
+    if "google" in providers do
+      {:ok, user}
+    else
+      user
+      |> Ecto.Changeset.change(auth_providers: Enum.uniq(["google" | providers]))
+      |> Repo.update()
     end
   end
 

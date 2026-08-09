@@ -18,6 +18,21 @@ defmodule BudgeteerWeb.UserLive.SettingsTest do
       assert html =~ "Send me the daily summary email"
     end
 
+    test "hides email and password controls for a Google-only account", %{conn: conn} do
+      user = user_fixture()
+
+      user =
+        user
+        |> Ecto.Changeset.change(auth_providers: ["google"])
+        |> Budgeteer.Repo.update!()
+
+      {:ok, live, html} = conn |> log_in_user(user) |> live(~p"/users/settings")
+
+      refute has_element?(live, "#email_form")
+      refute has_element?(live, "#password_form")
+      assert html =~ "managed through Google"
+    end
+
     test "redirects if user is not logged in", %{conn: conn} do
       assert {:error, redirect} = live(conn, ~p"/users/settings")
 

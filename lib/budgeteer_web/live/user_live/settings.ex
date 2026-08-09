@@ -24,57 +24,67 @@ defmodule BudgeteerWeb.UserLive.Settings do
         </.header>
       </div>
 
-      <.form for={@email_form} id="email_form" phx-submit="update_email" phx-change="validate_email">
-        <.input
-          field={@email_form[:email]}
-          type="email"
-          label={gettext("Email")}
-          autocomplete="username"
-          spellcheck="false"
-          required
-        />
-        <.button variant="primary" phx-disable-with={gettext("Changing...")}>
-          {gettext("Change Email")}
-        </.button>
-      </.form>
+      <%= if @email_auth_enabled do %>
+        <.form for={@email_form} id="email_form" phx-submit="update_email" phx-change="validate_email">
+          <.input
+            field={@email_form[:email]}
+            type="email"
+            label={gettext("Email")}
+            autocomplete="username"
+            spellcheck="false"
+            required
+          />
+          <.button variant="primary" phx-disable-with={gettext("Changing...")}>
+            {gettext("Change Email")}
+          </.button>
+        </.form>
+      <% end %>
 
-      <div class="divider" />
+      <%= if @password_auth_enabled do %>
+        <div class="divider" />
 
-      <.form
-        for={@password_form}
-        id="password_form"
-        action={~p"/users/update-password"}
-        method="post"
-        phx-change="validate_password"
-        phx-submit="update_password"
-        phx-trigger-action={@trigger_submit}
-      >
-        <input
-          name={@password_form[:email].name}
-          type="hidden"
-          id="hidden_user_email"
-          spellcheck="false"
-          value={@current_email}
-        />
-        <.input
-          field={@password_form[:password]}
-          type="password"
-          label={gettext("New password")}
-          autocomplete="new-password"
-          spellcheck="false"
-          required
-        />
-        <.input
-          field={@password_form[:password_confirmation]}
-          type="password"
-          label={gettext("Confirm new password")}
-          autocomplete="new-password"
-          spellcheck="false"
-        />
-        <.button variant="primary" phx-disable-with={gettext("Saving...")}>
-          {gettext("Save Password")}
-        </.button>
-      </.form>
+        <.form
+          for={@password_form}
+          id="password_form"
+          action={~p"/users/update-password"}
+          method="post"
+          phx-change="validate_password"
+          phx-submit="update_password"
+          phx-trigger-action={@trigger_submit}
+        >
+          <input
+            name={@password_form[:email].name}
+            type="hidden"
+            id="hidden_user_email"
+            spellcheck="false"
+            value={@current_email}
+          />
+          <.input
+            field={@password_form[:password]}
+            type="password"
+            label={gettext("New password")}
+            autocomplete="new-password"
+            spellcheck="false"
+            required
+          />
+          <.input
+            field={@password_form[:password_confirmation]}
+            type="password"
+            label={gettext("Confirm new password")}
+            autocomplete="new-password"
+            spellcheck="false"
+          />
+          <.button variant="primary" phx-disable-with={gettext("Saving...")}>
+            {gettext("Save Password")}
+          </.button>
+        </.form>
+      <% end %>
+
+      <p :if={!@email_auth_enabled && !@password_auth_enabled} class="alert alert-info">
+        {gettext(
+          "Your account is managed through Google. Email and password settings are unavailable here."
+        )}
+      </p>
 
       <div class="divider" />
 
@@ -243,6 +253,8 @@ defmodule BudgeteerWeb.UserLive.Settings do
       |> assign(:trigger_submit, false)
       |> assign(:invite_form, to_form(%{"email" => ""}, as: "invite"))
       |> assign(:new_token, nil)
+      |> assign(:email_auth_enabled, "email" in user.auth_providers)
+      |> assign(:password_auth_enabled, "email" in user.auth_providers)
       |> assign(:google_calendar_connected, not is_nil(user.google_calendar))
       |> assign(:daily_summary_email_enabled, user.daily_summary_email_enabled)
       |> assign(

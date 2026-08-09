@@ -73,6 +73,28 @@ defmodule Budgeteer.GoogleCalendarTest do
     assert Events.list_events(scope, ~D[2026-08-01], ~D[2026-08-31]) == []
   end
 
+  test "imports long descriptions and Google links" do
+    scope = household_scope_fixture()
+    long_description = String.duplicate("details ", 80)
+    long_url = "https://calendar.google.com/event?" <> String.duplicate("parameter=value&", 30)
+
+    assert {:ok, 1} =
+             Events.replace_google_events(scope, "primary", [
+               %{
+                 "id" => "long-event",
+                 "summary" => "Long event",
+                 "description" => long_description,
+                 "htmlLink" => long_url,
+                 "start" => %{"date" => "2026-08-20"},
+                 "end" => %{"date" => "2026-08-21"}
+               }
+             ])
+
+    [event] = Events.list_events(scope, ~D[2026-08-01], ~D[2026-08-31])
+    assert event.description == long_description
+    assert event.external_url == long_url
+  end
+
   test "disconnecting removes only the current user's imported events" do
     owner = user_fixture()
     member = second_household_member_fixture(owner)
