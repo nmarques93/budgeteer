@@ -46,7 +46,11 @@ config :budgeteer, Oban,
     # see CLAUDE.md), so this is a fixed UTC time approximating a Lisbon
     # morning (07:00 WEST in summer, 06:00 WET in winter) rather than a
     # true per-timezone schedule.
-    {Oban.Plugins.Cron, crontab: [{"0 6 * * *", Budgeteer.DailySummary.Worker}]}
+    {Oban.Plugins.Cron,
+     crontab: [
+       {"0 6 * * *", Budgeteer.DailySummary.Worker},
+       {"*/30 * * * *", Budgeteer.GoogleCalendar.ScheduledSyncWorker}
+     ]}
   ]
 
 # Local-disk storage for uploaded statements (Phase 1/2). Revisit for S3

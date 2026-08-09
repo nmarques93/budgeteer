@@ -33,6 +33,11 @@ defmodule Budgeteer.GoogleCalendar.Client do
     fetch_events(access_token, calendar_id, time_min, time_max, nil, [])
   end
 
+  @impl true
+  def list_calendars(access_token) do
+    fetch_calendars(access_token, nil, [])
+  end
+
   defp request_token(params) do
     body =
       params
@@ -79,6 +84,31 @@ defmodule Budgeteer.GoogleCalendar.Client do
 
           _ ->
             {:ok, all_events}
+        end
+
+      {:ok, %Req.Response{status: status, body: response}} ->
+        {:error, {:http_error, status, response}}
+
+      {:error, exception} ->
+        {:error, exception}
+    end
+  end
+
+  defp fetch_calendars(access_token, page_token, calendars) do
+    params = if page_token, do: [pageToken: page_token, maxResults: 250], else: [maxResults: 250]
+
+    case Req.get(
+           "#{@calendar_url}/users/me/calendarList",
+           headers: [{"authorization", "Bearer #{access_token}"}],
+           params: params,
+           receive_timeout: 20_000
+         ) do
+      {:ok, %Req.Response{status: 200, body: %{"items" => items} = response}} ->
+        all_calendars = calendars ++ items
+
+        case response["nextPageToken"] do
+          token when is_binary(token) -> fetch_calendars(access_token, token, all_calendars)
+          _ -> {:ok, all_calendars}
         end
 
       {:ok, %Req.Response{status: status, body: response}} ->

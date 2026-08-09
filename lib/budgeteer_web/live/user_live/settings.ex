@@ -5,6 +5,7 @@ defmodule BudgeteerWeb.UserLive.Settings do
 
   alias Budgeteer.Households
   alias Budgeteer.Events
+  alias Budgeteer.GoogleCalendar
   alias Budgeteer.GoogleCalendar.SyncWorker
   alias Budgeteer.RateLimit
 
@@ -120,6 +121,9 @@ defmodule BudgeteerWeb.UserLive.Settings do
         <%= if @google_calendar_connected do %>
           <div class="flex flex-wrap items-center gap-2 mt-4">
             <span class="text-success">{gettext("Connected")}</span>
+            <.button phx-click="refresh_google_calendars" phx-disable-with={gettext("Loading...")}>
+              {gettext("Refresh calendars")}
+            </.button>
             <.button phx-click="sync_google_calendar" phx-disable-with={gettext("Syncing...")}>
               {gettext("Sync now")}
             </.button>
@@ -130,6 +134,31 @@ defmodule BudgeteerWeb.UserLive.Settings do
               {gettext("Disconnect")}
             </.button>
           </div>
+          <p :if={@google_calendar_last_sync_error} class="text-error text-sm mt-2">
+            {gettext("Last sync failed: %{error}", error: @google_calendar_last_sync_error)}
+          </p>
+          <p :if={@google_calendar_last_synced_at} class="text-sm opacity-70 mt-2">
+            {gettext("Last synced: %{time}", time: @google_calendar_last_synced_at)}
+          </p>
+          <form
+            :if={@google_calendar_calendars != []}
+            id="google-calendar-selection-form"
+            phx-submit="save_google_calendar_selection"
+            class="mt-3"
+          >
+            <p class="text-sm font-semibold mb-1">{gettext("Calendars to import")}</p>
+            <.input
+              :for={calendar <- @google_calendar_calendars}
+              name="calendar_ids[]"
+              type="checkbox"
+              value={calendar["id"]}
+              checked={calendar["id"] in @google_calendar_ids}
+              label={calendar["name"]}
+            />
+            <.button variant="primary" phx-disable-with={gettext("Saving...")}>
+              {gettext("Save calendars")}
+            </.button>
+          </form>
         <% else %>
           <.link href={~p"/users/settings/google-calendar/connect"} class="btn btn-primary mt-4">
             {gettext("Connect Google Calendar")}
@@ -256,6 +285,22 @@ defmodule BudgeteerWeb.UserLive.Settings do
       |> assign(:email_auth_enabled, "email" in user.auth_providers)
       |> assign(:password_auth_enabled, "email" in user.auth_providers)
       |> assign(:google_calendar_connected, not is_nil(user.google_calendar))
+      |> assign(
+        :google_calendar_calendars,
+        get_in(user.google_calendar || %{}, ["calendars"]) || []
+      )
+      |> assign(
+        :google_calendar_ids,
+        get_in(user.google_calendar || %{}, ["calendar_ids"]) || ["primary"]
+      )
+      |> assign(
+        :google_calendar_last_synced_at,
+        get_in(user.google_calendar || %{}, ["last_synced_at"])
+      )
+      |> assign(
+        :google_calendar_last_sync_error,
+        get_in(user.google_calendar || %{}, ["last_sync_error"])
+      )
       |> assign(:daily_summary_email_enabled, user.daily_summary_email_enabled)
       |> assign(
         :access_token_form,
@@ -410,13 +455,55 @@ defmodule BudgeteerWeb.UserLive.Settings do
   def handle_event("sync_google_calendar", _params, socket) do
     user = socket.assigns.current_scope.user
 
-    case Oban.insert(SyncWorker.new(%{"user_id" => user.id})) do
+    job =
+      SyncWorker.new(%{"user_id" => user.id},
+        unique: [fields: [:args, :worker], keys: [:user_id], period: {10, :minutes}]
+      )
+
+    case Oban.insert(job) do
       {:ok, _job} ->
         {:noreply, put_flash(socket, :info, gettext("Google Calendar sync started."))}
 
       {:error, _reason} ->
         {:noreply,
          put_flash(socket, :error, gettext("Google Calendar sync could not be started."))}
+    end
+  end
+
+  def handle_event("refresh_google_calendars", _params, socket) do
+    user = socket.assigns.current_scope.user
+
+    case GoogleCalendar.refresh_calendars(user) do
+      {:ok, updated_user} ->
+        config = updated_user.google_calendar || %{}
+
+        {:noreply,
+         socket
+         |> assign(:google_calendar_calendars, config["calendars"] || [])
+         |> assign(:google_calendar_ids, config["calendar_ids"] || ["primary"])
+         |> put_flash(:info, gettext("Google calendars refreshed."))}
+
+      {:error, _reason} ->
+        {:noreply, put_flash(socket, :error, gettext("Google calendars could not be loaded."))}
+    end
+  end
+
+  def handle_event("save_google_calendar_selection", %{"calendar_ids" => calendar_ids}, socket) do
+    calendar_ids = Enum.reject(List.wrap(calendar_ids), &(&1 == "false"))
+    user = socket.assigns.current_scope.user
+
+    case GoogleCalendar.select_calendars(user, calendar_ids) do
+      {:ok, _updated_user} ->
+        {:noreply,
+         socket
+         |> assign(:google_calendar_ids, calendar_ids)
+         |> put_flash(:info, gettext("Google calendars saved. Click Sync now to import them."))}
+
+      {:error, :invalid_calendar_selection} ->
+        {:noreply, put_flash(socket, :error, gettext("Select at least one valid calendar."))}
+
+      {:error, _reason} ->
+        {:noreply, put_flash(socket, :error, gettext("Google calendars could not be saved."))}
     end
   end
 

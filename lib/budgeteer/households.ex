@@ -125,6 +125,11 @@ defmodule Budgeteer.Households do
     Repo.all(from h in Household, select: h.id)
   end
 
+  @doc "Returns user IDs with a connected Google Calendar for scheduled syncs."
+  def list_google_calendar_user_ids do
+    Repo.all(from u in User, where: not is_nil(u.google_calendar), select: u.id)
+  end
+
   @doc """
   Returns every member of the current scope's household, ordered by name
   (falling back to email — `name` is optional, e.g. for a password
@@ -334,14 +339,29 @@ defmodule Budgeteer.Households do
   @doc "Stores a user's encrypted Google Calendar refresh-token configuration."
   def save_google_calendar(%User{} = user, refresh_token, calendar_ids)
       when is_binary(refresh_token) and is_list(calendar_ids) do
-    user
-    |> Ecto.Changeset.change(%{
-      google_calendar: %{
-        "refresh_token" => refresh_token,
-        "calendar_ids" => calendar_ids
-      }
+    save_google_calendar_config(user, %{
+      "refresh_token" => refresh_token,
+      "calendar_ids" => calendar_ids
     })
+  end
+
+  @doc "Stores an encrypted Google Calendar configuration map."
+  def save_google_calendar_config(%User{} = user, config) when is_map(config) do
+    user
+    |> Ecto.Changeset.change(google_calendar: config)
     |> Repo.update()
+  end
+
+  @doc "Records the last Google Calendar sync result without exposing provider tokens."
+  def update_google_calendar_sync_status(%User{} = user, last_synced_at, last_sync_error) do
+    config = user.google_calendar || %{}
+
+    config =
+      config
+      |> Map.put("last_synced_at", last_synced_at)
+      |> Map.put("last_sync_error", last_sync_error)
+
+    save_google_calendar_config(user, config)
   end
 
   @doc "Disconnects the user's Google Calendar integration."

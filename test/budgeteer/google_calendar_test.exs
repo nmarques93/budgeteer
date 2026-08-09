@@ -23,7 +23,11 @@ defmodule Budgeteer.GoogleCalendarTest do
     user = user_fixture()
 
     expect(Budgeteer.GoogleCalendar.ClientMock, :exchange_code, fn "code", _redirect_uri ->
-      {:ok, %{"refresh_token" => "refresh-token"}}
+      {:ok, %{"refresh_token" => "refresh-token", "access_token" => "access-token"}}
+    end)
+
+    expect(Budgeteer.GoogleCalendar.ClientMock, :list_calendars, fn "access-token" ->
+      {:ok, [%{"id" => "primary", "summary" => "My calendar", "primary" => true}]}
     end)
 
     expect(Budgeteer.GoogleCalendar.ClientMock, :refresh_access_token, fn "refresh-token" ->
@@ -53,6 +57,10 @@ defmodule Budgeteer.GoogleCalendarTest do
 
     expect(Budgeteer.GoogleCalendar.ClientMock, :refresh_access_token, fn "refresh-token" ->
       {:ok, %{"access_token" => "access-token"}}
+    end)
+
+    expect(Budgeteer.GoogleCalendar.ClientMock, :list_calendars, fn "access-token" ->
+      {:ok, [%{"id" => "primary", "summary" => "My calendar", "primary" => true}]}
     end)
 
     expect(Budgeteer.GoogleCalendar.ClientMock, :list_events, fn
