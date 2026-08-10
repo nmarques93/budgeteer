@@ -140,6 +140,14 @@ grocery_items
   id (uuid), grocery_list_id (uuid FK), name, quantity, unit
   checked (boolean), added_by_id (uuid FK, nullable), checked_by_id (uuid FK, nullable)
 
+todo_lists
+  id (uuid), household_id (uuid FK), name, archived_at (nullable)
+
+todo_items
+  id (uuid), todo_list_id (uuid FK), household_id (uuid FK)
+  title, notes, due_date, completed, position
+  created_by_id (uuid FK, nullable), completed_by_id (uuid FK, nullable)
+
 events
   id (uuid), household_id (uuid FK), user_id (uuid FK, nullable)
   title, description, date, start_time, end_time
@@ -151,6 +159,8 @@ events
 `Statement` is built out in `Budgeteer.Statements` (`lib/budgeteer/statements.ex`, `lib/budgeteer/statements/{statement,parse_worker}.ex`) with LiveViews nested the same way as transactions: `/accounts/:account_id/statements` (index), `/accounts/:account_id/statements/new` (upload), `/accounts/:account_id/statements/:id/review` (confirm/edit extracted transactions). `Budgeteer.AI` (`lib/budgeteer/ai/{client,client_behaviour}.ex`) is the Claude API integration — see the Decisions section above for the full design (worker never auto-creates transactions, structured outputs, Mox-mocked in tests).
 
 `GroceryList`/`GroceryItem` are built out in `Budgeteer.Groceries` (`lib/budgeteer/groceries.ex`, `lib/budgeteer/groceries/{grocery_list,grocery_item}.ex`), with `GroceryListLive.{Index,Form,Show}` — `/groceries` (index, active/archived toggle), `/groceries/new`/`/groceries/:id/edit` (rename), `/groceries/:id` (the real-time shopping-list page: add/check/uncheck/delete items inline). See the Decisions section above for the per-list PubSub topic design and the denormalized `household_id` migration.
+
+`TodoList`/`TodoItem` are built out in `Budgeteer.Todos` (`lib/budgeteer/todos.ex`, `lib/budgeteer/todos/{todo_list,todo_item}.ex`) with `TodoListLive.{Index,Form,Show}` — `/todos` (active/archived lists), `/todos/new`/`/todos/:id/edit` (list management), and `/todos/:id` (real-time inline task add, completion, editing, deletion, and reordering). Members manage tasks; owners archive or delete lists.
 
 ---
 
@@ -394,7 +404,7 @@ Priorities below were assigned during a 2026-07-30 competitive-analysis pass aga
 
 ### Shipped
 
-~~Real outbound email provider~~, ~~meal planning~~, ~~OAuth sign-in (Google)~~, ~~MCP integration~~ (read-only for financial/grocery data, write tools for recipes/meal-plan), ~~charts on the dashboard~~, ~~CSV transaction export~~, ~~iOS install-nudge banner~~, ~~recurring-transaction/subscription detection~~, ~~family calendar~~, ~~read-only Google Calendar import~~ (primary calendar, encrypted refresh token, Oban sync; two-way writes and calendar selection remain deferred), ~~in-app AI recipe/ingredient extraction~~ (text-paste and URL — see the Decisions section for the still-deferred photo/PDF scope), ~~European Portuguese localization~~, ~~native iOS app~~ (Capacitor wrapper — see `mobile/README.md` for the remaining Apple-account-gated steps: real device testing, push notification credentials, TestFlight/App Store distribution), ~~budget insights~~ (AI-driven via DeepSeek, manual-refresh v1 — see the Decisions section), ~~inbound statement-email parsing~~ (via Resend Inbound — see the Decisions section for the real Resend Inbound domain/webhook setup still needed before a real statement can flow through it), ~~daily morning summary~~ (AI-driven via DeepSeek, Oban cron — see the Decisions section) — all **done**, see the Decisions section above for each.
+~~Real outbound email provider~~, ~~meal planning~~, ~~OAuth sign-in (Google)~~, ~~MCP integration~~ (read-only for financial/grocery data, write tools for recipes/meal-plan), ~~charts on the dashboard~~, ~~CSV transaction export~~, ~~iOS install-nudge banner~~, ~~recurring-transaction/subscription detection~~, ~~family calendar~~, ~~read-only Google Calendar import~~ (primary calendar, encrypted refresh token, Oban sync; two-way writes and calendar selection remain deferred), ~~shared TODO lists~~ (household-scoped real-time task lists with due dates, completion, inline editing, deletion, and reordering), ~~in-app AI recipe/ingredient extraction~~ (text-paste and URL — see the Decisions section for the still-deferred photo/PDF scope), ~~European Portuguese localization~~, ~~native iOS app~~ (Capacitor wrapper — see `mobile/README.md` for the remaining Apple-account-gated steps: real device testing, push notification credentials, TestFlight/App Store distribution), ~~budget insights~~ (AI-driven via DeepSeek, manual-refresh v1 — see the Decisions section), ~~inbound statement-email parsing~~ (via Resend Inbound — see the Decisions section for the real Resend Inbound domain/webhook setup still needed before a real statement can flow through it), ~~daily morning summary~~ (AI-driven via DeepSeek, Oban cron — see the Decisions section) — all **done**, see the Decisions section above for each.
 
 ### P1 — Next up, worth doing
 

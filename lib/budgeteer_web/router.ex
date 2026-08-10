@@ -108,6 +108,11 @@ defmodule BudgeteerWeb.Router do
       live "/groceries/:id", GroceryListLive.Show, :show
       live "/groceries/:id/edit", GroceryListLive.Form, :edit
 
+      live "/todos", TodoListLive.Index, :index
+      live "/todos/new", TodoListLive.Form, :new
+      live "/todos/:id", TodoListLive.Show, :show
+      live "/todos/:id/edit", TodoListLive.Form, :edit
+
       live "/recipes", RecipeLive.Index, :index
       live "/recipes/new", RecipeLive.Form, :new
       live "/recipes/extract", RecipeLive.Extract, :new

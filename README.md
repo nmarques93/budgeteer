@@ -9,6 +9,7 @@ A family budgeting PWA. Upload a bank statement (PDF or photo) and Claude extrac
 - **Transaction search** — filter by date, category, merchant, or amount, across one account or the whole household
 - **Budget alerts** — an email the moment a category's spend meets its budget for the month
 - **Shared grocery list** — check items off together, in real time
+- **Shared TODO lists** — organize household tasks, due dates, and completion in real time
 - **Meal planning** — recipes with one-click "add ingredients to grocery list"
 - **Dashboard** — balance history, spend vs. budget by category, category-spend breakdown
 - **Google sign-in**, alongside email/password and magic-link login

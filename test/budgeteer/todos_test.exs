@@ -1,0 +1,85 @@
+defmodule Budgeteer.TodosTest do
+  use Budgeteer.DataCase
+
+  alias Budgeteer.Todos
+
+  import Budgeteer.HouseholdsFixtures
+  import Budgeteer.TodosFixtures
+
+  describe "lists" do
+    test "lists are scoped and can be archived" do
+      scope = household_scope_fixture()
+      other_scope = household_scope_fixture()
+      list = todo_list_fixture(scope)
+      other_list = todo_list_fixture(other_scope)
+
+      assert [^list] = Todos.list_todo_lists(scope)
+      assert [^other_list] = Todos.list_todo_lists(other_scope)
+
+      assert {:ok, _} = Todos.archive_todo_list(scope, list)
+      assert Todos.list_todo_lists(scope) == []
+      assert [archived] = Todos.list_todo_lists(scope, archived: true)
+      assert archived.id == list.id
+    end
+
+    test "members cannot archive or delete a list" do
+      owner = user_fixture()
+      member = second_household_member_fixture(owner)
+      scope = household_scope_fixture(member)
+      list = todo_list_fixture(scope)
+
+      assert {:error, :forbidden} = Todos.archive_todo_list(scope, list)
+      assert {:error, :forbidden} = Todos.delete_todo_list(scope, list)
+    end
+  end
+
+  describe "items" do
+    test "creates, toggles, updates, and deletes items" do
+      scope = household_scope_fixture()
+      todo_list = todo_list_fixture(scope)
+      item = todo_item_fixture(scope, todo_list, %{notes: "Call soon"})
+
+      assert item.position == 0
+      assert [^item] = Todos.list_items(scope, todo_list)
+
+      assert {:ok, completed} = Todos.toggle_item(scope, item)
+      assert completed.completed
+      assert completed.completed_by_id == scope.user.id
+
+      assert {:ok, updated} = Todos.update_item(scope, completed, %{title: "Call dentist"})
+      assert updated.title == "Call dentist"
+
+      assert {:ok, _} = Todos.delete_item(scope, updated)
+      assert Todos.list_items(scope, todo_list) == []
+    end
+
+    test "moves items up and down" do
+      scope = household_scope_fixture()
+      todo_list = todo_list_fixture(scope)
+      first = todo_item_fixture(scope, todo_list, %{title: "First"})
+      second = todo_item_fixture(scope, todo_list, %{title: "Second"})
+
+      assert {:ok, _} = Todos.move_item(scope, second, :up)
+      assert [moved_first, moved_second] = Todos.list_items(scope, todo_list)
+      assert moved_first.id == second.id
+      assert moved_second.id == first.id
+
+      assert {:ok, _} = Todos.move_item(scope, second, :down)
+      assert [moved_second, moved_first] = Todos.list_items(scope, todo_list)
+      assert moved_second.id == second.id
+      assert moved_first.id == first.id
+    end
+
+    test "broadcasts item changes on the list topic" do
+      scope = household_scope_fixture()
+      todo_list = todo_list_fixture(scope)
+      Todos.subscribe_items(scope, todo_list)
+
+      item = todo_item_fixture(scope, todo_list)
+      assert_receive {:created, ^item}
+
+      assert {:ok, item} = Todos.toggle_item(scope, item)
+      assert_receive {:updated, ^item}
+    end
+  end
+end
