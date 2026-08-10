@@ -138,24 +138,32 @@
           <.link href={~p"/dashboard"}>{gettext("Dashboard")}</.link>
         </li>
         <li>
-          <.link href={~p"/accounts"}>{gettext("Accounts")}</.link>
-        </li>
-        <li>
-          <.link href={~p"/categories"}>{gettext("Categories")}</.link>
-        </li>
-        <li>
-          <.link href={~p"/groceries"}>{gettext("Groceries")}</.link>
+          <details>
+            <summary><.icon name="hero-banknotes" /> {gettext("Finance")}</summary>
+            <ul class="bg-base-100 rounded-box z-20">
+              <li><.link href={~p"/accounts"}>{gettext("Accounts")}</.link></li>
+              <li><.link href={~p"/transactions"}>{gettext("Search Transactions")}</.link></li>
+              <li><.link href={~p"/categories"}>{gettext("Categories")}</.link></li>
+              <li><.link href={~p"/subscriptions"}>{gettext("Recurring Charges")}</.link></li>
+            </ul>
+          </details>
         </li>
         <li>
           <details>
-            <summary>{gettext("More")}</summary>
+            <summary><.icon name="hero-home" /> {gettext("Home & Family")}</summary>
             <ul class="bg-base-100 rounded-box z-20">
-              <li><.link href={~p"/transactions"}>{gettext("Search Transactions")}</.link></li>
-              <li><.link href={~p"/subscriptions"}>{gettext("Recurring Charges")}</.link></li>
-              <li><.link href={~p"/recipes"}>{gettext("Recipes")}</.link></li>
-              <li><.link href={~p"/meal-plan"}>{gettext("Meal Plan")}</.link></li>
+              <li><.link href={~p"/groceries"}>{gettext("Groceries")}</.link></li>
               <li><.link href={~p"/todos"}>{gettext("TODOs")}</.link></li>
               <li><.link href={~p"/calendar"}>{gettext("Calendar")}</.link></li>
+            </ul>
+          </details>
+        </li>
+        <li>
+          <details>
+            <summary><.icon name="hero-book-open" /> {gettext("Meals")}</summary>
+            <ul class="bg-base-100 rounded-box z-20">
+              <li><.link href={~p"/recipes"}>{gettext("Recipes")}</.link></li>
+              <li><.link href={~p"/meal-plan"}>{gettext("Meal Plan")}</.link></li>
             </ul>
           </details>
         </li>

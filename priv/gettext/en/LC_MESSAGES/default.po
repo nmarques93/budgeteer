@@ -21,7 +21,7 @@ msgstr ""
 msgid "%{name} online"
 msgstr ""
 
-#: lib/budgeteer_web/live/calendar_live/index.ex:96
+#: lib/budgeteer_web/live/calendar_live/index.ex:118
 #, elixir-autogen, elixir-format
 msgid "+%{count} more"
 msgstr ""
@@ -38,12 +38,12 @@ msgid_plural "%{count} transactions saved"
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/budgeteer_web/live/user_live/settings.ex:214
+#: lib/budgeteer_web/live/user_live/settings.ex:340
 #, elixir-autogen, elixir-format
 msgid "A link to confirm your email change has been sent to the new address."
 msgstr ""
 
-#: lib/budgeteer_web/live/user_live/settings.ex:97
+#: lib/budgeteer_web/live/user_live/settings.ex:193
 #, elixir-autogen, elixir-format
 msgid "API access"
 msgstr ""
@@ -55,7 +55,7 @@ msgstr ""
 msgid "Account"
 msgstr ""
 
-#: lib/budgeteer_web/live/user_live/settings.ex:20
+#: lib/budgeteer_web/live/user_live/settings.ex:23
 #, elixir-autogen, elixir-format
 msgid "Account Settings"
 msgstr ""
@@ -70,12 +70,12 @@ msgstr ""
 msgid "Account updated successfully"
 msgstr ""
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:141
+#: lib/budgeteer_web/components/layouts/root.html.heex:144
 #, elixir-autogen, elixir-format
 msgid "Accounts"
 msgstr ""
 
-#: lib/budgeteer_web/components/core_components.ex:381
+#: lib/budgeteer_web/components/core_components.ex:383
 #, elixir-autogen, elixir-format
 msgid "Actions"
 msgstr ""
@@ -107,7 +107,7 @@ msgstr ""
 msgid "Add ingredients to"
 msgstr ""
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:260
+#: lib/budgeteer_web/components/layouts/root.html.heex:269
 #, elixir-autogen, elixir-format
 msgid "Add to Home Screen"
 msgstr ""
@@ -124,6 +124,7 @@ msgstr[1] ""
 #: lib/budgeteer_web/live/meal_plan_live/index.ex:31
 #: lib/budgeteer_web/live/meal_plan_live/index.ex:74
 #: lib/budgeteer_web/live/recipe_live/show.ex:92
+#: lib/budgeteer_web/live/todo_list_live/show.ex:33
 #, elixir-autogen, elixir-format
 msgid "Adding..."
 msgstr ""
@@ -164,7 +165,7 @@ msgstr ""
 msgid "An email was sent to %{email}, please access it to confirm your account."
 msgstr ""
 
-#: lib/budgeteer_web/live/user_live/settings.ex:260
+#: lib/budgeteer_web/live/user_live/settings.ex:538
 #, elixir-autogen, elixir-format
 msgid "An invite was sent to %{email}."
 msgstr ""
@@ -174,12 +175,13 @@ msgstr ""
 msgid "Apr"
 msgstr ""
 
-#: lib/budgeteer_web/live/calendar_live/index.ex:221
+#: lib/budgeteer_web/live/calendar_live/index.ex:275
 #, elixir-autogen, elixir-format
 msgid "April"
 msgstr ""
 
 #: lib/budgeteer_web/live/grocery_list_live/index.ex:30
+#: lib/budgeteer_web/live/todo_list_live/index.ex:30
 #, elixir-autogen, elixir-format
 msgid "Archive"
 msgstr ""
@@ -189,18 +191,18 @@ msgstr ""
 msgid "Archived grocery lists"
 msgstr ""
 
-#: lib/budgeteer_web/live/calendar_live/form.ex:35
+#: lib/budgeteer_web/live/calendar_live/form.ex:69
 #, elixir-autogen, elixir-format
 msgid "Are you sure you want to delete this event?"
 msgstr ""
 
-#: lib/budgeteer_web/live/account_live/index.ex:42
-#: lib/budgeteer_web/live/category_live/index.ex:39
+#: lib/budgeteer_web/live/account_live/index.ex:43
+#: lib/budgeteer_web/live/category_live/index.ex:42
 #: lib/budgeteer_web/live/grocery_list_live/show.ex:81
 #: lib/budgeteer_web/live/meal_plan_live/index.ex:53
 #: lib/budgeteer_web/live/recipe_live/index.ex:32
 #: lib/budgeteer_web/live/statement_live/index.ex:65
-#: lib/budgeteer_web/live/transaction_live/index.ex:69
+#: lib/budgeteer_web/live/transaction_live/index.ex:70
 #, elixir-autogen, elixir-format
 msgid "Are you sure?"
 msgstr ""
@@ -210,7 +212,7 @@ msgstr ""
 msgid "Aug"
 msgstr ""
 
-#: lib/budgeteer_web/live/calendar_live/index.ex:225
+#: lib/budgeteer_web/live/calendar_live/index.ex:279
 #, elixir-autogen, elixir-format
 msgid "August"
 msgstr ""
@@ -248,8 +250,8 @@ msgstr ""
 msgid "Bank name"
 msgstr ""
 
-#: lib/budgeteer_web/live/category_live/form.ex:19
-#: lib/budgeteer_web/live/category_live/index.ex:26
+#: lib/budgeteer_web/live/category_live/form.ex:25
+#: lib/budgeteer_web/live/category_live/index.ex:28
 #: lib/budgeteer_web/live/category_live/show.ex:25
 #: lib/budgeteer_web/live/dashboard_live.ex:85
 #, elixir-autogen, elixir-format
@@ -274,26 +276,28 @@ msgstr ""
 
 #: lib/budgeteer_web/components/layouts/root.html.heex:157
 #: lib/budgeteer_web/live/calendar_live/index.ex:17
-#: lib/budgeteer_web/live/calendar_live/index.ex:116
+#: lib/budgeteer_web/live/calendar_live/index.ex:140
 #, elixir-autogen, elixir-format
 msgid "Calendar"
 msgstr ""
 
 #: lib/budgeteer_web/live/account_live/form.ex:28
-#: lib/budgeteer_web/live/calendar_live/form.ex:31
-#: lib/budgeteer_web/live/category_live/form.ex:34
+#: lib/budgeteer_web/live/calendar_live/form.ex:65
+#: lib/budgeteer_web/live/category_live/form.ex:40
 #: lib/budgeteer_web/live/grocery_list_live/form.ex:22
 #: lib/budgeteer_web/live/recipe_live/extract.ex:58
 #: lib/budgeteer_web/live/recipe_live/extract.ex:134
 #: lib/budgeteer_web/live/recipe_live/form.ex:58
 #: lib/budgeteer_web/live/statement_live/review.ex:121
 #: lib/budgeteer_web/live/statement_live/upload.ex:100
+#: lib/budgeteer_web/live/todo_list_live/form.ex:19
+#: lib/budgeteer_web/live/todo_list_live/show.ex:59
 #: lib/budgeteer_web/live/transaction_live/form.ex:39
 #, elixir-autogen, elixir-format
 msgid "Cancel"
 msgstr ""
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:144
+#: lib/budgeteer_web/components/layouts/root.html.heex:146
 #, elixir-autogen, elixir-format
 msgid "Categories"
 msgstr ""
@@ -312,7 +316,7 @@ msgstr ""
 msgid "Category"
 msgstr ""
 
-#: lib/budgeteer_web/live/category_live/form.ex:112
+#: lib/budgeteer_web/live/category_live/form.ex:118
 #, elixir-autogen, elixir-format
 msgid "Category created successfully"
 msgstr ""
@@ -322,17 +326,17 @@ msgstr ""
 msgid "Category name %{message}"
 msgstr ""
 
-#: lib/budgeteer_web/live/category_live/form.ex:97
+#: lib/budgeteer_web/live/category_live/form.ex:103
 #, elixir-autogen, elixir-format
 msgid "Category updated successfully"
 msgstr ""
 
-#: lib/budgeteer_web/live/user_live/settings.ex:35
+#: lib/budgeteer_web/live/user_live/settings.ex:39
 #, elixir-autogen, elixir-format
 msgid "Change Email"
 msgstr ""
 
-#: lib/budgeteer_web/live/user_live/settings.ex:34
+#: lib/budgeteer_web/live/user_live/settings.ex:38
 #, elixir-autogen, elixir-format
 msgid "Changing..."
 msgstr ""
@@ -353,13 +357,13 @@ msgstr ""
 msgid "Choose a recipe"
 msgstr ""
 
-#: lib/budgeteer_web/live/category_live/form.ex:26
+#: lib/budgeteer_web/live/category_live/form.ex:32
 #, elixir-autogen, elixir-format
 msgid "Choose a value"
 msgstr ""
 
 #: lib/budgeteer_web/live/category_live/form.ex:15
-#: lib/budgeteer_web/live/category_live/index.ex:25
+#: lib/budgeteer_web/live/category_live/index.ex:27
 #: lib/budgeteer_web/live/category_live/show.ex:24
 #, elixir-autogen, elixir-format
 msgid "Color"
@@ -375,7 +379,7 @@ msgstr ""
 msgid "Confirm and stay logged in"
 msgstr ""
 
-#: lib/budgeteer_web/live/user_live/settings.ex:68
+#: lib/budgeteer_web/live/user_live/settings.ex:74
 #, elixir-autogen, elixir-format
 msgid "Confirm new password"
 msgstr ""
@@ -397,7 +401,7 @@ msgstr ""
 msgid "Continue with Google"
 msgstr ""
 
-#: lib/budgeteer_web/live/user_live/settings.ex:108
+#: lib/budgeteer_web/live/user_live/settings.ex:204
 #, elixir-autogen, elixir-format
 msgid "Copy your token now — you won't be able to see it again."
 msgstr ""
@@ -407,7 +411,7 @@ msgstr ""
 msgid "Could not create category"
 msgstr ""
 
-#: lib/budgeteer_web/live/user_live/settings.ex:287
+#: lib/budgeteer_web/live/user_live/settings.ex:406
 #, elixir-autogen, elixir-format
 msgid "Couldn't create the token — please try again."
 msgstr ""
@@ -433,7 +437,7 @@ msgstr ""
 msgid "Create it"
 msgstr ""
 
-#: lib/budgeteer_web/live/user_live/settings.ex:135
+#: lib/budgeteer_web/live/user_live/settings.ex:238
 #, elixir-autogen, elixir-format
 msgid "Created"
 msgstr ""
@@ -460,7 +464,7 @@ msgstr ""
 msgid "Current balance"
 msgstr ""
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:194
+#: lib/budgeteer_web/components/layouts/root.html.heex:203
 #, elixir-autogen, elixir-format
 msgid "Dark"
 msgstr ""
@@ -472,7 +476,7 @@ msgstr ""
 msgid "Dashboard"
 msgstr ""
 
-#: lib/budgeteer_web/live/calendar_live/form.ex:16
+#: lib/budgeteer_web/live/calendar_live/form.ex:28
 #: lib/budgeteer_web/live/dashboard_live.ex:91
 #: lib/budgeteer_web/live/meal_plan_live/index.ex:23
 #: lib/budgeteer_web/live/statement_live/review.ex:32
@@ -489,22 +493,23 @@ msgstr ""
 msgid "Dec"
 msgstr ""
 
-#: lib/budgeteer_web/live/calendar_live/index.ex:229
+#: lib/budgeteer_web/live/calendar_live/index.ex:283
 #, elixir-autogen, elixir-format
 msgid "December"
 msgstr ""
 
-#: lib/budgeteer_web/live/account_live/index.ex:44
-#: lib/budgeteer_web/live/calendar_live/form.ex:38
-#: lib/budgeteer_web/live/category_live/index.ex:41
+#: lib/budgeteer_web/live/account_live/index.ex:45
+#: lib/budgeteer_web/live/calendar_live/form.ex:72
+#: lib/budgeteer_web/live/category_live/index.ex:44
 #: lib/budgeteer_web/live/recipe_live/index.ex:34
 #: lib/budgeteer_web/live/statement_live/index.ex:67
-#: lib/budgeteer_web/live/transaction_live/index.ex:71
+#: lib/budgeteer_web/live/todo_list_live/index.ex:43
+#: lib/budgeteer_web/live/transaction_live/index.ex:72
 #, elixir-autogen, elixir-format
 msgid "Delete"
 msgstr ""
 
-#: lib/budgeteer_web/live/calendar_live/form.ex:26
+#: lib/budgeteer_web/live/calendar_live/form.ex:54
 #: lib/budgeteer_web/live/statement_live/review.ex:35
 #: lib/budgeteer_web/live/transaction_live/form.ex:25
 #: lib/budgeteer_web/live/transaction_live/index.ex:49
@@ -514,7 +519,7 @@ msgstr ""
 msgid "Description"
 msgstr ""
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:266
+#: lib/budgeteer_web/components/layouts/root.html.heex:275
 #: lib/budgeteer_web/live/subscription_live/index.ex:47
 #, elixir-autogen, elixir-format
 msgid "Dismiss"
@@ -531,7 +536,8 @@ msgid "Don't have an account?"
 msgstr ""
 
 #: lib/budgeteer_web/live/account_live/index.ex:37
-#: lib/budgeteer_web/live/category_live/index.ex:34
+#: lib/budgeteer_web/live/category_live/index.ex:36
+#: lib/budgeteer_web/live/todo_list_live/index.ex:37
 #: lib/budgeteer_web/live/transaction_live/index.ex:63
 #, elixir-autogen, elixir-format
 msgid "Edit"
@@ -542,12 +548,12 @@ msgstr ""
 msgid "Edit Account"
 msgstr ""
 
-#: lib/budgeteer_web/live/category_live/form.ex:58
+#: lib/budgeteer_web/live/category_live/form.ex:64
 #, elixir-autogen, elixir-format
 msgid "Edit Category"
 msgstr ""
 
-#: lib/budgeteer_web/live/calendar_live/form.ex:61
+#: lib/budgeteer_web/live/calendar_live/form.ex:95
 #, elixir-autogen, elixir-format
 msgid "Edit Event"
 msgstr ""
@@ -586,17 +592,17 @@ msgstr ""
 #: lib/budgeteer_web/live/user_live/login.ex:58
 #: lib/budgeteer_web/live/user_live/login.ex:84
 #: lib/budgeteer_web/live/user_live/registration.ex:43
-#: lib/budgeteer_web/live/user_live/settings.ex:29
+#: lib/budgeteer_web/live/user_live/settings.ex:33
 #, elixir-autogen, elixir-format
 msgid "Email"
 msgstr ""
 
-#: lib/budgeteer_web/live/user_live/settings.ex:163
+#: lib/budgeteer_web/live/user_live/settings.ex:266
 #, elixir-autogen, elixir-format
 msgid "Email change link is invalid or it has expired."
 msgstr ""
 
-#: lib/budgeteer_web/live/user_live/settings.ex:160
+#: lib/budgeteer_web/live/user_live/settings.ex:263
 #, elixir-autogen, elixir-format
 msgid "Email changed successfully."
 msgstr ""
@@ -606,7 +612,7 @@ msgstr ""
 msgid "Emails aren't actually being sent in this environment."
 msgstr ""
 
-#: lib/budgeteer_web/live/calendar_live/form.ex:18
+#: lib/budgeteer_web/live/calendar_live/form.ex:40
 #, elixir-autogen, elixir-format
 msgid "End time"
 msgstr ""
@@ -621,22 +627,22 @@ msgstr ""
 msgid "Estimated monthly cost"
 msgstr ""
 
-#: lib/budgeteer_web/live/calendar_live/form.ex:124
+#: lib/budgeteer_web/live/calendar_live/form.ex:171
 #, elixir-autogen, elixir-format
 msgid "Event created successfully"
 msgstr ""
 
-#: lib/budgeteer_web/live/calendar_live/form.ex:102
+#: lib/budgeteer_web/live/calendar_live/form.ex:136
 #, elixir-autogen, elixir-format
 msgid "Event deleted successfully"
 msgstr ""
 
-#: lib/budgeteer_web/live/calendar_live/form.ex:111
+#: lib/budgeteer_web/live/calendar_live/form.ex:152
 #, elixir-autogen, elixir-format
 msgid "Event updated successfully"
 msgstr ""
 
-#: lib/budgeteer_web/live/subscription_live/index.ex:149
+#: lib/budgeteer_web/live/subscription_live/index.ex:144
 #, elixir-autogen, elixir-format
 msgid "Every 2 weeks"
 msgstr ""
@@ -684,7 +690,7 @@ msgstr ""
 msgid "Feb"
 msgstr ""
 
-#: lib/budgeteer_web/live/calendar_live/index.ex:219
+#: lib/budgeteer_web/live/calendar_live/index.ex:273
 #, elixir-autogen, elixir-format
 msgid "February"
 msgstr ""
@@ -694,7 +700,7 @@ msgstr ""
 msgid "Filename"
 msgstr ""
 
-#: lib/budgeteer_web/live/calendar_live/form.ex:22
+#: lib/budgeteer_web/live/calendar_live/form.ex:46
 #, elixir-autogen, elixir-format
 msgid "For"
 msgstr ""
@@ -706,7 +712,7 @@ msgstr ""
 msgid "For %{account}"
 msgstr ""
 
-#: lib/budgeteer_web/live/calendar_live/index.ex:239
+#: lib/budgeteer_web/live/calendar_live/index.ex:293
 #, elixir-autogen, elixir-format
 msgid "Fri"
 msgstr ""
@@ -716,17 +722,17 @@ msgstr ""
 msgid "From"
 msgstr ""
 
-#: lib/budgeteer_web/live/user_live/settings.ex:128
+#: lib/budgeteer_web/live/user_live/settings.ex:230
 #, elixir-autogen, elixir-format
 msgid "Generate token"
 msgstr ""
 
-#: lib/budgeteer_web/live/user_live/settings.ex:127
+#: lib/budgeteer_web/live/user_live/settings.ex:229
 #, elixir-autogen, elixir-format
 msgid "Generating..."
 msgstr ""
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:147
+#: lib/budgeteer_web/components/layouts/root.html.heex:155
 #: lib/budgeteer_web/controllers/page_html/home.html.heex:45
 #: lib/budgeteer_web/controllers/page_html/home.html.heex:49
 #: lib/budgeteer_web/controllers/page_html/home.html.heex:127
@@ -815,12 +821,12 @@ msgstr ""
 msgid "Ingredients"
 msgstr ""
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:258
+#: lib/budgeteer_web/components/layouts/root.html.heex:267
 #, elixir-autogen, elixir-format
 msgid "Install Budgeteer: tap"
 msgstr ""
 
-#: lib/budgeteer_web/live/user_live/settings.ex:83
+#: lib/budgeteer_web/live/user_live/settings.ex:101
 #, elixir-autogen, elixir-format
 msgid "Invite a household member"
 msgstr ""
@@ -840,7 +846,7 @@ msgstr ""
 msgid "Jan"
 msgstr ""
 
-#: lib/budgeteer_web/live/calendar_live/index.ex:218
+#: lib/budgeteer_web/live/calendar_live/index.ex:272
 #, elixir-autogen, elixir-format
 msgid "January"
 msgstr ""
@@ -850,7 +856,7 @@ msgstr ""
 msgid "Jul"
 msgstr ""
 
-#: lib/budgeteer_web/live/calendar_live/index.ex:224
+#: lib/budgeteer_web/live/calendar_live/index.ex:278
 #, elixir-autogen, elixir-format
 msgid "July"
 msgstr ""
@@ -860,7 +866,7 @@ msgstr ""
 msgid "Jun"
 msgstr ""
 
-#: lib/budgeteer_web/live/calendar_live/index.ex:223
+#: lib/budgeteer_web/live/calendar_live/index.ex:277
 #, elixir-autogen, elixir-format
 msgid "June"
 msgstr ""
@@ -870,7 +876,7 @@ msgstr ""
 msgid "Keep me logged in on this device"
 msgstr ""
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:204
+#: lib/budgeteer_web/components/layouts/root.html.heex:213
 #, elixir-autogen, elixir-format
 msgid "Language"
 msgstr ""
@@ -885,29 +891,29 @@ msgstr ""
 msgid "Last charged"
 msgstr ""
 
-#: lib/budgeteer_web/live/user_live/settings.ex:136
+#: lib/budgeteer_web/live/user_live/settings.ex:239
 #, elixir-autogen, elixir-format
 msgid "Last used"
 msgstr ""
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:184
+#: lib/budgeteer_web/components/layouts/root.html.heex:193
 #, elixir-autogen, elixir-format
 msgid "Light"
 msgstr ""
 
 #: lib/budgeteer_web/live/account_live/index.ex:11
-#: lib/budgeteer_web/live/account_live/index.ex:60
+#: lib/budgeteer_web/live/account_live/index.ex:61
 #, elixir-autogen, elixir-format
 msgid "Listing Accounts"
 msgstr ""
 
 #: lib/budgeteer_web/live/category_live/index.ex:11
-#: lib/budgeteer_web/live/category_live/index.ex:57
+#: lib/budgeteer_web/live/category_live/index.ex:60
 #, elixir-autogen, elixir-format
 msgid "Listing Categories"
 msgstr ""
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:245
+#: lib/budgeteer_web/components/layouts/root.html.heex:254
 #: lib/budgeteer_web/live/user_live/confirmation.ex:55
 #: lib/budgeteer_web/live/user_live/login.ex:22
 #: lib/budgeteer_web/live/user_live/registration.ex:18
@@ -940,7 +946,7 @@ msgstr ""
 msgid "Log me in only this time"
 msgstr ""
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:235
+#: lib/budgeteer_web/components/layouts/root.html.heex:244
 #, elixir-autogen, elixir-format
 msgid "Log out"
 msgstr ""
@@ -962,7 +968,7 @@ msgstr ""
 msgid "Magic link is invalid or it has expired."
 msgstr ""
 
-#: lib/budgeteer_web/live/user_live/settings.ex:21
+#: lib/budgeteer_web/live/user_live/settings.ex:24
 #, elixir-autogen, elixir-format
 msgid "Manage your account email address and password settings"
 msgstr ""
@@ -972,7 +978,7 @@ msgstr ""
 msgid "Mar"
 msgstr ""
 
-#: lib/budgeteer_web/live/calendar_live/index.ex:220
+#: lib/budgeteer_web/live/calendar_live/index.ex:274
 #, elixir-autogen, elixir-format
 msgid "March"
 msgstr ""
@@ -982,13 +988,13 @@ msgstr ""
 msgid "Max amount"
 msgstr ""
 
-#: lib/budgeteer_web/live/calendar_live/index.ex:222
+#: lib/budgeteer_web/live/calendar_live/index.ex:276
 #: lib/budgeteer_web/live/dashboard_live.ex:289
 #, elixir-autogen, elixir-format
 msgid "May"
 msgstr ""
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:156
+#: lib/budgeteer_web/components/layouts/root.html.heex:166
 #, elixir-autogen, elixir-format
 msgid "Meal Plan"
 msgstr ""
@@ -1020,19 +1026,14 @@ msgstr ""
 msgid "Min amount"
 msgstr ""
 
-#: lib/budgeteer_web/live/calendar_live/index.ex:235
+#: lib/budgeteer_web/live/calendar_live/index.ex:289
 #, elixir-autogen, elixir-format
 msgid "Mon"
 msgstr ""
 
-#: lib/budgeteer_web/live/subscription_live/index.ex:150
+#: lib/budgeteer_web/live/subscription_live/index.ex:145
 #, elixir-autogen, elixir-format
 msgid "Monthly"
-msgstr ""
-
-#: lib/budgeteer_web/components/layouts/root.html.heex:151
-#, elixir-autogen, elixir-format
-msgid "More"
 msgstr ""
 
 #: lib/budgeteer_web/live/account_live/form.ex:14
@@ -1048,12 +1049,14 @@ msgstr ""
 #: lib/budgeteer_web/live/recipe_live/form.ex:17
 #: lib/budgeteer_web/live/recipe_live/form.ex:28
 #: lib/budgeteer_web/live/recipe_live/index.ex:27
-#: lib/budgeteer_web/live/user_live/settings.ex:134
+#: lib/budgeteer_web/live/todo_list_live/form.ex:14
+#: lib/budgeteer_web/live/todo_list_live/index.ex:27
+#: lib/budgeteer_web/live/user_live/settings.ex:236
 #, elixir-autogen, elixir-format
 msgid "Name"
 msgstr ""
 
-#: lib/budgeteer_web/live/user_live/settings.ex:137
+#: lib/budgeteer_web/live/user_live/settings.ex:240
 #, elixir-autogen, elixir-format
 msgid "Never"
 msgstr ""
@@ -1064,13 +1067,13 @@ msgstr ""
 msgid "New Account"
 msgstr ""
 
-#: lib/budgeteer_web/live/category_live/form.ex:67
+#: lib/budgeteer_web/live/category_live/form.ex:73
 #: lib/budgeteer_web/live/category_live/index.ex:14
 #, elixir-autogen, elixir-format
 msgid "New Category"
 msgstr ""
 
-#: lib/budgeteer_web/live/calendar_live/form.ex:71
+#: lib/budgeteer_web/live/calendar_live/form.ex:105
 #: lib/budgeteer_web/live/calendar_live/index.ex:23
 #, elixir-autogen, elixir-format
 msgid "New Event"
@@ -1088,11 +1091,12 @@ msgid "New grocery list"
 msgstr ""
 
 #: lib/budgeteer_web/live/grocery_list_live/index.ex:17
+#: lib/budgeteer_web/live/todo_list_live/index.ex:17
 #, elixir-autogen, elixir-format
 msgid "New list"
 msgstr ""
 
-#: lib/budgeteer_web/live/user_live/settings.ex:60
+#: lib/budgeteer_web/live/user_live/settings.ex:66
 #, elixir-autogen, elixir-format
 msgid "New password"
 msgstr ""
@@ -1136,6 +1140,7 @@ msgstr ""
 
 #: lib/budgeteer_web/live/recipe_live/extract.ex:94
 #: lib/budgeteer_web/live/recipe_live/form.ex:18
+#: lib/budgeteer_web/live/todo_list_live/show.ex:55
 #: lib/budgeteer_web/live/transaction_live/form.ex:26
 #: lib/budgeteer_web/live/transaction_live/index.ex:52
 #: lib/budgeteer_web/live/transaction_live/show.ex:31
@@ -1148,7 +1153,7 @@ msgstr ""
 msgid "Nov"
 msgstr ""
 
-#: lib/budgeteer_web/live/calendar_live/index.ex:228
+#: lib/budgeteer_web/live/calendar_live/index.ex:282
 #, elixir-autogen, elixir-format
 msgid "November"
 msgstr ""
@@ -1158,7 +1163,7 @@ msgstr ""
 msgid "Oct"
 msgstr ""
 
-#: lib/budgeteer_web/live/calendar_live/index.ex:227
+#: lib/budgeteer_web/live/calendar_live/index.ex:281
 #, elixir-autogen, elixir-format
 msgid "October"
 msgstr ""
@@ -1204,7 +1209,7 @@ msgstr ""
 msgid "Pending"
 msgstr ""
 
-#: lib/budgeteer_web/live/user_live/settings.ex:99
+#: lib/budgeteer_web/live/user_live/settings.ex:195
 #, elixir-autogen, elixir-format
 msgid "Personal access tokens let apps you connect read your household's data — read-only, except for creating recipes and planning meals."
 msgstr ""
@@ -1253,7 +1258,7 @@ msgstr ""
 msgid "Qty"
 msgstr ""
 
-#: lib/budgeteer_web/live/subscription_live/index.ex:151
+#: lib/budgeteer_web/live/subscription_live/index.ex:146
 #, elixir-autogen, elixir-format
 msgid "Quarterly"
 msgstr ""
@@ -1289,14 +1294,14 @@ msgstr ""
 msgid "Recipe updated successfully"
 msgstr ""
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:155
+#: lib/budgeteer_web/components/layouts/root.html.heex:165
 #: lib/budgeteer_web/live/recipe_live/index.ex:11
 #: lib/budgeteer_web/live/recipe_live/index.ex:50
 #, elixir-autogen, elixir-format
 msgid "Recipes"
 msgstr ""
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:154
+#: lib/budgeteer_web/components/layouts/root.html.heex:147
 #: lib/budgeteer_web/live/subscription_live/index.ex:12
 #: lib/budgeteer_web/live/subscription_live/index.ex:86
 #, elixir-autogen, elixir-format
@@ -1308,7 +1313,7 @@ msgstr ""
 msgid "Recurring charges detected"
 msgstr ""
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:242
+#: lib/budgeteer_web/components/layouts/root.html.heex:251
 #, elixir-autogen, elixir-format
 msgid "Register"
 msgstr ""
@@ -1325,6 +1330,7 @@ msgid "Remove"
 msgstr ""
 
 #: lib/budgeteer_web/live/grocery_list_live/show.ex:25
+#: lib/budgeteer_web/live/todo_list_live/show.ex:16
 #, elixir-autogen, elixir-format
 msgid "Rename"
 msgstr ""
@@ -1354,12 +1360,12 @@ msgstr ""
 msgid "Review the extracted recipe below — nothing is saved until you confirm."
 msgstr ""
 
-#: lib/budgeteer_web/live/user_live/settings.ex:145
+#: lib/budgeteer_web/live/user_live/settings.ex:248
 #, elixir-autogen, elixir-format
 msgid "Revoke"
 msgstr ""
 
-#: lib/budgeteer_web/live/user_live/settings.ex:143
+#: lib/budgeteer_web/live/user_live/settings.ex:246
 #, elixir-autogen, elixir-format
 msgid "Revoke this token?"
 msgstr ""
@@ -1370,7 +1376,7 @@ msgstr ""
 msgid "Salary"
 msgstr ""
 
-#: lib/budgeteer_web/live/calendar_live/index.ex:240
+#: lib/budgeteer_web/live/calendar_live/index.ex:294
 #, elixir-autogen, elixir-format
 msgid "Sat"
 msgstr ""
@@ -1380,17 +1386,17 @@ msgstr ""
 msgid "Save Account"
 msgstr ""
 
-#: lib/budgeteer_web/live/category_live/form.ex:31
+#: lib/budgeteer_web/live/category_live/form.ex:37
 #, elixir-autogen, elixir-format
 msgid "Save Category"
 msgstr ""
 
-#: lib/budgeteer_web/live/calendar_live/form.ex:29
+#: lib/budgeteer_web/live/calendar_live/form.ex:63
 #, elixir-autogen, elixir-format
 msgid "Save Event"
 msgstr ""
 
-#: lib/budgeteer_web/live/user_live/settings.ex:73
+#: lib/budgeteer_web/live/user_live/settings.ex:79
 #, elixir-autogen, elixir-format
 msgid "Save Password"
 msgstr ""
@@ -1411,6 +1417,7 @@ msgid "Save a recipe, add it to the week's meal plan, and push every ingredient 
 msgstr ""
 
 #: lib/budgeteer_web/live/grocery_list_live/form.ex:20
+#: lib/budgeteer_web/live/todo_list_live/form.ex:17
 #, elixir-autogen, elixir-format
 msgid "Save list"
 msgstr ""
@@ -1431,19 +1438,22 @@ msgid "Saved %{ok_count}, %{error_count} row(s) failed — check the values and 
 msgstr ""
 
 #: lib/budgeteer_web/live/account_live/form.ex:24
-#: lib/budgeteer_web/live/calendar_live/form.ex:28
-#: lib/budgeteer_web/live/category_live/form.ex:30
+#: lib/budgeteer_web/live/calendar_live/form.ex:60
+#: lib/budgeteer_web/live/category_live/form.ex:36
 #: lib/budgeteer_web/live/grocery_list_live/form.ex:19
 #: lib/budgeteer_web/live/recipe_live/extract.ex:131
 #: lib/budgeteer_web/live/recipe_live/form.ex:55
 #: lib/budgeteer_web/live/statement_live/review.ex:118
+#: lib/budgeteer_web/live/todo_list_live/form.ex:16
+#: lib/budgeteer_web/live/todo_list_live/show.ex:58
 #: lib/budgeteer_web/live/transaction_live/form.ex:35
-#: lib/budgeteer_web/live/user_live/settings.ex:72
+#: lib/budgeteer_web/live/user_live/settings.ex:78
+#: lib/budgeteer_web/live/user_live/settings.ex:158
 #, elixir-autogen, elixir-format
 msgid "Saving..."
 msgstr ""
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:153
+#: lib/budgeteer_web/components/layouts/root.html.heex:145
 #: lib/budgeteer_web/live/transaction_live/search.ex:12
 #: lib/budgeteer_web/live/transaction_live/search.ex:71
 #, elixir-autogen, elixir-format
@@ -1465,12 +1475,12 @@ msgstr ""
 msgid "See where the money actually went"
 msgstr ""
 
-#: lib/budgeteer_web/live/user_live/settings.ex:89
+#: lib/budgeteer_web/live/user_live/settings.ex:107
 #, elixir-autogen, elixir-format
 msgid "Send invite"
 msgstr ""
 
-#: lib/budgeteer_web/live/user_live/settings.ex:88
+#: lib/budgeteer_web/live/user_live/settings.ex:106
 #, elixir-autogen, elixir-format
 msgid "Sending..."
 msgstr ""
@@ -1480,23 +1490,23 @@ msgstr ""
 msgid "Sep"
 msgstr ""
 
-#: lib/budgeteer_web/live/calendar_live/index.ex:226
+#: lib/budgeteer_web/live/calendar_live/index.ex:280
 #, elixir-autogen, elixir-format
 msgid "September"
 msgstr ""
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:233
+#: lib/budgeteer_web/components/layouts/root.html.heex:242
 #, elixir-autogen, elixir-format
 msgid "Settings"
 msgstr ""
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:258
+#: lib/budgeteer_web/components/layouts/root.html.heex:267
 #, elixir-autogen, elixir-format
 msgid "Share"
 msgstr ""
 
 #: lib/budgeteer_web/live/account_live/index.ex:32
-#: lib/budgeteer_web/live/category_live/index.ex:32
+#: lib/budgeteer_web/live/category_live/index.ex:34
 #: lib/budgeteer_web/live/transaction_live/index.ex:59
 #, elixir-autogen, elixir-format
 msgid "Show"
@@ -1518,11 +1528,13 @@ msgid "Show Transaction"
 msgstr ""
 
 #: lib/budgeteer_web/live/grocery_list_live/index.ex:14
+#: lib/budgeteer_web/live/todo_list_live/index.ex:14
 #, elixir-autogen, elixir-format
 msgid "Show active"
 msgstr ""
 
 #: lib/budgeteer_web/live/grocery_list_live/index.ex:14
+#: lib/budgeteer_web/live/todo_list_live/index.ex:14
 #, elixir-autogen, elixir-format
 msgid "Show archived"
 msgstr ""
@@ -1547,7 +1559,7 @@ msgstr ""
 msgid "Spent"
 msgstr ""
 
-#: lib/budgeteer_web/live/calendar_live/form.ex:17
+#: lib/budgeteer_web/live/calendar_live/form.ex:34
 #, elixir-autogen, elixir-format
 msgid "Start time"
 msgstr ""
@@ -1585,27 +1597,27 @@ msgstr ""
 msgid "Suggested: \"%{name}\" — not yet a category."
 msgstr ""
 
-#: lib/budgeteer_web/live/calendar_live/index.ex:241
+#: lib/budgeteer_web/live/calendar_live/index.ex:295
 #, elixir-autogen, elixir-format
 msgid "Sun"
 msgstr ""
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:212
+#: lib/budgeteer_web/components/layouts/root.html.heex:221
 #, elixir-autogen, elixir-format
 msgid "Switch to English"
 msgstr ""
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:222
+#: lib/budgeteer_web/components/layouts/root.html.heex:231
 #, elixir-autogen, elixir-format
 msgid "Switch to European Portuguese"
 msgstr ""
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:174
+#: lib/budgeteer_web/components/layouts/root.html.heex:183
 #, elixir-autogen, elixir-format
 msgid "System"
 msgstr ""
 
-#: lib/budgeteer_web/live/user_live/settings.ex:310
+#: lib/budgeteer_web/live/user_live/settings.ex:451
 #, elixir-autogen, elixir-format
 msgid "That token no longer exists."
 msgstr ""
@@ -1630,7 +1642,7 @@ msgstr ""
 msgid "The grocery list, together"
 msgstr ""
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:166
+#: lib/budgeteer_web/components/layouts/root.html.heex:175
 #, elixir-autogen, elixir-format
 msgid "Theme"
 msgstr ""
@@ -1655,7 +1667,7 @@ msgstr ""
 msgid "This statement isn't ready to review yet."
 msgstr ""
 
-#: lib/budgeteer_web/live/calendar_live/index.ex:238
+#: lib/budgeteer_web/live/calendar_live/index.ex:292
 #, elixir-autogen, elixir-format
 msgid "Thu"
 msgstr ""
@@ -1665,7 +1677,7 @@ msgstr ""
 msgid "Tip: If you prefer passwords, you can enable them in the user settings."
 msgstr ""
 
-#: lib/budgeteer_web/live/calendar_live/form.ex:15
+#: lib/budgeteer_web/live/calendar_live/form.ex:22
 #, elixir-autogen, elixir-format
 msgid "Title"
 msgstr ""
@@ -1681,22 +1693,22 @@ msgstr ""
 msgid "Today"
 msgstr ""
 
-#: lib/budgeteer_web/live/user_live/settings.ex:123
+#: lib/budgeteer_web/live/user_live/settings.ex:219
 #, elixir-autogen, elixir-format
 msgid "Token name"
 msgstr ""
 
-#: lib/budgeteer_web/live/user_live/settings.ex:306
+#: lib/budgeteer_web/live/user_live/settings.ex:447
 #, elixir-autogen, elixir-format
 msgid "Token revoked."
 msgstr ""
 
-#: lib/budgeteer_web/live/user_live/settings.ex:267
+#: lib/budgeteer_web/live/user_live/settings.ex:545
 #, elixir-autogen, elixir-format
 msgid "Too many invites sent — please wait a while and try again."
 msgstr ""
 
-#: lib/budgeteer_web/live/user_live/settings.ex:294
+#: lib/budgeteer_web/live/user_live/settings.ex:413
 #, elixir-autogen, elixir-format
 msgid "Too many tokens created — please wait a while and try again."
 msgstr ""
@@ -1733,23 +1745,24 @@ msgid "Transactions"
 msgstr ""
 
 #: lib/budgeteer_web/live/transaction_live/index.ex:12
-#: lib/budgeteer_web/live/transaction_live/index.ex:94
+#: lib/budgeteer_web/live/transaction_live/index.ex:95
 #, elixir-autogen, elixir-format
 msgid "Transactions for %{account}"
 msgstr ""
 
 #: lib/budgeteer_web/controllers/page_html/home.html.heex:133
+#: lib/budgeteer_web/live/category_live/form.ex:141
 #, elixir-autogen, elixir-format
 msgid "Transport"
 msgstr ""
 
-#: lib/budgeteer_web/live/calendar_live/index.ex:236
+#: lib/budgeteer_web/live/calendar_live/index.ex:290
 #, elixir-autogen, elixir-format
 msgid "Tue"
 msgstr ""
 
-#: lib/budgeteer_web/live/category_live/form.ex:25
-#: lib/budgeteer_web/live/category_live/index.ex:29
+#: lib/budgeteer_web/live/category_live/form.ex:31
+#: lib/budgeteer_web/live/category_live/index.ex:31
 #: lib/budgeteer_web/live/category_live/show.ex:26
 #: lib/budgeteer_web/live/dashboard_live.ex:83
 #, elixir-autogen, elixir-format
@@ -1757,22 +1770,16 @@ msgid "Type"
 msgstr ""
 
 #: lib/budgeteer_web/live/grocery_list_live/index.ex:33
+#: lib/budgeteer_web/live/todo_list_live/index.ex:33
 #, elixir-autogen, elixir-format
 msgid "Unarchive"
 msgstr ""
 
-#: lib/budgeteer_web/live/dashboard_live.ex:303
-#: lib/budgeteer_web/live/dashboard_live.ex:306
+#: lib/budgeteer_web/components/category_components.ex:14
 #: lib/budgeteer_web/live/grocery_list_live/show.ex:167
 #: lib/budgeteer_web/live/statement_live/review.ex:85
-#: lib/budgeteer_web/live/subscription_live/index.ex:143
-#: lib/budgeteer_web/live/subscription_live/index.ex:146
 #: lib/budgeteer_web/live/transaction_live/filter_form.ex:116
 #: lib/budgeteer_web/live/transaction_live/form.ex:31
-#: lib/budgeteer_web/live/transaction_live/index.ex:140
-#: lib/budgeteer_web/live/transaction_live/index.ex:143
-#: lib/budgeteer_web/live/transaction_live/search.ex:113
-#: lib/budgeteer_web/live/transaction_live/search.ex:116
 #: lib/budgeteer_web/live/transaction_live/show.ex:50
 #, elixir-autogen, elixir-format
 msgid "Uncategorized"
@@ -1834,17 +1841,17 @@ msgstr ""
 msgid "Uploading..."
 msgstr ""
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:193
+#: lib/budgeteer_web/components/layouts/root.html.heex:202
 #, elixir-autogen, elixir-format
 msgid "Use dark theme"
 msgstr ""
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:183
+#: lib/budgeteer_web/components/layouts/root.html.heex:192
 #, elixir-autogen, elixir-format
 msgid "Use light theme"
 msgstr ""
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:173
+#: lib/budgeteer_web/components/layouts/root.html.heex:182
 #, elixir-autogen, elixir-format
 msgid "Use system theme"
 msgstr ""
@@ -1869,12 +1876,12 @@ msgstr ""
 msgid "View them at"
 msgstr ""
 
-#: lib/budgeteer_web/live/calendar_live/index.ex:237
+#: lib/budgeteer_web/live/calendar_live/index.ex:291
 #, elixir-autogen, elixir-format
 msgid "Wed"
 msgstr ""
 
-#: lib/budgeteer_web/live/subscription_live/index.ex:148
+#: lib/budgeteer_web/live/subscription_live/index.ex:143
 #, elixir-autogen, elixir-format
 msgid "Weekly"
 msgstr ""
@@ -1884,13 +1891,13 @@ msgstr ""
 msgid "Welcome %{email}"
 msgstr ""
 
-#: lib/budgeteer_web/live/calendar_live/form.ex:23
+#: lib/budgeteer_web/live/calendar_live/form.ex:47
 #: lib/budgeteer_web/live/calendar_live/index.ex:52
 #, elixir-autogen, elixir-format
 msgid "Whole household"
 msgstr ""
 
-#: lib/budgeteer_web/live/subscription_live/index.ex:152
+#: lib/budgeteer_web/live/subscription_live/index.ex:147
 #, elixir-autogen, elixir-format
 msgid "Yearly"
 msgstr ""
@@ -1989,7 +1996,7 @@ msgstr ""
 msgid "e.g. -42.50 for a debit"
 msgstr ""
 
-#: lib/budgeteer_web/live/category_live/form.ex:20
+#: lib/budgeteer_web/live/category_live/form.ex:26
 #, elixir-autogen, elixir-format
 msgid "e.g. 150.00"
 msgstr ""
@@ -2009,7 +2016,7 @@ msgstr ""
 msgid "e.g. Milk"
 msgstr ""
 
-#: lib/budgeteer_web/live/user_live/settings.ex:124
+#: lib/budgeteer_web/live/user_live/settings.ex:220
 #, elixir-autogen, elixir-format
 msgid "e.g. My budgeting app"
 msgstr ""
@@ -2057,7 +2064,7 @@ msgstr ""
 msgid "the mailbox page"
 msgstr ""
 
-#: lib/budgeteer_web/components/layouts/root.html.heex:258
+#: lib/budgeteer_web/components/layouts/root.html.heex:267
 #, elixir-autogen, elixir-format
 msgid "then"
 msgstr ""
@@ -2077,7 +2084,7 @@ msgstr ""
 msgid "Could not authenticate with Google."
 msgstr ""
 
-#: lib/budgeteer_web/controllers/statement_controller.ex:102
+#: lib/budgeteer_web/controllers/statement_controller.ex:105
 #, elixir-autogen, elixir-format
 msgid "Could not save statement"
 msgstr ""
@@ -2087,7 +2094,7 @@ msgstr ""
 msgid "Could not sign you in with Google."
 msgstr ""
 
-#: lib/budgeteer_web/controllers/statement_controller.ex:99
+#: lib/budgeteer_web/controllers/statement_controller.ex:102
 #, elixir-autogen, elixir-format
 msgid "File %{message}"
 msgstr ""
@@ -2122,7 +2129,7 @@ msgstr ""
 msgid "Please select a file to upload"
 msgstr ""
 
-#: lib/budgeteer_web/controllers/statement_controller.ex:86
+#: lib/budgeteer_web/controllers/statement_controller.ex:87
 #, elixir-autogen, elixir-format
 msgid "Statement uploaded — processing will begin shortly"
 msgstr ""
@@ -2374,13 +2381,427 @@ msgstr ""
 msgid "Not set up yet"
 msgstr ""
 
-#: lib/budgeteer/daily_summary/notifier.ex:42
+#: lib/budgeteer/daily_summary/notifier.ex:40
 #, elixir-autogen, elixir-format
 msgid "Good morning,"
 msgstr ""
 
-#: lib/budgeteer/daily_summary/notifier.ex:37
-#: lib/budgeteer/daily_summary/notifier.ex:59
+#: lib/budgeteer/daily_summary/notifier.ex:35
+#: lib/budgeteer/daily_summary/notifier.ex:57
 #, elixir-autogen, elixir-format
 msgid "Your morning summary"
+msgstr ""
+
+#: lib/budgeteer_web/live/todo_list_live/show.ex:34
+#, elixir-autogen, elixir-format
+msgid "Add task"
+msgstr ""
+
+#: lib/budgeteer_web/live/user_live/settings.ex:227
+#, elixir-autogen, elixir-format
+msgid "Allow recipe and meal-plan changes"
+msgstr ""
+
+#: lib/budgeteer_web/live/todo_list_live/index.ex:11
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Archived TODO lists"
+msgstr ""
+
+#: lib/budgeteer_web/live/todo_list_live/show.ex:13
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Back to TODO lists"
+msgstr ""
+
+#: lib/budgeteer_web/live/user_live/settings.ex:149
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Calendars to import"
+msgstr ""
+
+#: lib/budgeteer_web/live/user_live/settings.ex:164
+#, elixir-autogen, elixir-format
+msgid "Connect Google Calendar"
+msgstr ""
+
+#: lib/budgeteer_web/live/user_live/settings.ex:123
+#, elixir-autogen, elixir-format
+msgid "Connected"
+msgstr ""
+
+#: lib/budgeteer_web/live/user_live/settings.ex:173
+#, elixir-autogen, elixir-format
+msgid "Daily summary email"
+msgstr ""
+
+#: lib/budgeteer_web/live/todo_list_live/show.ex:119
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Delete task"
+msgstr ""
+
+#: lib/budgeteer_web/live/todo_list_live/index.ex:41
+#, elixir-autogen, elixir-format
+msgid "Delete this TODO list and all its items?"
+msgstr ""
+
+#: lib/budgeteer_web/live/todo_list_live/show.ex:118
+#, elixir-autogen, elixir-format
+msgid "Delete this task?"
+msgstr ""
+
+#: lib/budgeteer_web/live/user_live/settings.ex:134
+#, elixir-autogen, elixir-format
+msgid "Disconnect"
+msgstr ""
+
+#: lib/budgeteer_web/live/user_live/settings.ex:132
+#, elixir-autogen, elixir-format
+msgid "Disconnect Google Calendar?"
+msgstr ""
+
+#: lib/budgeteer_web/live/todo_list_live/show.ex:80
+#, elixir-autogen, elixir-format
+msgid "Due %{date}"
+msgstr ""
+
+#: lib/budgeteer_web/live/todo_list_live/show.ex:56
+#, elixir-autogen, elixir-format
+msgid "Due date"
+msgstr ""
+
+#: lib/budgeteer_web/live/todo_list_live/form.ex:38
+#, elixir-autogen, elixir-format
+msgid "Edit TODO list"
+msgstr ""
+
+#: lib/budgeteer_web/live/todo_list_live/show.ex:109
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Edit task"
+msgstr ""
+
+#: lib/budgeteer_web/live/category_live/form.ex:139
+#, elixir-autogen, elixir-format
+msgid "Education"
+msgstr ""
+
+#: lib/budgeteer_web/live/category_live/form.ex:138
+#, elixir-autogen, elixir-format
+msgid "Entertainment"
+msgstr ""
+
+#: lib/budgeteer_web/live/category_live/form.ex:143
+#, elixir-autogen, elixir-format
+msgid "Food"
+msgstr ""
+
+#: lib/budgeteer_web/live/category_live/form.ex:142
+#, elixir-autogen, elixir-format
+msgid "Gifts"
+msgstr ""
+
+#: lib/budgeteer_web/live/user_live/settings.ex:115
+#, elixir-autogen, elixir-format
+msgid "Google Calendar"
+msgstr ""
+
+#: lib/budgeteer_web/controllers/google_calendar_controller.ex:48
+#, elixir-autogen, elixir-format
+msgid "Google Calendar connected. Imported %{count} events."
+msgstr ""
+
+#: lib/budgeteer_web/controllers/google_calendar_controller.ex:29
+#, elixir-autogen, elixir-format
+msgid "Google Calendar connection could not be verified."
+msgstr ""
+
+#: lib/budgeteer_web/controllers/google_calendar_controller.ex:36
+#, elixir-autogen, elixir-format
+msgid "Google Calendar connection was cancelled."
+msgstr ""
+
+#: lib/budgeteer_web/controllers/google_calendar_controller.ex:58
+#, elixir-autogen, elixir-format
+msgid "Google Calendar could not be connected."
+msgstr ""
+
+#: lib/budgeteer_web/live/user_live/settings.ex:524
+#, elixir-autogen, elixir-format
+msgid "Google Calendar could not be disconnected."
+msgstr ""
+
+#: lib/budgeteer_web/live/user_live/settings.ex:520
+#, elixir-autogen, elixir-format
+msgid "Google Calendar disconnected."
+msgstr ""
+
+#: lib/budgeteer_web/live/calendar_live/form.ex:142
+#: lib/budgeteer_web/live/calendar_live/form.ex:161
+#, elixir-autogen, elixir-format
+msgid "Google Calendar events are read-only."
+msgstr ""
+
+#: lib/budgeteer_web/live/user_live/settings.ex:469
+#, elixir-autogen, elixir-format
+msgid "Google Calendar sync could not be started."
+msgstr ""
+
+#: lib/budgeteer_web/live/user_live/settings.ex:465
+#, elixir-autogen, elixir-format
+msgid "Google Calendar sync started."
+msgstr ""
+
+#: lib/budgeteer_web/live/user_live/settings.ex:487
+#, elixir-autogen, elixir-format
+msgid "Google calendars could not be loaded."
+msgstr ""
+
+#: lib/budgeteer_web/live/user_live/settings.ex:506
+#, elixir-autogen, elixir-format
+msgid "Google calendars could not be saved."
+msgstr ""
+
+#: lib/budgeteer_web/live/user_live/settings.ex:484
+#, elixir-autogen, elixir-format
+msgid "Google calendars refreshed."
+msgstr ""
+
+#: lib/budgeteer_web/live/user_live/settings.ex:500
+#, elixir-autogen, elixir-format
+msgid "Google calendars saved. Click Sync now to import them."
+msgstr ""
+
+#: lib/budgeteer_web/live/category_live/form.ex:137
+#, elixir-autogen, elixir-format
+msgid "Health"
+msgstr ""
+
+#: lib/budgeteer_web/live/category_live/form.ex:135
+#, elixir-autogen, elixir-format
+msgid "Home"
+msgstr ""
+
+#: lib/budgeteer_web/live/category_live/form.ex:19
+#, elixir-autogen, elixir-format
+msgid "Icon"
+msgstr ""
+
+#: lib/budgeteer_web/live/user_live/settings.ex:117
+#, elixir-autogen, elixir-format
+msgid "Import your primary Google Calendar into the shared household calendar."
+msgstr ""
+
+#: lib/budgeteer_web/live/user_live/settings.ex:138
+#, elixir-autogen, elixir-format
+msgid "Last sync failed: %{error}"
+msgstr ""
+
+#: lib/budgeteer_web/live/user_live/settings.ex:141
+#, elixir-autogen, elixir-format
+msgid "Last synced: %{time}"
+msgstr ""
+
+#: lib/budgeteer_web/live/user_live/settings.ex:124
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Loading..."
+msgstr ""
+
+#: lib/budgeteer_web/live/todo_list_live/show.ex:70
+#, elixir-autogen, elixir-format
+msgid "Mark task complete"
+msgstr ""
+
+#: lib/budgeteer_web/components/layouts/root.html.heex:163
+#, elixir-autogen, elixir-format
+msgid "Meals"
+msgstr ""
+
+#: lib/budgeteer_web/live/todo_list_live/show.ex:100
+#, elixir-autogen, elixir-format
+msgid "Move down"
+msgstr ""
+
+#: lib/budgeteer_web/live/todo_list_live/show.ex:90
+#, elixir-autogen, elixir-format
+msgid "Move up"
+msgstr ""
+
+#: lib/budgeteer_web/live/todo_list_live/form.ex:47
+#, elixir-autogen, elixir-format, fuzzy
+msgid "New TODO list"
+msgstr ""
+
+#: lib/budgeteer_web/live/todo_list_live/show.ex:40
+#, elixir-autogen, elixir-format
+msgid "No tasks yet."
+msgstr ""
+
+#: lib/budgeteer_web/live/category_live/form.ex:147
+#, elixir-autogen, elixir-format
+msgid "Office"
+msgstr ""
+
+#: lib/budgeteer_web/live/account_live/index.ex:75
+#, elixir-autogen, elixir-format
+msgid "Only the household owner can delete accounts."
+msgstr ""
+
+#: lib/budgeteer_web/live/category_live/index.ex:74
+#, elixir-autogen, elixir-format
+msgid "Only the household owner can delete categories."
+msgstr ""
+
+#: lib/budgeteer_web/live/transaction_live/index.ex:114
+#, elixir-autogen, elixir-format
+msgid "Only the household owner can delete transactions."
+msgstr ""
+
+#: lib/budgeteer_web/live/todo_list_live/index.ex:85
+#, elixir-autogen, elixir-format
+msgid "Only the household owner can do that."
+msgstr ""
+
+#: lib/budgeteer_web/live/user_live/settings.ex:378
+#, elixir-autogen, elixir-format
+msgid "Only the household owner can send invites."
+msgstr ""
+
+#: lib/budgeteer_web/live/category_live/form.ex:144
+#, elixir-autogen, elixir-format
+msgid "Phone"
+msgstr ""
+
+#: lib/budgeteer_web/live/user_live/settings.ex:175
+#, elixir-autogen, elixir-format
+msgid "Receive a morning email with today's plans and budget alerts."
+msgstr ""
+
+#: lib/budgeteer_web/live/user_live/settings.ex:125
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Refresh calendars"
+msgstr ""
+
+#: lib/budgeteer_web/live/todo_list_live/show.ex:58
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Save"
+msgstr ""
+
+#: lib/budgeteer_web/live/user_live/settings.ex:159
+#, elixir-autogen, elixir-format
+msgid "Save calendars"
+msgstr ""
+
+#: lib/budgeteer_web/live/user_live/settings.ex:237
+#, elixir-autogen, elixir-format
+msgid "Scopes"
+msgstr ""
+
+#: lib/budgeteer_web/live/user_live/settings.ex:503
+#, elixir-autogen, elixir-format
+msgid "Select at least one valid calendar."
+msgstr ""
+
+#: lib/budgeteer_web/live/user_live/settings.ex:184
+#, elixir-autogen, elixir-format
+msgid "Send me the daily summary email"
+msgstr ""
+
+#: lib/budgeteer_web/live/category_live/form.ex:134
+#, elixir-autogen, elixir-format
+msgid "Shopping"
+msgstr ""
+
+#: lib/budgeteer_web/live/calendar_live/index.ex:116
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Show less"
+msgstr ""
+
+#: lib/budgeteer_web/live/category_live/form.ex:148
+#, elixir-autogen, elixir-format
+msgid "Special"
+msgstr ""
+
+#: lib/budgeteer_web/live/user_live/settings.ex:128
+#, elixir-autogen, elixir-format
+msgid "Sync now"
+msgstr ""
+
+#: lib/budgeteer_web/live/user_live/settings.ex:127
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Syncing..."
+msgstr ""
+
+#: lib/budgeteer_web/live/todo_list_live/form.ex:72
+#, elixir-autogen, elixir-format
+msgid "TODO list created successfully"
+msgstr ""
+
+#: lib/budgeteer_web/live/todo_list_live/form.ex:85
+#, elixir-autogen, elixir-format
+msgid "TODO list updated successfully"
+msgstr ""
+
+#: lib/budgeteer_web/live/todo_list_live/index.ex:11
+#: lib/budgeteer_web/live/todo_list_live/index.ex:63
+#, elixir-autogen, elixir-format
+msgid "TODO lists"
+msgstr ""
+
+#: lib/budgeteer_web/components/layouts/root.html.heex:156
+#, elixir-autogen, elixir-format
+msgid "TODOs"
+msgstr ""
+
+#: lib/budgeteer_web/live/category_live/form.ex:133
+#, elixir-autogen, elixir-format
+msgid "Tag"
+msgstr ""
+
+#: lib/budgeteer_web/live/todo_list_live/show.ex:30
+#: lib/budgeteer_web/live/todo_list_live/show.ex:54
+#, elixir-autogen, elixir-format
+msgid "Task"
+msgstr ""
+
+#: lib/budgeteer_web/live/user_live/settings.ex:435
+#, elixir-autogen, elixir-format
+msgid "The daily summary email preference could not be saved."
+msgstr ""
+
+#: lib/budgeteer_web/live/calendar_live/form.ex:15
+#, elixir-autogen, elixir-format
+msgid "This event comes from Google Calendar and is read-only here."
+msgstr ""
+
+#: lib/budgeteer_web/live/category_live/form.ex:145
+#, elixir-autogen, elixir-format
+msgid "Tools"
+msgstr ""
+
+#: lib/budgeteer_web/live/category_live/form.ex:136
+#, elixir-autogen, elixir-format
+msgid "Utilities"
+msgstr ""
+
+#: lib/budgeteer_web/live/category_live/form.ex:146
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Work"
+msgstr ""
+
+#: lib/budgeteer_web/live/user_live/settings.ex:85
+#, elixir-autogen, elixir-format
+msgid "Your account is managed through Google. Email and password settings are unavailable here."
+msgstr ""
+
+#: lib/budgeteer_web/live/todo_list_live/show.ex:31
+#, elixir-autogen, elixir-format
+msgid "e.g. Book dentist appointment"
+msgstr ""
+
+#: lib/budgeteer_web/components/layouts/root.html.heex:142
+#: lib/budgeteer_web/live/category_live/form.ex:140
+#, elixir-autogen, elixir-format
+msgid "Finance"
+msgstr ""
+
+#: lib/budgeteer_web/components/layouts/root.html.heex:153
+#, elixir-autogen, elixir-format
+msgid "Home & Family"
 msgstr ""

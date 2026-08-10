@@ -137,7 +137,7 @@ defmodule BudgeteerWeb.CategoryLive.Form do
       {gettext("Health"), "hero-heart"},
       {gettext("Entertainment"), "hero-film"},
       {gettext("Education"), "hero-academic-cap"},
-      {gettext("Money"), "hero-banknotes"},
+      {gettext("Finance"), "hero-banknotes"},
       {gettext("Transport"), "hero-truck"},
       {gettext("Gifts"), "hero-gift"},
       {gettext("Food"), "hero-beaker"},
