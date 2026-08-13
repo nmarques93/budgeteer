@@ -3,6 +3,7 @@ defmodule BudgeteerWeb.CalendarLive.IndexTest do
 
   import Phoenix.LiveViewTest
   import Budgeteer.EventsFixtures
+  import Budgeteer.TodosFixtures
   import Budgeteer.HouseholdsFixtures, only: [second_household_member_fixture: 1]
 
   setup :register_and_log_in_user
@@ -17,6 +18,14 @@ defmodule BudgeteerWeb.CalendarLive.IndexTest do
 
     {:ok, _live, html} = live(conn, ~p"/calendar")
     assert html =~ "Dentist appointment"
+  end
+
+  test "shows incomplete TODOs on their due date", %{conn: conn, scope: scope} do
+    todo_list = todo_list_fixture(scope)
+    todo_item_fixture(scope, todo_list, %{title: "Buy light bulbs", due_date: Date.utc_today()})
+
+    {:ok, _live, html} = live(conn, ~p"/calendar")
+    assert html =~ "Buy light bulbs"
   end
 
   test "expands a day with more than three events", %{conn: conn, scope: scope} do

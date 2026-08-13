@@ -3,6 +3,8 @@ defmodule BudgeteerWeb.CalendarLive.Index do
 
   alias Budgeteer.Events
   alias Budgeteer.Households
+  alias Budgeteer.Todos
+  alias Budgeteer.Todos.TodoItem
 
   @impl true
   def render(assigns) do
@@ -102,6 +104,14 @@ defmodule BudgeteerWeb.CalendarLive.Index do
               {event.title}
             </.link>
           <% end %>
+          <.link
+            :for={todo <- Map.get(@todos_by_date, date, [])}
+            navigate={~p"/todos/#{todo.todo_list_id}"}
+            class="block truncate rounded px-1 py-0.5 text-left bg-primary text-primary-content"
+            title={todo.title}
+          >
+            <.icon name="hero-check-circle" class="size-3 align-text-bottom" /> {todo.title}
+          </.link>
           <div
             :if={length(Map.get(@events_by_date, date, [])) > 3}
             class="px-1 text-[10px] opacity-60"
@@ -131,6 +141,7 @@ defmodule BudgeteerWeb.CalendarLive.Index do
 
     if connected?(socket) do
       Events.subscribe_events(scope)
+      Todos.subscribe_todo_items(scope)
     end
 
     members = Households.list_household_members(scope)
@@ -149,26 +160,46 @@ defmodule BudgeteerWeb.CalendarLive.Index do
     month = parse_month(params["month"])
     grid_dates = grid_dates(month)
 
-    {:noreply,
-     socket
-     |> assign(:month, month)
-     |> assign(:grid_dates, grid_dates)
-     |> assign(
-       :events_by_date,
-       Enum.group_by(
-         Events.list_events(
-           socket.assigns.current_scope,
-           List.first(grid_dates),
-           List.last(grid_dates)
-         ),
-         & &1.date
-       )
-     )}
+    socket =
+      socket
+      |> assign(:month, month)
+      |> assign(:grid_dates, grid_dates)
+      |> assign(
+        :events_by_date,
+        Enum.group_by(
+          Events.list_events(
+            socket.assigns.current_scope,
+            List.first(grid_dates),
+            List.last(grid_dates)
+          ),
+          & &1.date
+        )
+      )
+      |> assign(
+        :todos_by_date,
+        Enum.group_by(
+          Todos.list_due_items(
+            socket.assigns.current_scope,
+            List.first(grid_dates),
+            List.last(grid_dates)
+          ),
+          & &1.due_date
+        )
+      )
+
+    {:noreply, socket}
   end
 
   @impl true
+  def handle_info({type, %TodoItem{}}, socket) when type in [:created, :updated, :deleted] do
+    {:noreply, assign(socket, :todos_by_date, reload_todos(socket))}
+  end
+
   def handle_info({type, _event}, socket) when type in [:created, :updated, :deleted] do
-    {:noreply, socket |> assign(:events_by_date, reload_events(socket))}
+    {:noreply,
+     socket
+     |> assign(:events_by_date, reload_events(socket))
+     |> assign(:todos_by_date, reload_todos(socket))}
   end
 
   @impl true
@@ -198,6 +229,17 @@ defmodule BudgeteerWeb.CalendarLive.Index do
       List.last(grid_dates)
     )
     |> Enum.group_by(& &1.date)
+  end
+
+  defp reload_todos(socket) do
+    grid_dates = socket.assigns.grid_dates
+
+    Todos.list_due_items(
+      socket.assigns.current_scope,
+      List.first(grid_dates),
+      List.last(grid_dates)
+    )
+    |> Enum.group_by(& &1.due_date)
   end
 
   defp visible_events(events_by_date, date, expanded_dates) do

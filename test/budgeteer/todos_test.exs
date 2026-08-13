@@ -53,6 +53,38 @@ defmodule Budgeteer.TodosTest do
       assert Todos.list_items(scope, todo_list) == []
     end
 
+    test "assigns an item to a household member with a priority" do
+      owner = user_fixture()
+      member = second_household_member_fixture(owner, %{name: "Alex"})
+      scope = household_scope_fixture(owner)
+      todo_list = todo_list_fixture(scope)
+
+      assert {:ok, item} =
+               Todos.create_item(scope, todo_list, %{
+                 title: "Pick up keys",
+                 assignee_id: member.id,
+                 priority: :high
+               })
+
+      assert item.assignee_id == member.id
+      assert item.priority == :high
+      assert item.assignee.email == member.email
+    end
+
+    test "rejects an assignee from another household" do
+      scope = household_scope_fixture()
+      other_scope = household_scope_fixture()
+      todo_list = todo_list_fixture(scope)
+
+      assert {:error, changeset} =
+               Todos.create_item(scope, todo_list, %{
+                 title: "Private task",
+                 assignee_id: other_scope.user.id
+               })
+
+      assert %{assignee_id: ["does not belong to this household"]} = errors_on(changeset)
+    end
+
     test "moves items up and down" do
       scope = household_scope_fixture()
       todo_list = todo_list_fixture(scope)

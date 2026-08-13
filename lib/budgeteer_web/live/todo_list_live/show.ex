@@ -3,6 +3,7 @@ defmodule BudgeteerWeb.TodoListLive.Show do
 
   alias Budgeteer.Todos
   alias Budgeteer.Todos.TodoItem
+  alias Budgeteer.Households
 
   @impl true
   def render(assigns) do
@@ -22,13 +23,27 @@ defmodule BudgeteerWeb.TodoListLive.Show do
         for={@item_form}
         id="todo-item-form"
         phx-submit="add_item"
-        class="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto] gap-2 items-end mt-4"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto] gap-2 items-end mt-4"
       >
         <.input
           field={@item_form[:title]}
           type="text"
           label={gettext("Task")}
           placeholder={gettext("e.g. Book dentist appointment")}
+        />
+        <.input field={@item_form[:due_date]} type="date" label={gettext("Due date")} />
+        <.input
+          field={@item_form[:assignee_id]}
+          type="select"
+          label={gettext("Assign to")}
+          prompt={gettext("Anyone")}
+          options={member_options(@members)}
+        />
+        <.input
+          field={@item_form[:priority]}
+          type="select"
+          label={gettext("Priority")}
+          options={priority_options()}
         />
         <.button phx-disable-with={gettext("Adding...")} variant="primary">
           <.icon name="hero-plus" /> {gettext("Add task")}
@@ -54,6 +69,19 @@ defmodule BudgeteerWeb.TodoListLive.Show do
               <.input field={@edit_form[:title]} type="text" label={gettext("Task")} />
               <.input field={@edit_form[:notes]} type="textarea" label={gettext("Notes")} />
               <.input field={@edit_form[:due_date]} type="date" label={gettext("Due date")} />
+              <.input
+                field={@edit_form[:assignee_id]}
+                type="select"
+                label={gettext("Assign to")}
+                prompt={gettext("Anyone")}
+                options={member_options(@members)}
+              />
+              <.input
+                field={@edit_form[:priority]}
+                type="select"
+                label={gettext("Priority")}
+                options={priority_options()}
+              />
               <div class="flex flex-wrap gap-2">
                 <.button variant="primary" phx-disable-with={gettext("Saving...")}>{gettext("Save")}</.button>
                 <.button type="button" phx-click="cancel_edit">{gettext("Cancel")}</.button>
@@ -79,6 +107,8 @@ defmodule BudgeteerWeb.TodoListLive.Show do
                 <p :if={item.due_date} class="text-xs opacity-60 mt-1">
                   {gettext("Due %{date}", date: item.due_date)}
                 </p>
+                <span class={priority_class(item.priority)}>{priority_label(item.priority)}</span>
+                <span :if={item.assignee} class="text-xs opacity-60 ml-2">{display_name(item.assignee)}</span>
               </div>
               <div class="flex flex-wrap gap-1 shrink-0">
                 <.button
@@ -139,6 +169,7 @@ defmodule BudgeteerWeb.TodoListLive.Show do
      socket
      |> assign(:page_title, todo_list.name)
      |> assign(:todo_list, todo_list)
+     |> assign(:members, Households.list_household_members(socket.assigns.current_scope))
      |> assign(:item_form, item_form(socket.assigns.current_scope))
      |> assign(:edit_form, nil)
      |> assign(:editing_item_id, nil)
@@ -231,6 +262,22 @@ defmodule BudgeteerWeb.TodoListLive.Show do
   end
 
   defp item_form(scope), do: to_form(Todos.change_item(scope, %TodoItem{}), as: "todo_item")
+
+  defp member_options(members), do: Enum.map(members, &{display_name(&1), &1.id})
+
+  defp display_name(member), do: member.name || member.email
+
+  defp priority_options do
+    [{gettext("Low"), "low"}, {gettext("Normal"), "normal"}, {gettext("High"), "high"}]
+  end
+
+  defp priority_label(:low), do: gettext("Low")
+  defp priority_label(:high), do: gettext("High")
+  defp priority_label(_), do: gettext("Normal")
+
+  defp priority_class(:high), do: "badge badge-error badge-sm mt-2"
+  defp priority_class(:low), do: "badge badge-ghost badge-sm mt-2"
+  defp priority_class(_), do: "badge badge-warning badge-sm mt-2"
 
   defp reset_items(socket) do
     stream(

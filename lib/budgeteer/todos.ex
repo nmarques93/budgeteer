@@ -10,6 +10,7 @@ defmodule Budgeteer.Todos do
   alias Budgeteer.Repo
   alias Budgeteer.Households
   alias Budgeteer.Households.Scope
+  alias Budgeteer.Households.User
   alias Budgeteer.Todos.{TodoItem, TodoList}
 
   ## Lists
@@ -114,10 +115,20 @@ defmodule Budgeteer.Todos do
     )
   end
 
+  def subscribe_todo_items(%Scope{} = scope) do
+    Phoenix.PubSub.subscribe(Budgeteer.PubSub, "household:#{scope.user.household_id}:todo_items")
+  end
+
   defp broadcast_item(%TodoItem{} = item, message) do
     Phoenix.PubSub.broadcast(
       Budgeteer.PubSub,
       "household:#{item.household_id}:todo_lists:#{item.todo_list_id}:items",
+      message
+    )
+
+    Phoenix.PubSub.broadcast(
+      Budgeteer.PubSub,
+      "household:#{item.household_id}:todo_items",
       message
     )
   end
@@ -128,12 +139,26 @@ defmodule Budgeteer.Todos do
     Repo.all(
       from i in TodoItem,
         where: i.todo_list_id == ^todo_list.id and i.household_id == ^scope.user.household_id,
-        order_by: [asc: i.completed, asc: i.position, asc: i.due_date, asc: i.inserted_at]
+        order_by: [asc: i.completed, asc: i.position, asc: i.due_date, asc: i.inserted_at],
+        preload: :assignee
+    )
+  end
+
+  def list_due_items(%Scope{} = scope, %Date{} = from, %Date{} = to) do
+    Repo.all(
+      from i in TodoItem,
+        where:
+          i.household_id == ^scope.user.household_id and
+            i.due_date >= ^from and i.due_date <= ^to and i.completed == false,
+        order_by: [asc: i.due_date, asc: i.position],
+        preload: :assignee
     )
   end
 
   def get_item!(%Scope{} = scope, id) do
-    Repo.get_by!(TodoItem, id: id, household_id: scope.user.household_id)
+    TodoItem
+    |> Repo.get_by!(id: id, household_id: scope.user.household_id)
+    |> Repo.preload(:assignee)
   end
 
   def create_item(%Scope{} = scope, %TodoList{} = todo_list, attrs) do
@@ -143,11 +168,13 @@ defmodule Budgeteer.Todos do
     changeset =
       %TodoItem{}
       |> TodoItem.changeset(attrs, scope)
+      |> validate_assignee_scope(scope)
       |> Ecto.Changeset.put_change(:todo_list_id, todo_list.id)
       |> Ecto.Changeset.put_change(:created_by_id, scope.user.id)
       |> Ecto.Changeset.put_change(:position, position)
 
     with {:ok, item = %TodoItem{}} <- Repo.insert(changeset) do
+      item = preload_item(item)
       broadcast_item(item, {:created, item})
       {:ok, item}
     end
@@ -156,7 +183,10 @@ defmodule Budgeteer.Todos do
   def update_item(%Scope{} = scope, %TodoItem{} = item, attrs) do
     true = item.household_id == scope.user.household_id
 
-    with {:ok, item = %TodoItem{}} <- Repo.update(TodoItem.changeset(item, attrs, scope)) do
+    changeset = TodoItem.changeset(item, attrs, scope) |> validate_assignee_scope(scope)
+
+    with {:ok, item = %TodoItem{}} <- Repo.update(changeset) do
+      item = preload_item(item)
       broadcast_item(item, {:updated, item})
       {:ok, item}
     end
@@ -182,6 +212,7 @@ defmodule Budgeteer.Todos do
       end
 
     with {:ok, item = %TodoItem{}} <- Repo.update(Ecto.Changeset.change(item, attrs)) do
+      item = preload_item(item)
       broadcast_item(item, {:updated, item})
       {:ok, item}
     end
@@ -214,6 +245,23 @@ defmodule Budgeteer.Todos do
     (max_position || -1) + 1
   end
 
+  defp validate_assignee_scope(changeset, %Scope{} = scope) do
+    case Ecto.Changeset.get_field(changeset, :assignee_id) do
+      nil ->
+        changeset
+
+      assignee_id ->
+        query =
+          from u in User,
+            where: u.id == ^assignee_id and u.household_id == ^scope.user.household_id
+
+        if Repo.exists?(query),
+          do: changeset,
+          else:
+            Ecto.Changeset.add_error(changeset, :assignee_id, "does not belong to this household")
+    end
+  end
+
   defp swap_positions(%TodoItem{} = item, %TodoItem{} = target) do
     item_position = item.position
     target_position = target.position
@@ -225,8 +273,12 @@ defmodule Budgeteer.Todos do
         {item, target}
       end)
 
+    item = preload_item(item)
+    target = preload_item(target)
     broadcast_item(item, {:updated, item})
     broadcast_item(target, {:updated, target})
     {:ok, item}
   end
+
+  defp preload_item(item), do: Repo.preload(item, :assignee)
 end

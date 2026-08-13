@@ -145,8 +145,8 @@ todo_lists
 
 todo_items
   id (uuid), todo_list_id (uuid FK), household_id (uuid FK)
-  title, notes, due_date, completed, position
-  created_by_id (uuid FK, nullable), completed_by_id (uuid FK, nullable)
+  title, notes, due_date, priority (low | normal | high), assignee_id (uuid FK, nullable)
+  completed, position, created_by_id (uuid FK, nullable), completed_by_id (uuid FK, nullable)
 
 events
   id (uuid), household_id (uuid FK), user_id (uuid FK, nullable)
@@ -404,7 +404,15 @@ Priorities below were assigned during a 2026-07-30 competitive-analysis pass aga
 
 ### Shipped
 
-~~Real outbound email provider~~, ~~meal planning~~, ~~OAuth sign-in (Google)~~, ~~MCP integration~~ (read-only for financial/grocery data, write tools for recipes/meal-plan), ~~charts on the dashboard~~, ~~CSV transaction export~~, ~~iOS install-nudge banner~~, ~~recurring-transaction/subscription detection~~, ~~family calendar~~, ~~read-only Google Calendar import~~ (primary calendar, encrypted refresh token, Oban sync; two-way writes and calendar selection remain deferred), ~~shared TODO lists~~ (household-scoped real-time task lists with due dates, completion, inline editing, deletion, and reordering), ~~in-app AI recipe/ingredient extraction~~ (text-paste and URL — see the Decisions section for the still-deferred photo/PDF scope), ~~European Portuguese localization~~, ~~native iOS app~~ (Capacitor wrapper — see `mobile/README.md` for the remaining Apple-account-gated steps: real device testing, push notification credentials, TestFlight/App Store distribution), ~~budget insights~~ (AI-driven via DeepSeek, manual-refresh v1 — see the Decisions section), ~~inbound statement-email parsing~~ (via Resend Inbound — see the Decisions section for the real Resend Inbound domain/webhook setup still needed before a real statement can flow through it), ~~daily morning summary~~ (AI-driven via DeepSeek, Oban cron — see the Decisions section) — all **done**, see the Decisions section above for each.
+~~Real outbound email provider~~, ~~meal planning~~, ~~OAuth sign-in (Google)~~, ~~MCP integration~~ (read-only for financial/grocery data, write tools for recipes/meal-plan), ~~charts on the dashboard~~, ~~CSV transaction export~~, ~~iOS install-nudge banner~~, ~~recurring-transaction/subscription detection~~, ~~family calendar~~, ~~read-only Google Calendar import~~ (primary calendar, encrypted refresh token, Oban sync; two-way writes and calendar selection remain deferred), ~~shared TODO lists~~ (household-scoped real-time task lists with due dates, assignment, priority, calendar visibility, completion, inline editing, deletion, and reordering), ~~in-app AI recipe/ingredient extraction~~ (text-paste and URL — see the Decisions section for the still-deferred photo/PDF scope), ~~European Portuguese localization~~, ~~native iOS app~~ (Capacitor wrapper — see `mobile/README.md` for the remaining Apple-account-gated steps: real device testing, push notification credentials, TestFlight/App Store distribution), ~~budget insights~~ (AI-driven via DeepSeek, manual-refresh v1 — see the Decisions section), ~~inbound statement-email parsing~~ (via Resend Inbound — see the Decisions section for the real Resend Inbound domain/webhook setup still needed before a real statement can flow through it), ~~daily morning summary~~ (AI-driven via DeepSeek, Oban cron — see the Decisions section) — all **done**, see the Decisions section above for each.
+
+### Active Product Backlog
+
+- [~] **TODO assignments, priorities, recurring tasks, and reminders.** The first slice adds assignees, priority, and calendar visibility. Recurrence and reminder channels remain deliberately unchosen until notification behavior is specified.
+- [ ] **Statement reconciliation** — duplicate detection, import confidence, skipped-row review, and opening/closing balance checks.
+- [ ] **Unified household agenda** — combine calendar events, TODOs, meals, groceries, and budget alerts into a weekly family view.
+- [ ] **Recurring bills and due-date reminders** — extend subscription detection into actionable payment planning.
+- [ ] **Full household export** — export financial, household, meal, calendar, and task data in a portable archive.
 
 ### P1 — Next up, worth doing
 
