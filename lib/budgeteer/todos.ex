@@ -211,9 +211,19 @@ defmodule Budgeteer.Todos do
         %{completed: true, completed_by_id: scope.user.id}
       end
 
-    with {:ok, item = %TodoItem{}} <- Repo.update(Ecto.Changeset.change(item, attrs)) do
+    with {:ok, {item, next_item}} <-
+           Repo.transaction(fn ->
+             item = Repo.update!(Ecto.Changeset.change(item, attrs))
+             next_item = if item.completed, do: create_next_recurring(scope, item), else: nil
+             {item, next_item}
+           end) do
       item = preload_item(item)
       broadcast_item(item, {:updated, item})
+
+      if next_item do
+        broadcast_item(preload_item(next_item), {:created, preload_item(next_item)})
+      end
+
       {:ok, item}
     end
   end
@@ -243,6 +253,50 @@ defmodule Budgeteer.Todos do
       )
 
     (max_position || -1) + 1
+  end
+
+  defp create_next_recurring(%Scope{} = scope, %TodoItem{due_date: due_date} = item)
+       when not is_nil(due_date) and item.recurrence != :none do
+    attrs = %{
+      title: item.title,
+      notes: item.notes,
+      due_date: next_due_date(due_date, item.recurrence),
+      priority: item.priority,
+      recurrence: item.recurrence,
+      assignee_id: item.assignee_id
+    }
+
+    %TodoItem{}
+    |> TodoItem.changeset(attrs, scope)
+    |> Ecto.Changeset.put_change(:todo_list_id, item.todo_list_id)
+    |> Ecto.Changeset.put_change(:created_by_id, scope.user.id)
+    |> Ecto.Changeset.put_change(
+      :position,
+      next_position(scope, %TodoList{id: item.todo_list_id, household_id: item.household_id})
+    )
+    |> validate_assignee_scope(scope)
+    |> Repo.insert!()
+  end
+
+  defp create_next_recurring(_scope, _item), do: nil
+
+  defp next_due_date(date, recurrence) do
+    next_date =
+      case recurrence do
+        :daily -> Date.add(date, 1)
+        :weekly -> Date.add(date, 7)
+        :monthly -> next_month_date(date)
+      end
+
+    if Date.compare(next_date, Date.utc_today()) == :lt,
+      do: next_due_date(next_date, recurrence),
+      else: next_date
+  end
+
+  defp next_month_date(date) do
+    next_month = date |> Date.beginning_of_month() |> Date.add(32) |> Date.beginning_of_month()
+    day = min(date.day, Date.days_in_month(next_month))
+    Date.add(next_month, day - 1)
   end
 
   defp validate_assignee_scope(changeset, %Scope{} = scope) do

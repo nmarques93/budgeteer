@@ -39,4 +39,12 @@ defmodule BudgeteerWeb.TodoListLive.ShowTest do
 
     refute has_element?(live, "#todo-items", "Call dentist")
   end
+
+  test "shows an in-app due-today reminder", %{conn: conn, scope: scope} do
+    todo_list = todo_list_fixture(scope)
+    todo_item_fixture(scope, todo_list, %{title: "Pay bill", due_date: Date.utc_today()})
+
+    {:ok, _live, html} = live(conn, ~p"/todos/#{todo_list}")
+    assert html =~ "Due today"
+  end
 end

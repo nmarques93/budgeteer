@@ -23,7 +23,7 @@ defmodule BudgeteerWeb.TodoListLive.Show do
         for={@item_form}
         id="todo-item-form"
         phx-submit="add_item"
-        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto] gap-2 items-end mt-4"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto_auto_auto] gap-2 items-end mt-4"
       >
         <.input
           field={@item_form[:title]}
@@ -44,6 +44,12 @@ defmodule BudgeteerWeb.TodoListLive.Show do
           type="select"
           label={gettext("Priority")}
           options={priority_options()}
+        />
+        <.input
+          field={@item_form[:recurrence]}
+          type="select"
+          label={gettext("Repeat")}
+          options={recurrence_options()}
         />
         <.button phx-disable-with={gettext("Adding...")} variant="primary">
           <.icon name="hero-plus" /> {gettext("Add task")}
@@ -82,6 +88,12 @@ defmodule BudgeteerWeb.TodoListLive.Show do
                 label={gettext("Priority")}
                 options={priority_options()}
               />
+              <.input
+                field={@edit_form[:recurrence]}
+                type="select"
+                label={gettext("Repeat")}
+                options={recurrence_options()}
+              />
               <div class="flex flex-wrap gap-2">
                 <.button variant="primary" phx-disable-with={gettext("Saving...")}>{gettext("Save")}</.button>
                 <.button type="button" phx-click="cancel_edit">{gettext("Cancel")}</.button>
@@ -104,10 +116,13 @@ defmodule BudgeteerWeb.TodoListLive.Show do
                 <p :if={item.notes} class="text-sm opacity-70 whitespace-pre-wrap break-words">
                   {item.notes}
                 </p>
-                <p :if={item.due_date} class="text-xs opacity-60 mt-1">
-                  {gettext("Due %{date}", date: item.due_date)}
+                <p :if={due_label(item)} class={due_class(item)}>
+                  {due_label(item)}
                 </p>
                 <span class={priority_class(item.priority)}>{priority_label(item.priority)}</span>
+                <span :if={item.recurrence != :none} class="badge badge-info badge-sm mt-2 ml-1">
+                  {recurrence_label(item.recurrence)}
+                </span>
                 <span :if={item.assignee} class="text-xs opacity-60 ml-2">{display_name(item.assignee)}</span>
               </div>
               <div class="flex flex-wrap gap-1 shrink-0">
@@ -278,6 +293,40 @@ defmodule BudgeteerWeb.TodoListLive.Show do
   defp priority_class(:high), do: "badge badge-error badge-sm mt-2"
   defp priority_class(:low), do: "badge badge-ghost badge-sm mt-2"
   defp priority_class(_), do: "badge badge-warning badge-sm mt-2"
+
+  defp recurrence_options do
+    [
+      {gettext("Does not repeat"), "none"},
+      {gettext("Daily"), "daily"},
+      {gettext("Weekly"), "weekly"},
+      {gettext("Monthly"), "monthly"}
+    ]
+  end
+
+  defp recurrence_label(:daily), do: gettext("Daily")
+  defp recurrence_label(:weekly), do: gettext("Weekly")
+  defp recurrence_label(:monthly), do: gettext("Monthly")
+
+  defp due_label(%TodoItem{completed: true}), do: nil
+  defp due_label(%TodoItem{due_date: nil}), do: nil
+
+  defp due_label(%TodoItem{due_date: due_date}) do
+    case Date.compare(due_date, Date.utc_today()) do
+      :lt -> gettext("Overdue · %{date}", date: due_date)
+      :eq -> gettext("Due today")
+      :gt -> gettext("Due %{date}", date: due_date)
+    end
+  end
+
+  defp due_class(%TodoItem{due_date: due_date}) do
+    class = "text-xs mt-1"
+
+    case Date.compare(due_date, Date.utc_today()) do
+      :lt -> class <> " text-error font-semibold"
+      :eq -> class <> " text-warning font-semibold"
+      :gt -> class <> " opacity-60"
+    end
+  end
 
   defp reset_items(socket) do
     stream(

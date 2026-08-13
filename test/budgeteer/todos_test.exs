@@ -71,6 +71,36 @@ defmodule Budgeteer.TodosTest do
       assert item.assignee.email == member.email
     end
 
+    test "creates the next occurrence when a recurring task is completed" do
+      scope = household_scope_fixture()
+      todo_list = todo_list_fixture(scope)
+      due_date = Date.utc_today()
+      item = todo_item_fixture(scope, todo_list, %{due_date: due_date, recurrence: :weekly})
+
+      assert {:ok, completed} = Todos.toggle_item(scope, item)
+      assert completed.completed
+
+      [next_item] =
+        scope
+        |> Todos.list_items(todo_list)
+        |> Enum.reject(&(&1.id == completed.id))
+
+      assert next_item.title == item.title
+      assert next_item.recurrence == :weekly
+      assert next_item.due_date == Date.add(due_date, 7)
+      refute next_item.completed
+    end
+
+    test "requires a due date for recurring tasks" do
+      scope = household_scope_fixture()
+      todo_list = todo_list_fixture(scope)
+
+      assert {:error, changeset} =
+               Todos.create_item(scope, todo_list, %{title: "Recurring", recurrence: :daily})
+
+      assert %{due_date: ["is required for recurring tasks"]} = errors_on(changeset)
+    end
+
     test "rejects an assignee from another household" do
       scope = household_scope_fixture()
       other_scope = household_scope_fixture()
