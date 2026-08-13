@@ -134,10 +134,10 @@
         </.link>
       </li>
       <%= if @current_scope do %>
-        <li>
+        <li class="hidden lg:block">
           <.link href={~p"/dashboard"}>{gettext("Dashboard")}</.link>
         </li>
-        <li>
+        <li class="hidden lg:block">
           <details>
             <summary><.icon name="hero-banknotes" /> {gettext("Finance")}</summary>
             <ul class="bg-base-100 rounded-box z-20">
@@ -148,7 +148,7 @@
             </ul>
           </details>
         </li>
-        <li>
+        <li class="hidden lg:block">
           <details>
             <summary><.icon name="hero-home" /> {gettext("Home & Family")}</summary>
             <ul class="bg-base-100 rounded-box z-20">
@@ -158,7 +158,7 @@
             </ul>
           </details>
         </li>
-        <li>
+        <li class="hidden lg:block">
           <details>
             <summary><.icon name="hero-book-open" /> {gettext("Meals")}</summary>
             <ul class="bg-base-100 rounded-box z-20">
@@ -255,6 +255,48 @@
         </li>
       <% end %>
     </ul>
+
+    <nav
+      :if={@current_scope}
+      id="mobile-navigation"
+      class="fixed inset-x-0 bottom-0 z-40 border-t border-base-300 bg-base-100/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_20px_rgba(0,0,0,0.08)] backdrop-blur lg:hidden"
+      aria-label={gettext("Main navigation")}
+    >
+      <div class="grid grid-cols-4 max-w-md mx-auto">
+        <.link
+          href={~p"/dashboard"}
+          class={mobile_nav_class(@current_path, ["/dashboard"])}
+          aria-label={gettext("Dashboard")}
+        >
+          <.icon name="hero-chart-bar" class="size-5" />
+          <span>{gettext("Dashboard")}</span>
+        </.link>
+        <.link
+          href={~p"/accounts"}
+          class={mobile_nav_class(@current_path, ["/accounts", "/transactions", "/categories"])}
+          aria-label={gettext("Finance")}
+        >
+          <.icon name="hero-banknotes" class="size-5" />
+          <span>{gettext("Finance")}</span>
+        </.link>
+        <.link
+          href={~p"/groceries"}
+          class={mobile_nav_class(@current_path, ["/groceries", "/todos", "/calendar"])}
+          aria-label={gettext("Home & Family")}
+        >
+          <.icon name="hero-home" class="size-5" />
+          <span>{gettext("Home & Family")}</span>
+        </.link>
+        <.link
+          href={~p"/recipes"}
+          class={mobile_nav_class(@current_path, ["/recipes", "/meal-plan"])}
+          aria-label={gettext("Meals")}
+        >
+          <.icon name="hero-book-open" class="size-5" />
+          <span>{gettext("Meals")}</span>
+        </.link>
+      </div>
+    </nav>
 
     <div
       :if={@current_scope}

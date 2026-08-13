@@ -131,6 +131,49 @@ defmodule BudgeteerWeb.CalendarLive.Index do
           </div>
         </div>
       </div>
+
+      <div id="calendar-agenda" class="md:hidden mt-6 space-y-4">
+        <section :for={date <- agenda_dates(@grid_dates, @events_by_date, @todos_by_date)}>
+          <h3 class="text-sm font-semibold border-b border-base-300 pb-1">
+            {Calendar.strftime(date, "%a %-d %b")}
+          </h3>
+          <div class="mt-2 space-y-1">
+            <%= for event <- Map.get(@events_by_date, date, []) do %>
+              <a
+                :if={event.source == :google}
+                href={event.external_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="block rounded px-3 py-2 bg-base-200"
+              >
+                <span class="font-medium">{event.title}</span>
+                <span :if={event.start_time} class="text-xs opacity-60 ml-2">{event.start_time}</span>
+              </a>
+              <.link
+                :if={event.source != :google}
+                navigate={~p"/calendar/#{event}/edit"}
+                class="block rounded px-3 py-2 bg-base-200"
+              >
+                <span class="font-medium">{event.title}</span>
+                <span :if={event.start_time} class="text-xs opacity-60 ml-2">{event.start_time}</span>
+              </.link>
+            <% end %>
+            <.link
+              :for={todo <- Map.get(@todos_by_date, date, [])}
+              navigate={~p"/todos/#{todo.todo_list_id}"}
+              class="block rounded px-3 py-2 bg-primary text-primary-content"
+            >
+              <.icon name="hero-check-circle" class="size-4 align-text-bottom" /> {todo.title}
+            </.link>
+          </div>
+        </section>
+        <p
+          :if={agenda_dates(@grid_dates, @events_by_date, @todos_by_date) == []}
+          class="text-sm opacity-60"
+        >
+          {gettext("Nothing scheduled in this period.")}
+        </p>
+      </div>
     </Layouts.app>
     """
   end
@@ -245,6 +288,10 @@ defmodule BudgeteerWeb.CalendarLive.Index do
   defp visible_events(events_by_date, date, expanded_dates) do
     events = Map.get(events_by_date, date, [])
     if MapSet.member?(expanded_dates, date), do: events, else: Enum.take(events, 3)
+  end
+
+  defp agenda_dates(dates, events_by_date, todos_by_date) do
+    Enum.filter(dates, &(Map.has_key?(events_by_date, &1) or Map.has_key?(todos_by_date, &1)))
   end
 
   defp event_classes(%{source: :google}),

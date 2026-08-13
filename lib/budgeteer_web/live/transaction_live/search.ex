@@ -24,31 +24,60 @@ defmodule BudgeteerWeb.TransactionLive.Search do
         {gettext("No transactions match these filters.")}
       </p>
 
-      <.table
-        :if={@result_count > 0}
-        id="transactions"
-        rows={@streams.transactions}
-        row_click={
-          fn {_id, transaction} ->
-            JS.navigate(~p"/accounts/#{transaction.account_id}/transactions/#{transaction}")
-          end
-        }
-      >
-        <:col :let={{_id, transaction}} label={gettext("Date")}>{transaction.date}</:col>
-        <:col :let={{_id, transaction}} label={gettext("Account")}>
-          {account_name(@accounts_by_id, transaction.account_id)}
-        </:col>
-        <:col :let={{_id, transaction}} label={gettext("Amount")}>
-          <.money cents={transaction.amount_cents} />
-        </:col>
-        <:col :let={{_id, transaction}} label={gettext("Merchant")}>{transaction.merchant}</:col>
-        <:col :let={{_id, transaction}} label={gettext("Description")}>
-          {transaction.description}
-        </:col>
-        <:col :let={{_id, transaction}} label={gettext("Category")}>
-          <.category_badge category={Map.get(@categories_by_id, transaction.category_id)} />
-        </:col>
-      </.table>
+      <div :if={@result_count > 0} class="hidden md:block">
+        <.table
+          id="transactions"
+          rows={@streams.transactions}
+          row_click={
+            fn {_id, transaction} ->
+              JS.navigate(~p"/accounts/#{transaction.account_id}/transactions/#{transaction}")
+            end
+          }
+        >
+          <:col :let={{_id, transaction}} label={gettext("Date")}>{transaction.date}</:col>
+          <:col :let={{_id, transaction}} label={gettext("Account")}>
+            {account_name(@accounts_by_id, transaction.account_id)}
+          </:col>
+          <:col :let={{_id, transaction}} label={gettext("Amount")}>
+            <.money cents={transaction.amount_cents} />
+          </:col>
+          <:col :let={{_id, transaction}} label={gettext("Merchant")}>{transaction.merchant}</:col>
+          <:col :let={{_id, transaction}} label={gettext("Description")}>
+            {transaction.description}
+          </:col>
+          <:col :let={{_id, transaction}} label={gettext("Category")}>
+            <.category_badge category={Map.get(@categories_by_id, transaction.category_id)} />
+          </:col>
+        </.table>
+      </div>
+
+      <div :if={@result_count > 0} id="transactions-mobile" class="space-y-2 md:hidden">
+        <article
+          :for={{id, transaction} <- @streams.transactions}
+          id={"mobile-#{id}"}
+          class="rounded border border-base-300 p-3"
+        >
+          <.link
+            navigate={~p"/accounts/#{transaction.account_id}/transactions/#{transaction}"}
+            class="block"
+          >
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="font-semibold truncate">
+                  {transaction.merchant || transaction.description}
+                </p>
+                <p class="text-xs opacity-60">
+                  {transaction.date} · {account_name(@accounts_by_id, transaction.account_id)}
+                </p>
+              </div>
+              <.money cents={transaction.amount_cents} />
+            </div>
+            <div class="mt-2">
+              <.category_badge category={Map.get(@categories_by_id, transaction.category_id)} />
+            </div>
+          </.link>
+        </article>
+      </div>
     </Layouts.app>
     """
   end

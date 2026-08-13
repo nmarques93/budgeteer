@@ -39,7 +39,7 @@ defmodule BudgeteerWeb.CalendarLive.IndexTest do
 
     {:ok, live, html} = live(conn, ~p"/calendar")
     assert html =~ "+1 more"
-    refute html =~ "Event 4"
+    assert has_element?(live, "#calendar-agenda", "Event 4")
 
     html = live |> element("button", "+1 more") |> render_click()
     assert html =~ "Event 4"

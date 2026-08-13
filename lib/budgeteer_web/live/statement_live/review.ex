@@ -25,8 +25,8 @@ defmodule BudgeteerWeb.StatementLive.Review do
 
       <form :if={@rows != []} id="review-form" phx-submit="save">
         <div class="overflow-x-auto">
-          <table class="table">
-            <thead>
+          <table class="table block md:table">
+            <thead class="hidden md:table-header-group">
               <tr>
                 <th>{gettext("Include")}</th>
                 <th>{gettext("Date")}</th>
@@ -36,9 +36,15 @@ defmodule BudgeteerWeb.StatementLive.Review do
                 <th>{gettext("Category")}</th>
               </tr>
             </thead>
-            <tbody>
-              <tr :for={row <- @rows} class="align-top">
-                <td class="align-top pt-4">
+            <tbody class="block md:table-row-group">
+              <tr
+                :for={row <- @rows}
+                class="block md:table-row border border-base-300 rounded-box mb-3 p-3 md:border-0 md:mb-0 md:p-0"
+              >
+                <td class="block md:table-cell align-top pt-2 md:pt-4">
+                  <span class="md:hidden block text-xs font-semibold opacity-60 mb-1">{gettext(
+                    "Include"
+                  )}</span>
                   <input type="hidden" name={"rows[#{row.index}][include]"} value="false" />
                   <input
                     type="checkbox"
@@ -48,7 +54,8 @@ defmodule BudgeteerWeb.StatementLive.Review do
                     checked
                   />
                 </td>
-                <td class="align-top">
+                <td class="block md:table-cell align-top">
+                  <span class="md:hidden block text-xs font-semibold opacity-60 mb-1">{gettext("Date")}</span>
                   <input
                     type="date"
                     class="w-full input"
@@ -56,7 +63,10 @@ defmodule BudgeteerWeb.StatementLive.Review do
                     value={row.date}
                   />
                 </td>
-                <td class="align-top">
+                <td class="block md:table-cell align-top">
+                  <span class="md:hidden block text-xs font-semibold opacity-60 mb-1">{gettext(
+                    "Amount"
+                  )}</span>
                   <input
                     type="text"
                     class="w-full input"
@@ -64,7 +74,10 @@ defmodule BudgeteerWeb.StatementLive.Review do
                     value={row.amount}
                   />
                 </td>
-                <td class="align-top">
+                <td class="block md:table-cell align-top">
+                  <span class="md:hidden block text-xs font-semibold opacity-60 mb-1">{gettext(
+                    "Merchant"
+                  )}</span>
                   <input
                     type="text"
                     class="w-full input"
@@ -72,7 +85,10 @@ defmodule BudgeteerWeb.StatementLive.Review do
                     value={row.merchant}
                   />
                 </td>
-                <td class="align-top">
+                <td class="block md:table-cell align-top">
+                  <span class="md:hidden block text-xs font-semibold opacity-60 mb-1">{gettext(
+                    "Description"
+                  )}</span>
                   <input
                     type="text"
                     class="w-full input"
@@ -80,7 +96,10 @@ defmodule BudgeteerWeb.StatementLive.Review do
                     value={row.description}
                   />
                 </td>
-                <td class="align-top min-w-56">
+                <td class="block md:table-cell align-top min-w-56">
+                  <span class="md:hidden block text-xs font-semibold opacity-60 mb-1">{gettext(
+                    "Category"
+                  )}</span>
                   <select class="w-full select min-w-40" name={"rows[#{row.index}][category_id]"}>
                     <option value="">{gettext("Uncategorized")}</option>
                     <option

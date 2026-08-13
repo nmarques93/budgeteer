@@ -9,6 +9,11 @@
 /* Required for Tailwind to automatically pick up changes in colocated CSS files in dev */
 @source "../../_build/dev/phoenix-colocated/budgeteer/*/";
 
+/* LiveView adds `phx-disconnected` to the active view root while reconnecting. */
+.phx-disconnected #live-connection-status {
+  display: flex;
+}
+
 /* A Tailwind plugin that makes "hero-#{ICON}" classes available.
    The heroicons installation itself is managed by your mix.exs */
 @plugin "../vendor/heroicons";

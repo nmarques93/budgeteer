@@ -50,7 +50,14 @@ defmodule BudgeteerWeb.Layouts do
       </span>
     </div>
 
-    <main class="px-4 py-20 sm:px-6 lg:px-8">
+    <div id="live-connection-status" class="hidden fixed inset-x-0 top-3 z-50 justify-center px-4">
+      <div class="alert alert-warning w-fit shadow-lg text-sm">
+        <.icon name="hero-wifi" class="size-4" />
+        {gettext("Live connection lost. Reconnecting...")}
+      </div>
+    </div>
+
+    <main class="px-4 pt-8 pb-24 sm:px-6 sm:pt-12 lg:px-8 lg:py-12">
       <div class={["mx-auto space-y-4", @container_class]}>
         {render_slot(@inner_block)}
       </div>
@@ -77,5 +84,16 @@ defmodule BudgeteerWeb.Layouts do
       <.flash kind={:error} flash={@flash} />
     </div>
     """
+  end
+
+  defp mobile_nav_class(path, paths) do
+    base =
+      "flex min-h-16 flex-col items-center justify-center gap-1 px-1 py-2 text-[10px] font-semibold text-base-content/60"
+
+    if Enum.any?(paths, &String.starts_with?(path || "", &1)) do
+      [base, "bg-base-200 text-primary"]
+    else
+      base
+    end
   end
 end
