@@ -101,6 +101,13 @@ defmodule Budgeteer.Households do
     |> Repo.update()
   end
 
+  @doc "Updates the current user's TODO reminder email preference."
+  def update_todo_reminder_preference(%User{} = user, enabled) when is_boolean(enabled) do
+    user
+    |> Ecto.Changeset.change(todo_reminders_enabled: enabled)
+    |> Repo.update()
+  end
+
   @doc "Returns the supported locales used by members of a household."
   def list_household_locales(household_id) do
     locales =

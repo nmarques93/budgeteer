@@ -16,6 +16,7 @@ defmodule BudgeteerWeb.UserLive.SettingsTest do
       assert html =~ "Save Password"
       assert html =~ "Connect Google Calendar"
       assert html =~ "Send me the daily summary email"
+      assert html =~ "Send me TODO reminders"
     end
 
     test "hides email and password controls for a Google-only account", %{conn: conn} do

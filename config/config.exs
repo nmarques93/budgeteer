@@ -49,7 +49,8 @@ config :budgeteer, Oban,
     {Oban.Plugins.Cron,
      crontab: [
        {"0 6 * * *", Budgeteer.DailySummary.Worker},
-       {"*/30 * * * *", Budgeteer.GoogleCalendar.ScheduledSyncWorker}
+       {"*/30 * * * *", Budgeteer.GoogleCalendar.ScheduledSyncWorker},
+       {"0 7 * * *", Budgeteer.Todos.ReminderWorker}
      ]}
   ]
 

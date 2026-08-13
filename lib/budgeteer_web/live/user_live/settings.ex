@@ -190,6 +190,24 @@ defmodule BudgeteerWeb.UserLive.Settings do
 
       <div>
         <.header>
+          {gettext("TODO reminders")}
+          <:subtitle>{gettext("Email me when an assigned task is due or overdue.")}</:subtitle>
+        </.header>
+        <form id="todo-reminder-form" phx-change="update_todo_reminders" class="mt-4">
+          <.input
+            name="todo_reminders_enabled"
+            type="checkbox"
+            value="true"
+            checked={@todo_reminders_enabled}
+            label={gettext("Send me TODO reminders")}
+          />
+        </form>
+      </div>
+
+      <div class="divider" />
+
+      <div>
+        <.header>
           {gettext("API access")}
           <:subtitle>
             {gettext(
@@ -302,6 +320,7 @@ defmodule BudgeteerWeb.UserLive.Settings do
         get_in(user.google_calendar || %{}, ["last_sync_error"])
       )
       |> assign(:daily_summary_email_enabled, user.daily_summary_email_enabled)
+      |> assign(:todo_reminders_enabled, user.todo_reminders_enabled)
       |> assign(
         :access_token_form,
         to_form(%{"name" => "", "meal_write" => false}, as: "access_token")
@@ -434,6 +453,20 @@ defmodule BudgeteerWeb.UserLive.Settings do
            :error,
            gettext("The daily summary email preference could not be saved.")
          )}
+    end
+  end
+
+  def handle_event("update_todo_reminders", %{"todo_reminders_enabled" => enabled}, socket) do
+    enabled = enabled == "true"
+    user = socket.assigns.current_scope.user
+
+    case Households.update_todo_reminder_preference(user, enabled) do
+      {:ok, _user} ->
+        {:noreply, assign(socket, :todo_reminders_enabled, enabled)}
+
+      {:error, _changeset} ->
+        {:noreply,
+         put_flash(socket, :error, gettext("The TODO reminder preference could not be saved."))}
     end
   end
 

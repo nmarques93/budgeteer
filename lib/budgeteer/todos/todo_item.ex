@@ -22,6 +22,10 @@ defmodule Budgeteer.Todos.TodoItem do
       foreign_key: :assignee_id,
       define_field: false
 
+    belongs_to :todo_list, Budgeteer.Todos.TodoList,
+      foreign_key: :todo_list_id,
+      define_field: false
+
     timestamps(type: :utc_datetime)
   end
 

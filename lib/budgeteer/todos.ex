@@ -155,10 +155,34 @@ defmodule Budgeteer.Todos do
     )
   end
 
+  @doc "Returns incomplete, due TODOs assigned to users who opted into reminders."
+  def list_reminder_items(%Date{} = today) do
+    Repo.all(
+      from i in TodoItem,
+        join: u in User,
+        on: u.id == i.assignee_id,
+        join: l in TodoList,
+        on: l.id == i.todo_list_id,
+        where:
+          i.completed == false and
+            i.due_date <= ^today and
+            u.todo_reminders_enabled == true and
+            is_nil(l.archived_at),
+        preload: [:assignee, :todo_list],
+        order_by: [asc: i.due_date, asc: i.position]
+    )
+  end
+
   def get_item!(%Scope{} = scope, id) do
     TodoItem
     |> Repo.get_by!(id: id, household_id: scope.user.household_id)
     |> Repo.preload(:assignee)
+  end
+
+  def get_item_for_reminder!(id) do
+    TodoItem
+    |> Repo.get!(id)
+    |> Repo.preload([:assignee, :todo_list])
   end
 
   def create_item(%Scope{} = scope, %TodoList{} = todo_list, attrs) do
