@@ -8,6 +8,7 @@ defmodule Budgeteer.Ledger do
 
   alias Budgeteer.Households
   alias Budgeteer.Ledger.{Account, Category}
+  alias Budgeteer.Ledger.TransactionFingerprint
   alias Budgeteer.Ledger.Transaction
   alias Budgeteer.Households.Scope
 
@@ -297,6 +298,19 @@ defmodule Budgeteer.Ledger do
   """
   def list_transactions(%Scope{} = scope) do
     Repo.all_by(Transaction, household_id: scope.user.household_id)
+  end
+
+  @doc "Returns fingerprints for existing transactions in a scoped account."
+  def list_transaction_fingerprints(%Scope{} = scope, account_id) do
+    Repo.all(
+      from t in Transaction,
+        where: t.household_id == ^scope.user.household_id and t.account_id == ^account_id,
+        select: {t.date, t.amount_cents, t.merchant, t.description}
+    )
+    |> Enum.map(fn {date, amount_cents, merchant, description} ->
+      TransactionFingerprint.build(date, amount_cents, merchant, description)
+    end)
+    |> MapSet.new()
   end
 
   @doc """

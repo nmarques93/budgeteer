@@ -127,6 +127,69 @@ defmodule BudgeteerWeb.StatementLive.ReviewTest do
              )
     end
 
+    test "flags an extracted row that already exists in the account", %{
+      conn: conn,
+      scope: scope,
+      account: account
+    } do
+      transaction_fixture = %{
+        account_id: account.id,
+        date: ~D[2026-07-20],
+        amount: "-42.50",
+        merchant: "Continente",
+        description: "Weekly shop"
+      }
+
+      {:ok, _transaction} = Ledger.create_transaction(scope, transaction_fixture)
+
+      statement =
+        processed_statement_fixture(scope, account, %{
+          "currency" => "EUR",
+          "transactions" => [
+            %{
+              "date" => "2026-07-20",
+              "amount_cents" => -4250,
+              "merchant" => "Continente",
+              "description" => "Weekly shop",
+              "category" => ""
+            }
+          ]
+        })
+
+      {:ok, review_live, html} =
+        live(conn, ~p"/accounts/#{account}/statements/#{statement}/review")
+
+      assert html =~ "duplicate"
+      assert has_element?(review_live, "#review-warnings")
+      refute has_element?(review_live, ~s{input[name="rows[0][include]"][value="true"][checked]})
+    end
+
+    test "flags incomplete extracted rows and leaves them unchecked", %{
+      conn: conn,
+      scope: scope,
+      account: account
+    } do
+      statement =
+        processed_statement_fixture(scope, account, %{
+          "currency" => "EUR",
+          "transactions" => [
+            %{
+              "date" => "",
+              "amount_cents" => 0,
+              "merchant" => "",
+              "description" => "",
+              "category" => ""
+            }
+          ]
+        })
+
+      {:ok, review_live, html} =
+        live(conn, ~p"/accounts/#{account}/statements/#{statement}/review")
+
+      assert html =~ "incomplete"
+      refute has_element?(review_live, ~s{input[name="rows[0][include]"][value="true"][checked]})
+    end
+
     test "shows a message and no form when the statement hasn't been processed yet", %{
       conn: conn,
       scope: scope,

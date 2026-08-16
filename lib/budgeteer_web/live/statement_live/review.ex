@@ -2,6 +2,7 @@ defmodule BudgeteerWeb.StatementLive.Review do
   use BudgeteerWeb, :live_view
 
   alias Budgeteer.Ledger
+  alias Budgeteer.Ledger.TransactionFingerprint
   alias Budgeteer.Statements
 
   @impl true
@@ -22,6 +23,35 @@ defmodule BudgeteerWeb.StatementLive.Review do
       <p :if={@statement.status == :processed and @rows == []}>
         {gettext("No transactions were extracted from this statement.")}
       </p>
+
+      <div
+        :if={@duplicate_count > 0 or @incomplete_count > 0}
+        id="review-warnings"
+        class="alert alert-warning mb-4"
+      >
+        <.icon name="hero-exclamation-triangle" class="size-5 shrink-0" />
+        <div>
+          <p :if={@duplicate_count > 0}>
+            {ngettext(
+              "%{count} row appears to duplicate an existing transaction.",
+              "%{count} rows appear to duplicate existing transactions.",
+              @duplicate_count
+            )}
+          </p>
+          <p :if={@incomplete_count > 0}>
+            {ngettext(
+              "%{count} row is incomplete and was left unchecked.",
+              "%{count} rows are incomplete and were left unchecked.",
+              @incomplete_count
+            )}
+          </p>
+          <p class="text-sm opacity-80">
+            {gettext(
+              "Review flagged rows before saving. You can include one deliberately if it is legitimate."
+            )}
+          </p>
+        </div>
+      </div>
 
       <form :if={@rows != []} id="review-form" phx-submit="save">
         <div class="overflow-x-auto">
@@ -51,7 +81,7 @@ defmodule BudgeteerWeb.StatementLive.Review do
                     class="checkbox checkbox-sm"
                     name={"rows[#{row.index}][include]"}
                     value="true"
-                    checked
+                    checked={not row.duplicate? and not row.incomplete?}
                   />
                 </td>
                 <td class="block md:table-cell align-top">
@@ -157,7 +187,17 @@ defmodule BudgeteerWeb.StatementLive.Review do
      |> assign(:account, account)
      |> assign(:statement, statement)
      |> assign(:categories, categories)
-     |> assign(:rows, build_rows(statement, categories))}
+     |> assign(
+       :rows,
+       build_rows(
+         statement,
+         categories,
+         Ledger.list_transaction_fingerprints(socket.assigns.current_scope, account.id)
+       )
+     )
+     |> assign(:duplicate_count, 0)
+     |> assign(:incomplete_count, 0)
+     |> assign_counts()}
   end
 
   @impl true
@@ -220,25 +260,62 @@ defmodule BudgeteerWeb.StatementLive.Review do
     end
   end
 
-  defp build_rows(%{raw_ai_output: nil}, _categories), do: []
+  defp build_rows(%{raw_ai_output: nil}, _categories, _existing_fingerprints), do: []
 
-  defp build_rows(statement, categories) do
-    (statement.raw_ai_output["transactions"] || [])
-    |> Enum.with_index()
-    |> Enum.map(fn {tx, idx} ->
-      suggested_category = tx["category"]
+  defp build_rows(statement, categories, existing_fingerprints) do
+    raw_rows =
+      (statement.raw_ai_output["transactions"] || [])
+      |> Enum.with_index()
+      |> Enum.map(fn {tx, idx} ->
+        amount_cents = tx["amount_cents"]
+        date = tx["date"]
+        merchant = tx["merchant"]
+        description = tx["description"]
+        fingerprint = TransactionFingerprint.build(date, amount_cents, merchant, description)
 
+        %{
+          index: idx,
+          date: date,
+          amount: Budgeteer.Money.to_decimal_string(amount_cents),
+          merchant: merchant,
+          description: description,
+          category_id: matching_category_id(categories, tx["category"]),
+          suggested_category: tx["category"],
+          fingerprint: fingerprint,
+          incomplete?: incomplete_row?(date, amount_cents, merchant, description),
+          duplicate?: false
+        }
+      end)
+
+    frequencies =
+      raw_rows |> Enum.map(& &1.fingerprint) |> Enum.reject(&is_nil/1) |> Enum.frequencies()
+
+    Enum.map(raw_rows, fn row ->
       %{
-        index: idx,
-        date: tx["date"],
-        amount: Budgeteer.Money.to_decimal_string(tx["amount_cents"]),
-        merchant: tx["merchant"],
-        description: tx["description"],
-        category_id: matching_category_id(categories, suggested_category),
-        suggested_category: suggested_category
+        row
+        | duplicate?:
+            row.fingerprint in existing_fingerprints or
+              Map.get(frequencies, row.fingerprint, 0) > 1
       }
     end)
   end
+
+  defp assign_counts(socket) do
+    rows = socket.assigns.rows
+
+    assign(socket,
+      duplicate_count: Enum.count(rows, & &1.duplicate?),
+      incomplete_count: Enum.count(rows, & &1.incomplete?)
+    )
+  end
+
+  defp incomplete_row?(date, amount_cents, merchant, description) do
+    date in [nil, ""] or not is_integer(amount_cents) or
+      (amount_cents == 0 and blank?(merchant) and blank?(description))
+  end
+
+  defp blank?(nil), do: true
+  defp blank?(value), do: String.trim(to_string(value)) == ""
 
   defp assign_if_matching_suggestion(row, category, suggested_name) do
     if row.category_id == nil and row.suggested_category not in [nil, ""] and
