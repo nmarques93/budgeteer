@@ -170,6 +170,19 @@ defmodule Budgeteer.Meals do
   end
 
   @doc """
+  Returns planned meals within an inclusive date range, with recipes preloaded.
+  """
+  def list_planned_meals_between(%Scope{} = scope, %Date{} = from, %Date{} = to) do
+    Repo.all(
+      from pm in PlannedMeal,
+        where: pm.household_id == ^scope.user.household_id,
+        where: pm.date >= ^from and pm.date <= ^to,
+        order_by: [asc: pm.date],
+        preload: :recipe
+    )
+  end
+
+  @doc """
   Returns the household's planned meal for one specific date (or `nil`),
   by household id (no scope) — same "background job, no user context"
   precedent as `Households.list_household_emails/1`, used by

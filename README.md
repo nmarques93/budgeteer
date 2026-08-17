@@ -12,6 +12,7 @@ A family budgeting PWA. Upload a bank statement (PDF or photo) and Claude extrac
 - **Shared TODO lists** — organize household tasks, due dates, and completion in real time
 - **Meal planning** — recipes with one-click "add ingredients to grocery list"
 - **Dashboard** — balance history, spend vs. budget by category, category-spend breakdown
+- **Household agenda** — a weekly view of calendar events, TODOs, meals, shopping, and budget alerts
 - **Google sign-in**, alongside email/password and magic-link login
 - **Google Calendar import** — read-only sync of a member's primary calendar into the shared calendar
 - **PWA** — installable to a phone's home screen

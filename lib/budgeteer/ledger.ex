@@ -632,6 +632,22 @@ defmodule Budgeteer.Ledger do
   end
 
   @doc """
+  Returns expense categories that have already reached their budget in the
+  current month, so the agenda can surface the current alerts.
+  """
+  def list_current_budget_alerts(%Scope{} = scope, date \\ Date.utc_today()) do
+    month_start = Date.beginning_of_month(date)
+
+    Repo.all(
+      from c in Category,
+        where: c.household_id == ^scope.user.household_id,
+        where: c.type == :expense,
+        where: c.budget_alert_sent_for == ^month_start,
+        order_by: [asc: c.name]
+    )
+  end
+
+  @doc """
   Returns the household's most recent transactions, across all accounts.
   """
   def list_recent_transactions(%Scope{} = scope, limit \\ 10) do

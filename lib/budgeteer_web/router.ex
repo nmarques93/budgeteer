@@ -123,6 +123,8 @@ defmodule BudgeteerWeb.Router do
 
       live "/subscriptions", SubscriptionLive.Index, :index
 
+      live "/agenda", AgendaLive.Index, :index
+
       live "/calendar", CalendarLive.Index, :index
       live "/calendar/new", CalendarLive.Form, :new
       live "/calendar/:id/edit", CalendarLive.Form, :edit
