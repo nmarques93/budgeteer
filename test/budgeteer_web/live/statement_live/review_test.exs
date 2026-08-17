@@ -127,6 +127,59 @@ defmodule BudgeteerWeb.StatementLive.ReviewTest do
              )
     end
 
+    test "shows a successful balance reconciliation", %{
+      conn: conn,
+      scope: scope,
+      account: account
+    } do
+      statement =
+        processed_statement_fixture(scope, account, %{
+          "currency" => "EUR",
+          "statement_period" => %{"from" => "2026-07-01", "to" => "2026-07-31"},
+          "opening_balance_cents" => 10_000,
+          "closing_balance_cents" => 8_800,
+          "transactions" => [
+            %{
+              "date" => "2026-07-20",
+              "amount_cents" => -1_200,
+              "merchant" => "Market",
+              "description" => "Shopping",
+              "category" => ""
+            }
+          ]
+        })
+
+      {:ok, review_live, _html} =
+        live(conn, ~p"/accounts/#{account}/statements/#{statement}/review")
+
+      assert has_element?(review_live, "#balance-reconciliation")
+      assert render(review_live) =~ "reconciles"
+    end
+
+    test "shows a balance mismatch warning", %{conn: conn, scope: scope, account: account} do
+      statement =
+        processed_statement_fixture(scope, account, %{
+          "currency" => "EUR",
+          "opening_balance_cents" => 10_000,
+          "closing_balance_cents" => 9_000,
+          "transactions" => [
+            %{
+              "date" => "2026-07-20",
+              "amount_cents" => -1_200,
+              "merchant" => "Market",
+              "description" => "Shopping",
+              "category" => ""
+            }
+          ]
+        })
+
+      {:ok, review_live, _html} =
+        live(conn, ~p"/accounts/#{account}/statements/#{statement}/review")
+
+      assert has_element?(review_live, "#balance-reconciliation")
+      assert render(review_live) =~ "Balance mismatch"
+    end
+
     test "flags an extracted row that already exists in the account", %{
       conn: conn,
       scope: scope,

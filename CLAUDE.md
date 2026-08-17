@@ -409,7 +409,7 @@ Priorities below were assigned during a 2026-07-30 competitive-analysis pass aga
 ### Active Product Backlog
 
 - [~] **TODO assignments, priorities, recurring tasks, and reminders.** The first slice adds assignees, priority, and calendar visibility. Recurrence and reminder channels remain deliberately unchosen until notification behavior is specified.
-- [~] **Statement reconciliation** — the first slice flags exact duplicate and incomplete extracted rows during review and leaves them unchecked by default. Import confidence, skipped-row review, and opening/closing balance checks remain next.
+- [~] **Statement reconciliation** — review now flags exact duplicates and incomplete rows, leaves them unchecked by default, shows the skipped-row count, and checks extracted opening/closing balances. Real-provider confidence calibration and broader reconciliation coverage remain next.
 - [ ] **Unified household agenda** — combine calendar events, TODOs, meals, groceries, and budget alerts into a weekly family view.
 - [ ] **Recurring bills and due-date reminders** — extend subscription detection into actionable payment planning.
 - [ ] **Full household export** — export financial, household, meal, calendar, and task data in a portable archive.

@@ -45,6 +45,13 @@ defmodule BudgeteerWeb.StatementLive.Review do
               @incomplete_count
             )}
           </p>
+          <p :if={@skipped_count > 0} class="text-sm">
+            {ngettext(
+              "%{count} flagged row will be skipped unless included.",
+              "%{count} flagged rows will be skipped unless included.",
+              @skipped_count
+            )}
+          </p>
           <p class="text-sm opacity-80">
             {gettext(
               "Review flagged rows before saving. You can include one deliberately if it is legitimate."
@@ -52,6 +59,33 @@ defmodule BudgeteerWeb.StatementLive.Review do
           </p>
         </div>
       </div>
+
+      <div
+        :if={@reconciliation.status == :match}
+        id="balance-reconciliation"
+        class="alert alert-success mb-4"
+      >
+        <.icon name="hero-check-circle" class="size-5 shrink-0" />
+        {gettext("Statement balance reconciles at %{amount}.",
+          amount: Budgeteer.Money.format(@reconciliation.closing_balance_cents)
+        )}
+      </div>
+      <div
+        :if={@reconciliation.status == :mismatch}
+        id="balance-reconciliation"
+        class="alert alert-error mb-4"
+      >
+        <.icon name="hero-exclamation-triangle" class="size-5 shrink-0" />
+        {gettext(
+          "Balance mismatch: expected %{expected}, statement says %{closing} (difference %{difference}).",
+          expected: Budgeteer.Money.format(@reconciliation.expected_closing_balance_cents),
+          closing: Budgeteer.Money.format(@reconciliation.closing_balance_cents),
+          difference: Budgeteer.Money.format(@reconciliation.difference_cents)
+        )}
+      </div>
+      <p :if={@reconciliation.status == :unavailable} class="text-sm opacity-70 mb-4">
+        {gettext("Opening and closing balances were not available for this statement.")}
+      </p>
 
       <form :if={@rows != []} id="review-form" phx-submit="save">
         <div class="overflow-x-auto">
@@ -83,6 +117,12 @@ defmodule BudgeteerWeb.StatementLive.Review do
                     value="true"
                     checked={not row.duplicate? and not row.incomplete?}
                   />
+                  <span :if={row.duplicate?} class="block text-xs text-error mt-1">{gettext(
+                    "Duplicate"
+                  )}</span>
+                  <span :if={row.incomplete?} class="block text-xs text-warning mt-1">{gettext(
+                    "Incomplete"
+                  )}</span>
                 </td>
                 <td class="block md:table-cell align-top">
                   <span class="md:hidden block text-xs font-semibold opacity-60 mb-1">{gettext("Date")}</span>
@@ -197,7 +237,7 @@ defmodule BudgeteerWeb.StatementLive.Review do
      )
      |> assign(:duplicate_count, 0)
      |> assign(:incomplete_count, 0)
-     |> assign_counts()}
+     |> assign_review_metrics()}
   end
 
   @impl true
@@ -215,6 +255,7 @@ defmodule BudgeteerWeb.StatementLive.Review do
          socket
          |> assign(:categories, socket.assigns.categories ++ [category])
          |> assign(:rows, rows)
+         |> assign_review_metrics()
          |> put_flash(:info, gettext("Created category \"%{name}\"", name: category.name))}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -276,6 +317,7 @@ defmodule BudgeteerWeb.StatementLive.Review do
         %{
           index: idx,
           date: date,
+          amount_cents: amount_cents,
           amount: Budgeteer.Money.to_decimal_string(amount_cents),
           merchant: merchant,
           description: description,
@@ -300,13 +342,40 @@ defmodule BudgeteerWeb.StatementLive.Review do
     end)
   end
 
-  defp assign_counts(socket) do
+  defp assign_review_metrics(socket) do
     rows = socket.assigns.rows
 
+    socket =
+      assign(socket,
+        duplicate_count: Enum.count(rows, & &1.duplicate?),
+        incomplete_count: Enum.count(rows, & &1.incomplete?)
+      )
+
     assign(socket,
-      duplicate_count: Enum.count(rows, & &1.duplicate?),
-      incomplete_count: Enum.count(rows, & &1.incomplete?)
+      skipped_count: Enum.count(rows, &(&1.duplicate? or &1.incomplete?)),
+      reconciliation: reconciliation(socket.assigns.statement, rows)
     )
+  end
+
+  defp reconciliation(statement, rows) do
+    opening = statement.opening_balance_cents
+    closing = statement.closing_balance_cents
+    amounts = rows |> Enum.map(& &1.amount_cents) |> Enum.filter(&is_integer/1)
+
+    cond do
+      not is_integer(opening) or not is_integer(closing) ->
+        %{status: :unavailable}
+
+      true ->
+        expected = opening + Enum.sum(amounts)
+
+        %{
+          status: if(expected == closing, do: :match, else: :mismatch),
+          expected_closing_balance_cents: expected,
+          closing_balance_cents: closing,
+          difference_cents: expected - closing
+        }
+    end
   end
 
   defp incomplete_row?(date, amount_cents, merchant, description) do

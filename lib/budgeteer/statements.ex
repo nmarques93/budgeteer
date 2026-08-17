@@ -167,7 +167,12 @@ defmodule Budgeteer.Statements do
   called by the Oban worker.
   """
   def mark_processed(%Statement{} = statement, raw_ai_output) when is_map(raw_ai_output) do
-    update_status(statement, %{"status" => "processed", "raw_ai_output" => raw_ai_output})
+    attrs =
+      raw_ai_output
+      |> Statement.reconciliation_metadata()
+      |> Map.merge(%{"status" => "processed", "raw_ai_output" => raw_ai_output})
+
+    update_status(statement, attrs)
   end
 
   @doc """

@@ -18,6 +18,10 @@ defmodule Budgeteer.Statements.Statement do
     field :account_id, :binary_id
     field :uploaded_by_id, :binary_id
     field :household_id, :binary_id
+    field :statement_period_start, :date
+    field :statement_period_end, :date
+    field :opening_balance_cents, :integer
+    field :closing_balance_cents, :integer
 
     timestamps(type: :utc_datetime)
   end
@@ -62,6 +66,41 @@ defmodule Budgeteer.Statements.Statement do
   (processing/processed/failed) — not user input, no form ceremony needed.
   """
   def status_changeset(statement, attrs) do
-    cast(statement, attrs, [:status, :raw_ai_output, :error_message])
+    cast(statement, attrs, [
+      :status,
+      :raw_ai_output,
+      :error_message,
+      :statement_period_start,
+      :statement_period_end,
+      :opening_balance_cents,
+      :closing_balance_cents
+    ])
   end
+
+  def reconciliation_metadata(%{"statement_period" => period} = output) when is_map(period) do
+    %{
+      "statement_period_start" => parse_date(period["from"]),
+      "statement_period_end" => parse_date(period["to"]),
+      "opening_balance_cents" => output["opening_balance_cents"],
+      "closing_balance_cents" => output["closing_balance_cents"]
+    }
+  end
+
+  def reconciliation_metadata(output) when is_map(output) do
+    %{
+      "statement_period_start" => nil,
+      "statement_period_end" => nil,
+      "opening_balance_cents" => output["opening_balance_cents"],
+      "closing_balance_cents" => output["closing_balance_cents"]
+    }
+  end
+
+  defp parse_date(date) when is_binary(date) do
+    case Date.from_iso8601(date) do
+      {:ok, date} -> date
+      {:error, _} -> nil
+    end
+  end
+
+  defp parse_date(_date), do: nil
 end

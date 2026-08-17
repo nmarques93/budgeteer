@@ -34,9 +34,13 @@ defmodule Budgeteer.AI.Client do
   concise category name instead (e.g. "Restaurants"). If you have no basis
   to guess, use an empty string.
 
-  If the document contains no identifiable transactions at all, return an
-  empty `transactions` array. Never return a placeholder transaction with
-  blank or zero fields just to have something in the array.
+   If the document contains no identifiable transactions at all, return an
+   empty `transactions` array. Never return a placeholder transaction with
+   blank or zero fields just to have something in the array.
+
+   Also extract the statement period and opening/closing balances when they
+   are explicitly visible. Use an empty date string or null balance when the
+   document does not provide that value. Never infer balances.
   """
 
   @output_schema %{
@@ -61,9 +65,26 @@ defmodule Budgeteer.AI.Client do
           "required" => ["date", "amount_cents", "merchant", "description", "category"],
           "additionalProperties" => false
         }
-      }
+      },
+      "statement_period" => %{
+        "type" => "object",
+        "properties" => %{
+          "from" => %{"type" => "string"},
+          "to" => %{"type" => "string"}
+        },
+        "required" => ["from", "to"],
+        "additionalProperties" => false
+      },
+      "opening_balance_cents" => %{"type" => ["integer", "null"]},
+      "closing_balance_cents" => %{"type" => ["integer", "null"]}
     },
-    "required" => ["currency", "transactions"],
+    "required" => [
+      "currency",
+      "transactions",
+      "statement_period",
+      "opening_balance_cents",
+      "closing_balance_cents"
+    ],
     "additionalProperties" => false
   }
 
