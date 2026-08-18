@@ -13,6 +13,7 @@ defmodule Budgeteer.GoogleCalendar.SyncWorker do
     case GoogleCalendar.sync_user(user) do
       {:ok, _count} -> :ok
       {:error, :not_connected} -> :ok
+      {:error, :reconnect_required} -> :ok
       {:error, reason} -> {:error, reason}
     end
   end

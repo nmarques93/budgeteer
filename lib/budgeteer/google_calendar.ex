@@ -95,6 +95,10 @@ defmodule Budgeteer.GoogleCalendar do
         _ = Households.update_google_calendar_sync_status(user, nil, safe_error(error))
         error
 
+      {:error, {:http_error, 400, %{"error" => "invalid_grant"}}} ->
+        {:ok, _user} = Households.disconnect_google_calendar(user)
+        {:error, :reconnect_required}
+
       {:error, reason} ->
         error = {:error, {:token_refresh, reason}}
         _ = Households.update_google_calendar_sync_status(user, nil, safe_error(error))
