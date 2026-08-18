@@ -560,16 +560,26 @@ defmodule BudgeteerWeb.UserLive.Settings do
 
   defp send_invite(socket, user, email) do
     if RateLimit.check("invite:#{user.id}", @invite_scale, @invite_limit) == :ok do
-      Households.deliver_household_invite(
-        user,
-        email,
-        &url(~p"/users/register?#{[token: &1]}")
-      )
+      case Households.deliver_household_invite(
+             user,
+             email,
+             &url(~p"/users/register?#{[token: &1]}")
+           ) do
+        {:ok, _email} ->
+          {:noreply,
+           socket
+           |> put_flash(:info, gettext("An invite was sent to %{email}.", email: email))
+           |> assign(:invite_form, to_form(%{"email" => ""}, as: "invite"))}
 
-      {:noreply,
-       socket
-       |> put_flash(:info, gettext("An invite was sent to %{email}.", email: email))
-       |> assign(:invite_form, to_form(%{"email" => ""}, as: "invite"))}
+        {:error, _reason} ->
+          {:noreply,
+           socket
+           |> put_flash(
+             :error,
+             gettext("The invite could not be delivered. Please try again or contact support.")
+           )
+           |> assign(:invite_form, to_form(%{"email" => email}, as: "invite"))}
+      end
     else
       {:noreply,
        put_flash(
