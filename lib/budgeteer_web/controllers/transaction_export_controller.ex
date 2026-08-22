@@ -37,11 +37,27 @@ defmodule BudgeteerWeb.TransactionExportController do
       Date.to_iso8601(transaction.date),
       Map.get(accounts, transaction.account_id, ""),
       Money.to_decimal_string(transaction.amount_cents),
-      transaction.merchant,
-      transaction.description,
-      Map.get(categories, transaction.category_id, "Uncategorized"),
-      transaction.notes
+      sanitize_csv_value(transaction.merchant),
+      sanitize_csv_value(transaction.description),
+      sanitize_csv_value(Map.get(categories, transaction.category_id, "Uncategorized")),
+      sanitize_csv_value(transaction.notes)
     ]
+  end
+
+  # Neutralizes CSV/formula injection. Merchant and description in
+  # particular often originate from bank-parsed statement text, not
+  # something the household typed themselves — a payment reference crafted
+  # as e.g. "=cmd|'/ C calc'!A1" executes as a formula the moment this
+  # export is opened in Excel/Sheets. Prefixing a leading =, +, -, @, tab,
+  # or CR with a single quote is the standard mitigation; spreadsheet apps
+  # then render the value as literal text instead of a formula.
+  @formula_lead_chars ["=", "+", "-", "@", "\t", "\r"]
+
+  defp sanitize_csv_value(nil), do: nil
+
+  defp sanitize_csv_value(value) do
+    string = to_string(value)
+    if String.starts_with?(string, @formula_lead_chars), do: "'" <> string, else: string
   end
 
   defp encode_row(fields), do: Enum.map_join(fields, ",", &encode_field/1)

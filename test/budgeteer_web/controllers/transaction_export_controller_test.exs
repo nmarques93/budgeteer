@@ -61,6 +61,43 @@ defmodule BudgeteerWeb.TransactionExportControllerTest do
       assert conn.resp_body =~ ~s("Café ""Central"", Lda")
     end
 
+    test "neutralizes a merchant/description/category/notes value that would execute as a spreadsheet formula",
+         %{conn: conn, scope: scope} do
+      account = account_fixture(scope)
+      category = category_fixture(scope, %{name: "=2+2", type: :expense})
+
+      transaction_fixture(scope, %{
+        account_id: account.id,
+        category_id: category.id,
+        amount: "1.00",
+        merchant: "=cmd|'/ C calc'!A1",
+        description: "+SUM(A1:A9)",
+        notes: "-1;@SUM(1+1)"
+      })
+
+      conn = get(conn, ~p"/transactions/export")
+
+      assert conn.resp_body =~ "'=cmd|'/ C calc'!A1"
+      assert conn.resp_body =~ "'+SUM(A1:A9)"
+      assert conn.resp_body =~ "'-1;@SUM(1+1)"
+      assert conn.resp_body =~ "'=2+2"
+      refute conn.resp_body =~ ",=cmd"
+      refute conn.resp_body =~ ",+SUM"
+    end
+
+    test "leaves an ordinary value starting with a non-formula character untouched", %{
+      conn: conn,
+      scope: scope
+    } do
+      account = account_fixture(scope)
+
+      transaction_fixture(scope, %{account_id: account.id, amount: "1.00", merchant: "Continente"})
+
+      conn = get(conn, ~p"/transactions/export")
+
+      assert conn.resp_body =~ ",Continente,"
+    end
+
     test "respects filter params, matching what's on screen", %{conn: conn, scope: scope} do
       account = account_fixture(scope)
       other_account = account_fixture(scope)
